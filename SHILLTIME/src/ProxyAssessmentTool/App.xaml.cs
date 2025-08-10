@@ -26,7 +26,7 @@ namespace ProxyAssessmentTool
         private IHost? _host;
         private ILogger<App>? _logger;
 
-        protected override async void OnStartup(StartupEventArgs e)
+        protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
@@ -35,35 +35,46 @@ namespace ProxyAssessmentTool
             DispatcherUnhandledException += OnDispatcherUnhandledException;
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
-            try
+            // Run async initialization without async void
+            Task.Run(async () =>
             {
-                // Build and start the host
-                _host = CreateHostBuilder(e.Args).Build();
-                await _host.StartAsync();
+                try
+                {
+                    // Build and start the host
+                    _host = CreateHostBuilder(e.Args).Build();
+                    await _host.StartAsync();
 
-                _logger = _host.Services.GetRequiredService<ILogger<App>>();
-                _logger.LogInformation("ProxyAssessmentTool starting up");
+                    _logger = _host.Services.GetRequiredService<ILogger<App>>();
+                    _logger.LogInformation("ProxyAssessmentTool starting up");
 
-                // Check for required files and first-run setup
-                await PerformStartupChecksAsync();
+                    // Check for required files and first-run setup
+                    await PerformStartupChecksAsync();
 
-                // Apply theme based on Windows settings
-                ThemeManager.Current.ApplicationTheme = ThemeManager.Current.ActualApplicationTheme;
+                    // Apply theme based on Windows settings
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        ThemeManager.Current.ApplicationTheme = ThemeManager.Current.ActualApplicationTheme;
 
-                // Create and show the main window
-                var mainWindow = _host.Services.GetRequiredService<MainWindow>();
-                mainWindow.Show();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    $"Fatal error during startup: {ex.Message}",
-                    "ProxyAssessmentTool",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
-                Shutdown(1);
-            }
+                        // Create and show the main window
+                        var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+                        MainWindow = mainWindow;
+                        mainWindow.Show();
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogCritical(ex, "Critical startup error");
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        MessageBox.Show(
+                            $"Failed to start application: {ex.Message}",
+                            "Startup Error",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                        Shutdown();
+                    });
+                }
+            });
         }
 
         protected override async void OnExit(ExitEventArgs e)
