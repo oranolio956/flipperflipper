@@ -3,7 +3,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Calculator, Search, ExternalLink, Clock, TrendingUp, AlertCircle } from 'lucide-react';
+import { Calculator, Search, ExternalLink, Clock, TrendingUp, AlertCircle, ScanLine } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -178,6 +178,39 @@ export function App() {
     }
   };
 
+  const handleBulkScan = async () => {
+    setIsLoading(true);
+    try {
+      // Get active tab
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      
+      if (!tab.id) {
+        throw new Error('No active tab');
+      }
+      
+      // Check if it's a search results page
+      const isSearchPage = tab.url?.includes('marketplace/search') ||
+                          tab.url?.includes('marketplace/category') ||
+                          (tab.url?.includes('craigslist.org') && tab.url?.includes('/search/'));
+      
+      if (!isSearchPage) {
+        alert('Please navigate to a marketplace search results page first.');
+        return;
+      }
+      
+      // Send message to content script
+      await chrome.tabs.sendMessage(tab.id, { action: 'scanSearch' });
+      
+      // Close popup to see results panel
+      window.close();
+    } catch (error) {
+      console.error('Scan error:', error);
+      alert('Failed to scan page. Make sure you\'re on a search results page.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const openDashboard = async (page?: string) => {
     await sendMessage({
       type: MessageType.OPEN_DASHBOARD,
@@ -212,14 +245,25 @@ export function App() {
         </Button>
       </div>
 
-      <Button 
-        className="w-full mb-4" 
-        onClick={handleParseCurrentPage}
-        disabled={isLoading}
-      >
-        <Search className="h-4 w-4 mr-2" />
-        {isLoading ? 'Parsing...' : 'Parse Current Page'}
-      </Button>
+      <div className="grid grid-cols-2 gap-2 mb-4">
+        <Button 
+          onClick={handleParseCurrentPage}
+          disabled={isLoading}
+          size="sm"
+        >
+          <Search className="h-4 w-4 mr-2" />
+          Parse Page
+        </Button>
+        <Button 
+          onClick={handleBulkScan}
+          disabled={isLoading}
+          size="sm"
+          variant="outline"
+        >
+          <ScanLine className="h-4 w-4 mr-2" />
+          Scan Results
+        </Button>
+      </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2">

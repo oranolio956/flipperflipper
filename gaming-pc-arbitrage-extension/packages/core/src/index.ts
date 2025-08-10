@@ -55,6 +55,12 @@ export * from './competition/signals';
 // Export finance
 export * from './finance/pnl';
 
+// Export ML
+export * from './ml/priceModel';
+
+// Export data
+export * from './data/gpuHierarchy';
+
 export const VERSION = '1.0.0';
 export const SUPPORTED_PLATFORMS = ['facebook', 'craigslist', 'offerup'] as const;
 export const MAX_ACTIVE_DEALS = 50;

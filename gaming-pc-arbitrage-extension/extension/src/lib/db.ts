@@ -136,6 +136,26 @@ export interface DBComp {
   expiresAt: Date;
 }
 
+export interface DBWatchedListing {
+  _id?: number;
+  id: string;
+  listingId: string;
+  platform: string;
+  url: string;
+  title: string;
+  lastSeenPrice: number;
+  originalPrice: number;
+  lowestPrice: number;
+  lastCheckedAt: Date;
+  createdAt: Date;
+  dropThresholdPct: number;
+  priceHistory: Array<{
+    price: number;
+    timestamp: Date;
+  }>;
+  notified: boolean;
+}
+
 // Database class
 export class ArbitrageDB extends Dexie {
   listings!: Table<DBListing>;
@@ -151,6 +171,7 @@ export class ArbitrageDB extends Dexie {
   assignments!: Table<DBAssignment>;
   experiments!: Table<DBExperiment>;
   comps!: Table<DBComp>;
+  watchedListings!: Table<DBWatchedListing>;
 
   constructor() {
     super('ArbitrageDB');
@@ -296,6 +317,24 @@ export class ArbitrageDB extends Dexie {
       assignments: '++_id, id, dealId, userId, [dealId+userId]',
       experiments: '++_id, id, name, createdAt',
       comps: '++_id, id, source, [source+url], timestamp, expiresAt',
+    });
+    
+    // Version 7 - Add watched listings
+    this.version(7).stores({
+      listings: '++_id, id, platform, [platform+externalId], metadata.createdAt, metadata.status',
+      deals: '++_id, id, listingId, stage, metadata.createdAt',
+      threads: '++_id, id, listingId, sellerId, lastMsgAt, nextFollowUpAt',
+      offers: '++_id, id, listingId, [listingId+amount], status, timestamp',
+      settings: '++_id, version',
+      events: '++_id, timestamp, category, name, actorUserId',
+      partsBin: '++_id, name, category',
+      attachments: '++_id, dealId, type, timestamp',
+      migrations: '++_id, version, appliedAt',
+      users: '++_id, id, name, role, createdAt',
+      assignments: '++_id, id, dealId, userId, [dealId+userId]',
+      experiments: '++_id, id, name, createdAt',
+      comps: '++_id, id, source, [source+url], timestamp, expiresAt',
+      watchedListings: '++_id, id, listingId, platform, url, lastCheckedAt, notified',
     });
 
     // Apply encryption middleware for sensitive fields

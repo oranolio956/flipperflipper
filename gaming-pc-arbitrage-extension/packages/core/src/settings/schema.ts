@@ -94,6 +94,7 @@ export const NotificationPreferencesSchema = z.object({
     highValueDeal: z.boolean().default(true),
     riskAlert: z.boolean().default(true),
   }),
+  priceDropThreshold: z.number().min(1).max(50).default(10),
 });
 
 // Pricing Settings Schema
@@ -182,6 +183,14 @@ const MacroSchema = z.object({
   customHotkeys: z.record(z.string()).default({}),
 });
 
+// Price Drop Schema
+const PriceDropSchema = z.object({
+  enabled: z.boolean().default(true),
+  defaultThreshold: z.number().min(1).max(50).default(10),
+  checkFrequency: z.enum(['manual', 'daily', 'twice-daily']).default('daily'),
+  autoRemoveAfterDays: z.number().min(7).max(90).default(30),
+});
+
 // Main Settings Schema
 export const SettingsSchema = z.object({
   version: z.string().default('1.0.0'),
@@ -210,6 +219,7 @@ export const SettingsSchema = z.object({
   team: TeamSchema,
   backup: BackupSchema,
   macros: MacroSchema,
+  priceDrops: PriceDropSchema,
   
   // Feature Flags
   features: z.object({

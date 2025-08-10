@@ -1,10 +1,11 @@
 /**
  * Pricing Integrations
- * Connect comp stats to FMV calculations
+ * Connect comp stats and ML predictions to FMV calculations
  */
 
 import { CompStats } from '../comps';
 import { ComponentValue } from '../calculators/fmv-calculator';
+import { ModelWeights } from '../ml/priceModel';
 
 /**
  * Adjust component value based on comp stats
@@ -29,6 +30,56 @@ export function adjustValueWithComps(
     confidence: Math.min(baseValue.confidence + 0.2, 0.95), // Boost confidence with comps
     source: `${baseValue.source} + ${compStats.n} comps`,
   };
+}
+
+/**
+ * Adjust value with ML predictions
+ */
+export function adjustValueWithML(
+  baseValue: ComponentValue,
+  mlPrediction: number,
+  modelWeights: ModelWeights | null,
+  blendFactor = 0.3
+): ComponentValue {
+  if (!modelWeights || !modelWeights.metrics || mlPrediction <= 0) {
+    return baseValue;
+  }
+  
+  // Only use ML if model has good performance
+  if (modelWeights.metrics.r2 < 0.5) {
+    return baseValue;
+  }
+  
+  // Blend with ML prediction
+  const blendedFmv = baseValue.fmv * (1 - blendFactor) + mlPrediction * blendFactor;
+  
+  return {
+    ...baseValue,
+    fmv: Math.round(blendedFmv),
+    confidence: Math.min(baseValue.confidence + 0.1, 0.95),
+    source: `${baseValue.source} + ML (R²=${modelWeights.metrics.r2.toFixed(2)})`,
+  };
+}
+
+/**
+ * Combine all pricing sources
+ */
+export function calculateEnhancedFMV(
+  baseValue: ComponentValue,
+  compStats: CompStats | null,
+  mlPrediction: number | null,
+  modelWeights: ModelWeights | null,
+  mlSettings?: { enabled: boolean; blend: number }
+): ComponentValue {
+  // Start with comp-adjusted value
+  let value = adjustValueWithComps(baseValue, compStats);
+  
+  // Apply ML if enabled
+  if (mlSettings?.enabled && mlPrediction) {
+    value = adjustValueWithML(value, mlPrediction, modelWeights, mlSettings.blend);
+  }
+  
+  return value;
 }
 
 /**
