@@ -77,6 +77,39 @@ export interface DBMigration {
   description: string;
 }
 
+export interface DBUser {
+  _id?: number;
+  id: string;
+  name: string;
+  role: 'admin' | 'operator' | 'viewer';
+  createdAt: Date;
+  lastActive?: Date;
+}
+
+export interface DBAssignment {
+  _id?: number;
+  id: string;
+  dealId: string;
+  userId: string;
+  createdAt: Date;
+}
+
+export interface DBExperiment {
+  _id?: number;
+  id: string;
+  name: string;
+  description: string;
+  variants: Array<{
+    id: string;
+    impressions: number;
+    successes: number;
+    conversionRate: number;
+  }>;
+  promotedId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Database class
 export class ArbitrageDB extends Dexie {
   listings!: Table<DBListing>;
@@ -88,6 +121,9 @@ export class ArbitrageDB extends Dexie {
   partsBin!: Table<DBPartsBin>;
   attachments!: Table<DBAttachment>;
   migrations!: Table<DBMigration>;
+  users!: Table<DBUser>;
+  assignments!: Table<DBAssignment>;
+  experiments!: Table<DBExperiment>;
 
   constructor() {
     super('ArbitrageDB');
@@ -135,6 +171,70 @@ export class ArbitrageDB extends Dexie {
           };
         }
       });
+    });
+    
+    // Version 3 - Add team mode
+    this.version(3).stores({
+      listings: '++_id, id, platform, [platform+externalId], metadata.createdAt, metadata.status',
+      deals: '++_id, id, listingId, stage, metadata.createdAt',
+      threads: '++_id, dealId, lastActivity',
+      offers: '++_id, dealId, timestamp, status',
+      settings: '++_id, version',
+      events: '++_id, timestamp, category, name, actorUserId',
+      partsBin: '++_id, name, category',
+      attachments: '++_id, dealId, type, timestamp',
+      migrations: '++_id, version, appliedAt',
+      users: '++_id, id, name, role, createdAt',
+      assignments: '++_id, id, dealId, userId, [dealId+userId]',
+    }).upgrade(async trans => {
+      // Create default admin user
+      const adminUser = {
+        id: 'user-admin',
+        name: 'Admin',
+        role: 'admin' as const,
+        createdAt: new Date(),
+      };
+      await trans.users.add(adminUser);
+      
+      // Add team settings
+      await trans.settings.toCollection().modify(setting => {
+        if (!setting.team) {
+          setting.team = {
+            currentUserId: adminUser.id,
+          };
+        }
+      });
+    });
+    
+    // Version 4 - Add experiments
+    this.version(4).stores({
+      listings: '++_id, id, platform, [platform+externalId], metadata.createdAt, metadata.status',
+      deals: '++_id, id, listingId, stage, metadata.createdAt',
+      threads: '++_id, dealId, lastActivity',
+      offers: '++_id, dealId, timestamp, status',
+      settings: '++_id, version',
+      events: '++_id, timestamp, category, name, actorUserId',
+      partsBin: '++_id, name, category',
+      attachments: '++_id, dealId, type, timestamp',
+      migrations: '++_id, version, appliedAt',
+      users: '++_id, id, name, role, createdAt',
+      assignments: '++_id, id, dealId, userId, [dealId+userId]',
+      experiments: '++_id, id, name, createdAt',
+    }).upgrade(async trans => {
+      // Create default negotiation experiment
+      const defaultExperiment = {
+        id: 'negotiation_openers',
+        name: 'Opening Message Templates',
+        description: 'Test different opening message styles',
+        variants: [
+          { id: 'opener_friendly', impressions: 0, successes: 0, conversionRate: 0 },
+          { id: 'opener_direct', impressions: 0, successes: 0, conversionRate: 0 },
+          { id: 'opener_curious', impressions: 0, successes: 0, conversionRate: 0 },
+        ],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      await trans.experiments.add(defaultExperiment);
     });
 
     // Apply encryption middleware for sensitive fields

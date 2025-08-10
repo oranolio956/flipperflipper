@@ -1,0 +1,156 @@
+{
+  "spots": [
+    {
+      "id": "den-pd-1",
+      "name": "Denver Police Station - District 1",
+      "type": "police",
+      "address": "1311 W 46th Ave, Denver, CO 80211",
+      "coord": { "lat": 39.7802, "lng": -105.0014 },
+      "metro": "Denver"
+    },
+    {
+      "id": "den-lib-central",
+      "name": "Denver Central Library",
+      "type": "library",
+      "address": "10 W 14th Ave Pkwy, Denver, CO 80204",
+      "coord": { "lat": 39.7372, "lng": -104.9888 },
+      "metro": "Denver"
+    },
+    {
+      "id": "den-pd-2",
+      "name": "Denver Police Station - District 2",
+      "type": "police",
+      "address": "3921 N Holly St, Denver, CO 80207",
+      "coord": { "lat": 39.7711, "lng": -104.9227 },
+      "metro": "Denver"
+    },
+    {
+      "id": "aurora-pd",
+      "name": "Aurora Police Department",
+      "type": "police",
+      "address": "15001 E Alameda Pkwy, Aurora, CO 80012",
+      "coord": { "lat": 39.7111, "lng": -104.8141 },
+      "metro": "Denver"
+    },
+    {
+      "id": "boulder-pd",
+      "name": "Boulder Police Department",
+      "type": "police",
+      "address": "1805 33rd St, Boulder, CO 80301",
+      "coord": { "lat": 40.0150, "lng": -105.2513 },
+      "metro": "Boulder"
+    },
+    {
+      "id": "seattle-pd-north",
+      "name": "Seattle Police - North Precinct",
+      "type": "police",
+      "address": "10049 College Way N, Seattle, WA 98133",
+      "coord": { "lat": 47.7018, "lng": -122.3351 },
+      "metro": "Seattle"
+    },
+    {
+      "id": "seattle-lib-central",
+      "name": "Seattle Central Library",
+      "type": "library",
+      "address": "1000 4th Ave, Seattle, WA 98104",
+      "coord": { "lat": 47.6067, "lng": -122.3326 },
+      "metro": "Seattle"
+    },
+    {
+      "id": "bellevue-pd",
+      "name": "Bellevue Police Department",
+      "type": "police",
+      "address": "450 110th Ave NE, Bellevue, WA 98004",
+      "coord": { "lat": 47.6145, "lng": -122.1945 },
+      "metro": "Seattle"
+    },
+    {
+      "id": "austin-pd-main",
+      "name": "Austin Police Headquarters",
+      "type": "police",
+      "address": "715 E 8th St, Austin, TX 78701",
+      "coord": { "lat": 30.2688, "lng": -97.7405 },
+      "metro": "Austin"
+    },
+    {
+      "id": "austin-lib-central",
+      "name": "Austin Central Library",
+      "type": "library",
+      "address": "710 W Cesar Chavez St, Austin, TX 78701",
+      "coord": { "lat": 30.2661, "lng": -97.7501 },
+      "metro": "Austin"
+    },
+    {
+      "id": "phoenix-pd-1",
+      "name": "Phoenix Police - Central City Precinct",
+      "type": "police",
+      "address": "620 W Washington St, Phoenix, AZ 85003",
+      "coord": { "lat": 33.4484, "lng": -112.0806 },
+      "metro": "Phoenix"
+    },
+    {
+      "id": "phoenix-lib-central",
+      "name": "Burton Barr Central Library",
+      "type": "library",
+      "address": "1221 N Central Ave, Phoenix, AZ 85004",
+      "coord": { "lat": 33.4632, "lng": -112.0740 },
+      "metro": "Phoenix"
+    },
+    {
+      "id": "portland-pd-central",
+      "name": "Portland Police - Central Precinct",
+      "type": "police",
+      "address": "1111 SW 2nd Ave, Portland, OR 97204",
+      "coord": { "lat": 45.5152, "lng": -122.6784 },
+      "metro": "Portland"
+    },
+    {
+      "id": "portland-lib-central",
+      "name": "Central Library - Multnomah County",
+      "type": "library",
+      "address": "801 SW 10th Ave, Portland, OR 97204",
+      "coord": { "lat": 45.5190, "lng": -122.6819 },
+      "metro": "Portland"
+    },
+    {
+      "id": "sf-pd-park",
+      "name": "SFPD Park Station",
+      "type": "police",
+      "address": "1899 Waller St, San Francisco, CA 94117",
+      "coord": { "lat": 37.7700, "lng": -122.4533 },
+      "metro": "San Francisco"
+    },
+    {
+      "id": "sf-lib-main",
+      "name": "San Francisco Main Library",
+      "type": "library",
+      "address": "100 Larkin St, San Francisco, CA 94102",
+      "coord": { "lat": 37.7791, "lng": -122.4157 },
+      "metro": "San Francisco"
+    },
+    {
+      "id": "oakland-pd",
+      "name": "Oakland Police Department",
+      "type": "police",
+      "address": "455 7th St, Oakland, CA 94607",
+      "coord": { "lat": 37.8007, "lng": -122.2745 },
+      "metro": "San Francisco"
+    },
+    {
+      "id": "la-pd-central",
+      "name": "LAPD Central Division",
+      "type": "police",
+      "address": "251 E 6th St, Los Angeles, CA 90014",
+      "coord": { "lat": 34.0442, "lng": -118.2469 },
+      "metro": "Los Angeles"
+    },
+    {
+      "id": "la-lib-central",
+      "name": "Los Angeles Central Library",
+      "type": "library",
+      "address": "630 W 5th St, Los Angeles, CA 90071",
+      "coord": { "lat": 34.0502, "lng": -118.2534 },
+      "metro": "Los Angeles"
+    }
+  ]
+}

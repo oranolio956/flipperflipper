@@ -43,6 +43,7 @@ import {
   generateId,
 } from '@/core';
 import { initializeSync, handleSyncAlarm, triggerSync } from './sync';
+import { initializeBackup, handleBackupAlarm, triggerBackup } from './backup';
 
 // Rate limiting
 const requestCounts = new Map<string, number>();
@@ -58,6 +59,9 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   
   // Initialize Google Sheets sync
   await initializeSync();
+  
+  // Initialize backup system
+  await initializeBackup();
   
   // Set up alarms for follow-ups
   chrome.alarms.create('followup-check', { periodInMinutes: 60 });
@@ -84,6 +88,8 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     await performCleanup();
   } else if (alarm.name === 'sheets-sync') {
     await handleSyncAlarm();
+  } else if (alarm.name === 'auto-backup') {
+    await handleBackupAlarm();
   } else if (alarm.name.startsWith('followup-')) {
     // Individual follow-up alarm
     const dealId = alarm.name.replace('followup-', '');
@@ -168,6 +174,10 @@ onMessage(async (request: MessageRequest, sender) => {
       case MessageType.SHEETS_PULL_NOW:
         await triggerSync('pull');
         return { success: true };
+        
+      case MessageType.BACKUP_NOW:
+        const filename = await triggerBackup();
+        return { success: true, filename };
         
       default:
         return { success: false, error: 'Unknown message type' };

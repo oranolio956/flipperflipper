@@ -36,6 +36,12 @@ export { calculateDistance, isWithinRadius } from './utils/geo';
 export { generateId, hashString } from './utils/crypto';
 
 // Constants
+// Export analytics
+export * from './analytics';
+
+// Export A/B testing
+export * from './abtest';
+
 export const VERSION = '1.0.0';
 export const SUPPORTED_PLATFORMS = ['facebook', 'craigslist', 'offerup'] as const;
 export const MAX_ACTIVE_DEALS = 50;

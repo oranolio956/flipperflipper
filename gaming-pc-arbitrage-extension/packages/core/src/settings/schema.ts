@@ -154,6 +154,19 @@ const IntegrationsSchema = z.object({
   }).default({}),
 });
 
+// Team Schema
+const TeamSchema = z.object({
+  currentUserId: z.string().optional(),
+});
+
+// Backup Schema
+const BackupSchema = z.object({
+  enabled: z.boolean().default(false),
+  frequency: z.enum(['weekly', 'monthly']).default('weekly'),
+  retention: z.number().min(1).max(20).default(5),
+  passphrase: z.string().default(''),
+});
+
 // Main Settings Schema
 export const SettingsSchema = z.object({
   version: z.string().default('1.0.0'),
@@ -179,6 +192,8 @@ export const SettingsSchema = z.object({
   automation: AutomationSettingsSchema,
   integrations: IntegrationsSchema,
   privacy: PrivacySettingsSchema,
+  team: TeamSchema,
+  backup: BackupSchema,
   
   // Feature Flags
   features: z.object({

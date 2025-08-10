@@ -15,6 +15,8 @@ import { Label } from '@/components/ui/label';
 import { Section } from './components/Section';
 import { Field } from './components/Field';
 import { Sheets } from './sections/Sheets';
+import { Team } from './sections/Team';
+import { Backup } from './sections/Backup';
 import { 
   getSettings, 
   setSettings, 
@@ -253,6 +255,8 @@ export function App() {
             <TabsTrigger value="automation">Automation</TabsTrigger>
             <TabsTrigger value="features">Features</TabsTrigger>
             <TabsTrigger value="sheets">Google Sheets</TabsTrigger>
+            <TabsTrigger value="team">Team</TabsTrigger>
+            <TabsTrigger value="backup">Backup</TabsTrigger>
           </TabsList>
 
           <TabsContent value="geography">
@@ -498,6 +502,28 @@ export function App() {
           <TabsContent value="sheets">
             <Sheets 
               settings={settings} 
+              onUpdate={(updates) => {
+                const newSettings = { ...settings, ...updates };
+                setLocalSettings(newSettings);
+                setHasChanges(true);
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="team">
+            <Team
+              settings={settings}
+              onUpdate={(updates) => {
+                const newSettings = { ...settings, ...updates };
+                setLocalSettings(newSettings);
+                setHasChanges(true);
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="backup">
+            <Backup
+              settings={settings}
               onUpdate={(updates) => {
                 const newSettings = { ...settings, ...updates };
                 setLocalSettings(newSettings);

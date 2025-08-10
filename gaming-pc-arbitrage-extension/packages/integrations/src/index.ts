@@ -5,3 +5,4 @@
 
 export * from './google/sheetsAdapter';
 export * from './calendar/ics';
+export * from './maps/route';

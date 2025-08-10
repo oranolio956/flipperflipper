@@ -33,6 +33,8 @@ export const MessageType = {
   SHEETS_SYNC: 'SHEETS_SYNC',
   SHEETS_PUSH_NOW: 'SHEETS_PUSH_NOW',
   SHEETS_PULL_NOW: 'SHEETS_PULL_NOW',
+  // Backup
+  BACKUP_NOW: 'BACKUP_NOW',
 } as const;
 
 // Request schemas
@@ -132,6 +134,10 @@ export const SheetsPullNowRequestSchema = z.object({
   type: z.literal(MessageType.SHEETS_PULL_NOW),
 });
 
+export const BackupNowRequestSchema = z.object({
+  type: z.literal(MessageType.BACKUP_NOW),
+});
+
 // Union of all request types
 export const MessageRequestSchema = z.discriminatedUnion('type', [
   ParsePageRequestSchema,
@@ -151,6 +157,7 @@ export const MessageRequestSchema = z.discriminatedUnion('type', [
   SheetsSyncRequestSchema,
   SheetsPushNowRequestSchema,
   SheetsPullNowRequestSchema,
+  BackupNowRequestSchema,
 ]);
 
 // Response types

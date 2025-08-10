@@ -4,11 +4,14 @@
 
 import React from 'react';
 import { createHashRouter, Navigate, Outlet } from 'react-router-dom';
-import { Home, Package, BarChart3, Settings as SettingsIcon } from 'lucide-react';
+import { Home, Package, BarChart3, Settings as SettingsIcon, Map, Flask } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Pipeline } from './pages/Pipeline';
 import { ListingDetail } from './pages/ListingDetail';
 import { Settings } from './pages/Settings';
+import { Routes } from './pages/Routes';
+import { Analytics } from './pages/Analytics';
+import { Experiments } from './pages/Experiments';
 
 // Layout component with navigation
 function Layout() {
@@ -16,7 +19,9 @@ function Layout() {
   
   const navItems = [
     { path: '/pipeline', label: 'Pipeline', icon: Package },
+    { path: '/routes', label: 'Routes', icon: Map },
     { path: '/analytics', label: 'Analytics', icon: BarChart3 },
+    { path: '/experiments', label: 'Experiments', icon: Flask },
     { path: '/settings', label: 'Settings', icon: SettingsIcon },
   ];
 
@@ -82,8 +87,16 @@ export const router = createHashRouter([
         element: <ListingDetail />,
       },
       {
+        path: 'routes',
+        element: <Routes />,
+      },
+      {
         path: 'analytics',
-        element: <Pipeline />, // Reuse pipeline with charts for now
+        element: <Analytics />,
+      },
+      {
+        path: 'experiments',
+        element: <Experiments />,
       },
       {
         path: 'settings',
