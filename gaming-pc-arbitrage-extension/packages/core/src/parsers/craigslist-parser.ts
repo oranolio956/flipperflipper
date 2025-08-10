@@ -26,16 +26,29 @@ export class CraigslistParser implements ParserStrategy {
     
     // Extract images
     const images: string[] = [];
-    document.querySelectorAll('.gallery img, .thumb img').forEach(img => {
-      if (img instanceof HTMLImageElement && img.src) {
-        images.push(img.src);
-      }
+    // Gallery thumbnails - get the href from anchor tags
+    document.querySelectorAll('.thumb').forEach(thumb => {
+      const link = thumb.getAttribute('href');
+      if (link) images.push(link);
     });
+    // Fallback to img tags
+    if (images.length === 0) {
+      document.querySelectorAll('.gallery img, .slide img').forEach(img => {
+        if (img instanceof HTMLImageElement && img.src) {
+          images.push(img.src);
+        }
+      });
+    }
     
-    // Location from breadcrumb
-    const locationText = document.querySelector('.crumb.area a')?.textContent || '';
+    // Location from small tag in title or breadcrumb
+    const locationEl = document.querySelector('.postingtitletext small') || 
+                      document.querySelector('.postingtitle small');
+    const locationFromTitle = locationEl?.textContent?.replace(/[()]/g, '').trim() || '';
+    const locationFromBreadcrumb = document.querySelector('.crumb.area a')?.textContent || '';
+    const locationText = locationFromTitle || locationFromBreadcrumb || '';
+    
     const location = {
-      city: locationText.split(',')[0] || 'Unknown',
+      city: locationText.split(',')[0]?.trim() || 'Unknown',
       state: locationText.split(',')[1]?.trim() || 'Unknown',
     };
     

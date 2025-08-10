@@ -15,32 +15,59 @@ export class OfferUpParser implements ParserStrategy {
   
   parse(document: Document): ParsedListing {
     // OfferUp uses React - need to adapt selectors based on their structure
-    const title = document.querySelector('h1[class*="title"]')?.textContent || 
-                 document.querySelector('[data-testid="item-title"]')?.textContent ||
+    const title = document.querySelector('[data-testid="item-title"]')?.textContent?.trim() || 
+                 document.querySelector('h1[class*="ItemTitle"]')?.textContent?.trim() ||
+                 document.querySelector('h1')?.textContent?.trim() ||
                  'Unknown Item';
     
-    const priceText = document.querySelector('[class*="price"]')?.textContent || '0';
-    const price = parseFloat(priceText.replace(/[^0-9]/g, ''));
+    const priceElement = document.querySelector('[data-testid="item-price"]') ||
+                        document.querySelector('[class*="Price"]') ||
+                        document.querySelector('span[class*="currency"]');
+    const priceText = priceElement?.textContent || '0';
+    const price = parseFloat(priceText.replace(/[^0-9.,]/g, '').replace(',', ''));
     
-    const description = document.querySelector('[class*="description"]')?.textContent || '';
+    const description = document.querySelector('[data-testid="item-description"]')?.textContent?.trim() || 
+                       document.querySelector('[class*="ItemDescription"]')?.textContent?.trim() ||
+                       document.querySelector('div[class*="description"] p')?.textContent?.trim() ||
+                       '';
     
     // Extract images
     const images: string[] = [];
-    document.querySelectorAll('[class*="image-gallery"] img').forEach(img => {
-      if (img instanceof HTMLImageElement && img.src) {
-        images.push(img.src);
+    const imageSelectors = [
+      'img[data-testid*="image"]',
+      '[class*="ItemImage"] img',
+      '[class*="carousel"] img',
+      'picture img'
+    ];
+    document.querySelectorAll(imageSelectors.join(', ')).forEach(img => {
+      if (img instanceof HTMLImageElement) {
+        const src = img.src || (img as any).dataset?.src;
+        if (src && !src.includes('placeholder') && !src.includes('avatar')) {
+          images.push(src);
+        }
       }
     });
     
     // Location
-    const locationText = document.querySelector('[class*="location"]')?.textContent || '';
+    const locationElement = document.querySelector('[data-testid="item-location"]') ||
+                           document.querySelector('a[href*="location"]') ||
+                           document.querySelector('[class*="Location"]');
+    const locationText = locationElement?.textContent?.trim() || '';
     const location = {
-      city: locationText.split(',')[0] || 'Unknown',
+      city: locationText.split(',')[0]?.trim() || 'Unknown',
       state: locationText.split(',')[1]?.trim() || 'Unknown',
     };
     
     // Seller
-    const sellerName = document.querySelector('[class*="seller-name"]')?.textContent || 'OfferUp User';
+    const sellerName = document.querySelector('[data-testid="seller-name"]')?.textContent?.trim() || 
+                      document.querySelector('a[href*="/profile/"] span')?.textContent?.trim() ||
+                      document.querySelector('[class*="SellerInfo"] a')?.textContent?.trim() ||
+                      'OfferUp User';
+    
+    // Seller rating
+    const sellerRating = document.querySelector('[data-testid="seller-rating"]')?.textContent?.trim() ||
+                        document.querySelector('[class*="rating"]')?.textContent?.trim() ||
+                        '';
     
     return {
       url: window.location.href,

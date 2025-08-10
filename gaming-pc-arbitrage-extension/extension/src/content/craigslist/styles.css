@@ -1,0 +1,7 @@
+/* Craigslist content script styles */
+
+/* Ensure overlay is visible on Craigslist's simple design */
+#arbitrage-overlay-root {
+  position: relative;
+  z-index: 9999;
+}

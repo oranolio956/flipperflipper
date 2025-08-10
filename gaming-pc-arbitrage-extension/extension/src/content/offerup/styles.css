@@ -1,0 +1,7 @@
+/* OfferUp content script styles */
+
+/* Ensure overlay is visible on OfferUp's React app */
+#arbitrage-overlay-root {
+  position: relative;
+  z-index: 99999; /* OfferUp uses high z-indexes */
+}

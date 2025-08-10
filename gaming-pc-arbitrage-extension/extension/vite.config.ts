@@ -43,13 +43,23 @@ export default defineConfig({
     sourcemap: process.env.NODE_ENV === 'development',
     rollupOptions: {
       input: {
-        popup: resolve(__dirname, 'public/popup.html'),
-        options: resolve(__dirname, 'public/options.html'),
+        popup: resolve(__dirname, 'src/ui/popup/index.html'),
+        options: resolve(__dirname, 'src/ui/options/index.html'),
+        dashboard: resolve(__dirname, 'src/ui/dashboard/index.html'),
         background: resolve(__dirname, 'src/background/index.ts'),
-        content: resolve(__dirname, 'src/content/index.ts'),
+        'content/fb': resolve(__dirname, 'src/content/fb/index.ts'),
+        'content/craigslist': resolve(__dirname, 'src/content/craigslist/index.ts'),
+        'content/offerup': resolve(__dirname, 'src/content/offerup/index.ts'),
+        'workers/ocr': resolve(__dirname, 'src/workers/ocr.worker.ts'),
       },
       output: {
-        entryFileNames: '[name].js',
+        entryFileNames: (chunkInfo) => {
+          // Workers need to be in their own directory
+          if (chunkInfo.name.includes('worker')) {
+            return 'workers/[name].js';
+          }
+          return '[name].js';
+        },
         chunkFileNames: 'chunks/[name].[hash].js',
         assetFileNames: 'assets/[name].[ext]',
       },

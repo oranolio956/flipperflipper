@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { X, DollarSign, AlertCircle, Plus, MessageSquare, BarChart3, ExternalLink } from 'lucide-react';
+import { X, DollarSign, AlertCircle, Plus, MessageSquare, BarChart3, ExternalLink, Scan } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Progress } from '@/components/ui/progress';
 import { formatCurrency, formatPercentage } from '@/core';
 import { sendMessage, MessageType } from '@/lib/messages';
+import { extractSpecsFromImages, setOCRProgressCallback } from '@/lib/ocr';
 import type { Listing, FMVResult, ROIResult, RiskAssessment } from '@/core';
 
 interface OverlayData {
@@ -26,6 +27,15 @@ export function OverlayApp() {
   const [isMinimized, setIsMinimized] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [ocrProgress, setOcrProgress] = useState(0);
+  const [ocrSpecs, setOcrSpecs] = useState<{
+    cpu?: string;
+    gpu?: string;
+    ram?: string;
+    storage?: string;
+    psu?: string;
+  } | null>(null);
 
   useEffect(() => {
     // Listen for updates from content script
@@ -94,6 +104,49 @@ export function OverlayApp() {
     });
   };
 
+  const handleScanImages = async () => {
+    if (!data.listing?.images || data.listing.images.length === 0) {
+      alert('No images to scan');
+      return;
+    }
+
+    setIsScanning(true);
+    setOcrProgress(0);
+    
+    try {
+      // Set up progress callback
+      setOCRProgressCallback((progress) => {
+        setOcrProgress(Math.round(progress * 100));
+      });
+
+      // Extract specs from images
+      const specs = await extractSpecsFromImages(data.listing.images);
+      setOcrSpecs(specs);
+
+      // Update listing with OCR results
+      if (specs.cpu || specs.gpu || specs.ram || specs.storage || specs.psu) {
+        // Send update message to background
+        await sendMessage({
+          type: MessageType.SAVE_LISTING,
+          listing: {
+            ...data.listing,
+            metadata: {
+              ...data.listing.metadata,
+              ocrExtracted: true,
+              ocrSpecs: specs,
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.error('OCR scan failed:', error);
+      alert('Failed to scan images. Please try again.');
+    } finally {
+      setIsScanning(false);
+      setOcrProgress(0);
+    }
+  };
+
   if (!data.listing) return null;
 
   const { listing, fmv, roi, risk } = data;
@@ -152,7 +205,39 @@ export function OverlayApp() {
           <CardContent className="space-y-4">
             {/* Component Summary */}
             <div className="space-y-2">
-              <div className="text-sm font-medium">Detected Components:</div>
+              <div className="flex items-center justify-between">
+                <div className="text-sm font-medium">Detected Components:</div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleScanImages}
+                  disabled={isScanning || !data.listing?.images?.length}
+                >
+                  <Scan className="h-3 w-3 mr-1" />
+                  {isScanning ? 'Scanning...' : 'Scan Photos'}
+                </Button>
+              </div>
+              
+              {isScanning && (
+                <div className="space-y-1">
+                  <div className="text-xs text-muted-foreground">
+                    Extracting text from images...
+                  </div>
+                  <Progress value={ocrProgress} className="h-1" />
+                </div>
+              )}
+              
+              {ocrSpecs && (
+                <div className="p-2 bg-muted rounded-md space-y-1">
+                  <div className="text-xs font-medium">OCR Results:</div>
+                  {ocrSpecs.cpu && <div className="text-xs">CPU: {ocrSpecs.cpu}</div>}
+                  {ocrSpecs.gpu && <div className="text-xs">GPU: {ocrSpecs.gpu}</div>}
+                  {ocrSpecs.ram && <div className="text-xs">RAM: {ocrSpecs.ram}</div>}
+                  {ocrSpecs.storage && <div className="text-xs">Storage: {ocrSpecs.storage}</div>}
+                  {ocrSpecs.psu && <div className="text-xs">PSU: {ocrSpecs.psu}</div>}
+                </div>
+              )}
+              
               <div className="flex flex-wrap gap-1">
                 {listing.components.cpu && (
                   <Badge variant="outline" className="text-xs">
