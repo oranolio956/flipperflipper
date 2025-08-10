@@ -3,14 +3,28 @@
  * Handles extension lifecycle, message routing, and background tasks
  */
 
-import { performanceTracker } from '@arbitrage/core';
+import { onMessage, type Message } from '../lib/messages';
+import { db } from '../lib/db';
+import { 
+  FMVCalculator, 
+  ROICalculator, 
+  FacebookMarketplaceParser,
+  CraigslistParser,
+  OfferUpParser,
+  RiskEngine,
+  DEFAULT_SETTINGS
+} from '@arbitrage/core';
 
-// Message types
-interface ExtensionMessage {
-  type: string;
-  payload?: any;
-  tabId?: number;
-}
+// Initialize services
+const fmvCalculator = new FMVCalculator(DEFAULT_SETTINGS);
+const roiCalculator = new ROICalculator(DEFAULT_SETTINGS);
+const riskEngine = new RiskEngine(DEFAULT_SETTINGS);
+
+const parsers = {
+  facebook: new FacebookMarketplaceParser(),
+  craigslist: new CraigslistParser(),
+  offerup: new OfferUpParser()
+};
 
 // Initialize extension on install
 chrome.runtime.onInstalled.addListener(async (details) => {
@@ -19,243 +33,268 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === 'install') {
     // Set default settings
     await chrome.storage.local.set({
-      settings: {
-        version: '1.0.0',
-        location: {
-          zipCode: '',
-          maxDistance: 25,
-          preferredMeetingSpots: []
-        },
-        pricing: {
-          targetROI: 25,
-          minDealValue: 500,
-          includeShipping: true,
-          includeFees: true
-        },
-        notifications: {
-          enabled: true,
-          priceDrops: true,
-          newListings: true,
-          messages: true,
-          dealUpdates: true
-        }
-      }
+      settings: DEFAULT_SETTINGS,
+      installDate: new Date().toISOString(),
+      version: chrome.runtime.getManifest().version
     });
     
-    // Open welcome page
+    // Open onboarding page
     chrome.tabs.create({
-      url: chrome.runtime.getURL('dashboard.html#/welcome')
+      url: chrome.runtime.getURL('dashboard.html#/onboarding')
     });
+  } else if (details.reason === 'update') {
+    // Handle updates
+    const previousVersion = details.previousVersion;
+    console.log(`Updated from ${previousVersion} to ${chrome.runtime.getManifest().version}`);
   }
 });
 
 // Message handler
-chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendResponse) => {
+onMessage(async (message: Message, sender) => {
   console.log('Background received message:', message.type);
   
-  performanceTracker.measure('message-handler', 'api', async () => {
-    try {
-      switch (message.type) {
-        case 'ANALYZE_LISTING':
-          handleAnalyzeListing(message.payload, sendResponse);
-          return true; // Will respond asynchronously
-          
-        case 'SAVE_DEAL':
-          handleSaveDeal(message.payload, sendResponse);
-          return true;
-          
-        case 'GET_SETTINGS':
-          handleGetSettings(sendResponse);
-          return true;
-          
-        case 'UPDATE_SETTINGS':
-          handleUpdateSettings(message.payload, sendResponse);
-          return true;
-          
-        case 'OPEN_DASHBOARD':
-          chrome.tabs.create({
-            url: chrome.runtime.getURL('dashboard.html')
-          });
-          sendResponse({ success: true });
-          break;
-          
-        case 'REQUEST_PERMISSIONS':
-          handlePermissionRequest(message.payload, sendResponse);
-          return true;
-          
-        default:
-          sendResponse({ error: 'Unknown message type' });
+  switch (message.type) {
+    case 'PARSE_LISTING': {
+      try {
+        const { platform, html, url } = message.payload;
+        const parser = parsers[platform];
+        
+        if (!parser) {
+          return { success: false, error: 'Unknown platform' };
+        }
+        
+        // Create DOM from HTML
+        const dom = new DOMParser().parseFromString(html, 'text/html');
+        const listing = parser.extractListing(dom);
+        
+        if (!listing) {
+          return { success: false, error: 'Failed to parse listing' };
+        }
+        
+        // Enhance listing with URL
+        listing.url = url;
+        
+        return {
+          type: 'LISTING_PARSED',
+          payload: { listing, success: true }
+        };
+      } catch (error) {
+        return {
+          type: 'LISTING_PARSED',
+          payload: { 
+            success: false, 
+            error: error instanceof Error ? error.message : 'Parse error'
+          }
+        };
       }
-    } catch (error) {
-      console.error('Message handler error:', error);
-      sendResponse({ error: error.message });
     }
-  });
-  
-  return false; // Synchronous response
-});
-
-// Command handlers
-chrome.commands.onCommand.addListener(async (command) => {
-  console.log('Command:', command);
-  
-  switch (command) {
-    case 'analyze-listing':
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (tab?.id) {
-        chrome.tabs.sendMessage(tab.id, { type: 'TRIGGER_ANALYSIS' });
+    
+    case 'CALCULATE_FMV': {
+      try {
+        const { listing } = message.payload;
+        const fmvResult = fmvCalculator.calculate(listing);
+        const roiResult = roiCalculator.calculate(listing, fmvResult);
+        const riskResult = riskEngine.assessRisk(listing);
+        
+        // Store in database
+        const savedListing = await db.listings.add({
+          ...listing,
+          id: `${listing.platform}_${Date.now()}`,
+          savedAt: new Date(),
+          analysis: {
+            fmv: fmvResult.total,
+            componentValue: fmvResult.total,
+            profitPotential: roiResult.netProfit,
+            roi: roiResult.roi,
+            margin: roiResult.profitMargin,
+            dealScore: roiResult.dealScore,
+            confidence: fmvResult.confidence
+          },
+          risks: {
+            score: riskResult.score,
+            flags: riskResult.flags,
+            stolen: { probability: 0, indicators: [] },
+            scam: { probability: 0, patterns: [] },
+            technical: { issues: [], severity: 'low' }
+          }
+        });
+        
+        return {
+          type: 'FMV_CALCULATED',
+          payload: {
+            fmv: fmvResult.total,
+            confidence: fmvResult.confidence,
+            breakdown: fmvResult.componentBreakdown.map(c => ({
+              component: c.name,
+              value: c.adjustedValue
+            }))
+          }
+        };
+      } catch (error) {
+        return {
+          type: 'ERROR',
+          payload: {
+            message: 'FMV calculation failed',
+            details: error instanceof Error ? error.message : 'Unknown error'
+          }
+        };
       }
-      break;
-      
-    case 'track-deal':
-      const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (activeTab?.id) {
-        chrome.tabs.sendMessage(activeTab.id, { type: 'TRIGGER_TRACK_DEAL' });
+    }
+    
+    case 'SAVE_DEAL': {
+      try {
+        const { listing, fmv, notes } = message.payload;
+        
+        const dealId = `deal_${Date.now()}`;
+        await db.deals.add({
+          id: dealId,
+          listingId: listing.id,
+          listing,
+          platform: listing.platform,
+          status: 'watching',
+          askingPrice: listing.price,
+          offers: [],
+          messages: [],
+          metadata: {
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            source: 'manual',
+            version: 1,
+            notes
+          }
+        });
+        
+        // Track analytics event
+        await db.analytics.add({
+          id: `event_${Date.now()}`,
+          name: 'deal_created',
+          category: 'deals',
+          timestamp: new Date(),
+          properties: {
+            platform: listing.platform,
+            askingPrice: listing.price,
+            fmv,
+            roi: ((fmv - listing.price) / listing.price) * 100
+          }
+        });
+        
+        return {
+          type: 'DEAL_SAVED',
+          payload: { dealId, success: true }
+        };
+      } catch (error) {
+        return {
+          type: 'DEAL_SAVED',
+          payload: { 
+            dealId: '', 
+            success: false,
+            error: error instanceof Error ? error.message : 'Save failed'
+          }
+        };
       }
-      break;
+    }
+    
+    case 'GET_SETTINGS': {
+      const { settings } = await chrome.storage.local.get('settings');
+      return {
+        type: 'SETTINGS_RETRIEVED',
+        payload: { settings: settings || DEFAULT_SETTINGS }
+      };
+    }
+    
+    case 'UPDATE_SETTINGS': {
+      const { settings } = message.payload;
+      await chrome.storage.local.set({ settings });
       
-    case 'open-dashboard':
-      chrome.tabs.create({
-        url: chrome.runtime.getURL('dashboard.html')
+      // Reinitialize services with new settings
+      fmvCalculator.updateSettings(settings);
+      roiCalculator.settings = settings;
+      riskEngine.settings = settings;
+      
+      return {
+        type: 'SETTINGS_UPDATED',
+        payload: { success: true }
+      };
+    }
+    
+    case 'SHOW_NOTIFICATION': {
+      const { title, message: body, type, dealId } = message.payload;
+      
+      // Create notification
+      const notificationId = await chrome.notifications.create({
+        type: 'basic',
+        iconUrl: chrome.runtime.getURL('icons/icon-128.png'),
+        title,
+        message: body,
+        priority: type === 'error' ? 2 : 1,
+        requireInteraction: type === 'success' && dealId
       });
-      break;
-  }
-});
-
-// Alarm handlers for scheduled tasks
-chrome.alarms.onAlarm.addListener(async (alarm) => {
-  console.log('Alarm fired:', alarm.name);
-  
-  if (alarm.name.startsWith('followup-')) {
-    await handleFollowupReminder(alarm.name);
-  } else if (alarm.name === 'backup') {
-    await performBackup();
-  } else if (alarm.name === 'cleanup') {
-    await performDataCleanup();
-  }
-});
-
-// Helper functions
-async function handleAnalyzeListing(payload: any, sendResponse: Function) {
-  try {
-    // Placeholder - would analyze listing
-    const result = {
-      fmv: 1200,
-      roi: 25,
-      risk: { score: 30, level: 'low' }
-    };
-    sendResponse({ success: true, result });
-  } catch (error) {
-    sendResponse({ error: error.message });
-  }
-}
-
-async function handleSaveDeal(payload: any, sendResponse: Function) {
-  try {
-    const { deals = [] } = await chrome.storage.local.get('deals');
-    const newDeal = {
-      ...payload,
-      id: `deal-${Date.now()}`,
-      metadata: {
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        source: 'manual',
-        version: 1
+      
+      // Handle click
+      if (dealId) {
+        chrome.notifications.onClicked.addListener((id) => {
+          if (id === notificationId) {
+            chrome.tabs.create({
+              url: chrome.runtime.getURL(`dashboard.html#/deals/${dealId}`)
+            });
+          }
+        });
       }
-    };
+      
+      return { success: true };
+    }
     
-    deals.push(newDeal);
-    await chrome.storage.local.set({ deals });
+    case 'TRACK_EVENT': {
+      const { name, category, properties } = message.payload;
+      
+      await db.analytics.add({
+        id: `event_${Date.now()}`,
+        name,
+        category,
+        timestamp: new Date(),
+        properties
+      });
+      
+      return { success: true };
+    }
     
-    sendResponse({ success: true, deal: newDeal });
-  } catch (error) {
-    sendResponse({ error: error.message });
+    default: {
+      return {
+        type: 'ERROR',
+        payload: {
+          message: 'Unknown message type',
+          code: 'UNKNOWN_MESSAGE'
+        }
+      };
+    }
   }
-}
+});
 
-async function handleGetSettings(sendResponse: Function) {
-  try {
-    const { settings } = await chrome.storage.local.get('settings');
-    sendResponse({ success: true, settings });
-  } catch (error) {
-    sendResponse({ error: error.message });
-  }
-}
+// Handle extension icon click
+chrome.action.onClicked.addListener(() => {
+  chrome.tabs.create({
+    url: chrome.runtime.getURL('dashboard.html')
+  });
+});
 
-async function handleUpdateSettings(payload: any, sendResponse: Function) {
-  try {
-    const { settings } = await chrome.storage.local.get('settings');
-    const updatedSettings = { ...settings, ...payload };
-    await chrome.storage.local.set({ settings: updatedSettings });
-    sendResponse({ success: true, settings: updatedSettings });
-  } catch (error) {
-    sendResponse({ error: error.message });
-  }
-}
-
-async function handlePermissionRequest(payload: any, sendResponse: Function) {
-  try {
-    const { permissions, origins } = payload;
-    const granted = await chrome.permissions.request({
-      permissions: permissions || [],
-      origins: origins || []
+// Handle alarms for scheduled tasks
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+  console.log('Alarm triggered:', alarm.name);
+  
+  if (alarm.name.startsWith('deal_followup_')) {
+    const dealId = alarm.name.replace('deal_followup_', '');
+    
+    // Show notification
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: chrome.runtime.getURL('icons/icon-128.png'),
+      title: 'Deal Follow-up Reminder',
+      message: 'Time to follow up on your deal!',
+      priority: 2,
+      requireInteraction: true
     });
-    sendResponse({ success: true, granted });
-  } catch (error) {
-    sendResponse({ error: error.message });
   }
-}
-
-async function handleFollowupReminder(alarmName: string) {
-  const dealId = alarmName.replace('followup-', '');
-  
-  // Show notification
-  chrome.notifications.create({
-    type: 'basic',
-    iconUrl: chrome.runtime.getURL('icons/icon-128.png'),
-    title: 'Follow-up Reminder',
-    message: `Time to follow up on deal ${dealId}`,
-    buttons: [
-      { title: 'View Deal' },
-      { title: 'Snooze' }
-    ]
-  });
-}
-
-async function performBackup() {
-  try {
-    console.log('Performing scheduled backup...');
-    // Placeholder - would implement backup logic
-  } catch (error) {
-    console.error('Backup failed:', error);
-  }
-}
-
-async function performDataCleanup() {
-  try {
-    console.log('Performing data cleanup...');
-    // Remove old data based on retention settings
-    const { settings } = await chrome.storage.local.get('settings');
-    const retentionDays = settings?.dataRetention?.dealHistory || 90;
-    
-    // Placeholder - would implement cleanup logic
-  } catch (error) {
-    console.error('Cleanup failed:', error);
-  }
-}
-
-// Set up periodic tasks
-chrome.runtime.onStartup.addListener(() => {
-  // Schedule daily cleanup
-  chrome.alarms.create('cleanup', {
-    periodInMinutes: 24 * 60 // Daily
-  });
-  
-  // Schedule weekly backup
-  chrome.alarms.create('backup', {
-    periodInMinutes: 7 * 24 * 60 // Weekly
-  });
 });
 
 // Export for testing
-export { handleAnalyzeListing, handleSaveDeal };
+export { fmvCalculator, roiCalculator, riskEngine };

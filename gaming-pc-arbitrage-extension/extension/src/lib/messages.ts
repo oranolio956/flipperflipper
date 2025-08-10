@@ -1,320 +1,189 @@
 /**
- * Type-safe Message Bus for Chrome Extension
- * Uses discriminated unions and Zod validation
+ * Type-safe message passing system for Chrome Extension
  */
 
 import { z } from 'zod';
-import type { 
-  Listing, 
-  Settings, 
-  FMVResult, 
-  ROIResult,
-  RiskAssessment,
-  Deal
-} from '@/core';
+import type { Listing, Deal, ExtensionSettings } from '@arbitrage/core';
 
-// Message type discriminators
-export const MessageType = {
-  PARSE_PAGE: 'PARSE_PAGE',
-  CALC_VALUATION: 'CALC_VALUATION',
-  SAVE_LISTING: 'SAVE_LISTING',
-  CREATE_DEAL: 'CREATE_DEAL',
-  UPDATE_DEAL_STAGE: 'UPDATE_DEAL_STAGE',
-  SCHEDULE_FOLLOWUP: 'SCHEDULE_FOLLOWUP',
-  EXPORT_CSV: 'EXPORT_CSV',
-  IMPORT_JSON: 'IMPORT_JSON',
-  GET_SETTINGS: 'GET_SETTINGS',
-  SET_SETTINGS: 'SET_SETTINGS',
-  REQUEST_PERMISSION: 'REQUEST_PERMISSION',
-  OPEN_DASHBOARD: 'OPEN_DASHBOARD',
-  GENERATE_DRAFT: 'GENERATE_DRAFT',
-  // Google Sheets
-  SHEETS_AUTH: 'SHEETS_AUTH',
-  SHEETS_SYNC: 'SHEETS_SYNC',
-  SHEETS_PUSH_NOW: 'SHEETS_PUSH_NOW',
-  SHEETS_PULL_NOW: 'SHEETS_PULL_NOW',
-  // Backup
-  BACKUP_NOW: 'BACKUP_NOW',
-  // Comps
-  SAVE_COMPS: 'SAVE_COMPS',
-} as const;
-
-// Request schemas
-export const ParsePageRequestSchema = z.object({
-  type: z.literal(MessageType.PARSE_PAGE),
-  url: z.string().url(),
-  html: z.string(),
-  platform: z.enum(['facebook', 'craigslist', 'offerup']),
-});
-
-export const CalcValuationRequestSchema = z.object({
-  type: z.literal(MessageType.CALC_VALUATION),
-  listing: z.any(), // Should be Listing type but Zod doesn't know our custom types
-});
-
-export const SaveListingRequestSchema = z.object({
-  type: z.literal(MessageType.SAVE_LISTING),
-  listing: z.any(),
-  autoCreateDeal: z.boolean().optional(),
-});
-
-export const CreateDealRequestSchema = z.object({
-  type: z.literal(MessageType.CREATE_DEAL),
-  listingId: z.string(),
-  initialOffer: z.number().optional(),
-});
-
-export const UpdateDealStageRequestSchema = z.object({
-  type: z.literal(MessageType.UPDATE_DEAL_STAGE),
-  dealId: z.string(),
-  stage: z.string(),
-  reason: z.string().optional(),
-});
-
-export const ScheduleFollowupRequestSchema = z.object({
-  type: z.literal(MessageType.SCHEDULE_FOLLOWUP),
-  dealId: z.string(),
-  scheduleFor: z.string().datetime(),
-  message: z.string().optional(),
-});
-
-export const ExportCsvRequestSchema = z.object({
-  type: z.literal(MessageType.EXPORT_CSV),
-  dataType: z.enum(['deals', 'listings', 'analytics', 'inventory']),
-  filters: z.record(z.any()).optional(),
-});
-
-export const ImportJsonRequestSchema = z.object({
-  type: z.literal(MessageType.IMPORT_JSON),
-  jsonData: z.string(),
-});
-
-export const GetSettingsRequestSchema = z.object({
-  type: z.literal(MessageType.GET_SETTINGS),
-});
-
-export const SetSettingsRequestSchema = z.object({
-  type: z.literal(MessageType.SET_SETTINGS),
-  settings: z.any(),
-  partial: z.boolean().optional(),
-});
-
-export const RequestPermissionSchema = z.object({
-  type: z.literal(MessageType.REQUEST_PERMISSION),
-  permission: z.string(),
-});
-
-export const OpenDashboardRequestSchema = z.object({
-  type: z.literal(MessageType.OPEN_DASHBOARD),
-  page: z.enum(['pipeline', 'analytics', 'settings']).optional(),
-  dealId: z.string().optional(),
-});
-
-export const GenerateDraftRequestSchema = z.object({
-  type: z.literal(MessageType.GENERATE_DRAFT),
-  dealId: z.string(),
-  templateId: z.string().optional(),
-  variables: z.record(z.string()).optional(),
-});
-
-// Google Sheets request schemas
-export const SheetsAuthRequestSchema = z.object({
-  type: z.literal(MessageType.SHEETS_AUTH),
-  action: z.enum(['connect', 'disconnect']),
-});
-
-export const SheetsSyncRequestSchema = z.object({
-  type: z.literal(MessageType.SHEETS_SYNC),
-  direction: z.enum(['push', 'pull', 'both']).optional(),
-});
-
-export const SheetsPushNowRequestSchema = z.object({
-  type: z.literal(MessageType.SHEETS_PUSH_NOW),
-});
-
-export const SheetsPullNowRequestSchema = z.object({
-  type: z.literal(MessageType.SHEETS_PULL_NOW),
-});
-
-export const BackupNowRequestSchema = z.object({
-  type: z.literal(MessageType.BACKUP_NOW),
-});
-
-export const SaveCompsRequestSchema = z.object({
-  type: z.literal(MessageType.SAVE_COMPS),
-  comps: z.array(z.any()),
-});
-
-// Union of all request types
-export const MessageRequestSchema = z.discriminatedUnion('type', [
-  ParsePageRequestSchema,
-  CalcValuationRequestSchema,
-  SaveListingRequestSchema,
-  CreateDealRequestSchema,
-  UpdateDealStageRequestSchema,
-  ScheduleFollowupRequestSchema,
-  ExportCsvRequestSchema,
-  ImportJsonRequestSchema,
-  GetSettingsRequestSchema,
-  SetSettingsRequestSchema,
-  RequestPermissionSchema,
-  OpenDashboardRequestSchema,
-  GenerateDraftRequestSchema,
-  SheetsAuthRequestSchema,
-  SheetsSyncRequestSchema,
-  SheetsPushNowRequestSchema,
-  SheetsPullNowRequestSchema,
-  BackupNowRequestSchema,
-  SaveCompsRequestSchema,
+// Message types
+export const MessageTypeSchema = z.enum([
+  'PARSE_LISTING',
+  'LISTING_PARSED',
+  'CALCULATE_FMV',
+  'FMV_CALCULATED',
+  'SAVE_DEAL',
+  'DEAL_SAVED',
+  'GET_SETTINGS',
+  'SETTINGS_RETRIEVED',
+  'UPDATE_SETTINGS',
+  'SETTINGS_UPDATED',
+  'SHOW_NOTIFICATION',
+  'TRACK_EVENT',
+  'ERROR'
 ]);
 
-// Response types
-export interface BaseResponse {
-  success: boolean;
-  error?: string;
-}
+export type MessageType = z.infer<typeof MessageTypeSchema>;
 
-export interface ParsePageResponse extends BaseResponse {
-  listing?: Listing;
-  fmv?: FMVResult;
-  roi?: ROIResult;
-  risk?: RiskAssessment;
-}
+// Message payloads
+export const ParseListingPayload = z.object({
+  url: z.string(),
+  platform: z.enum(['facebook', 'craigslist', 'offerup']),
+  html: z.string()
+});
 
-export interface CalcValuationResponse extends BaseResponse {
-  fmv?: FMVResult;
-  roi?: ROIResult;
-  risk?: RiskAssessment;
-}
+export const ListingParsedPayload = z.object({
+  listing: z.any(), // Would be Listing type
+  success: z.boolean(),
+  error: z.string().optional()
+});
 
-export interface SaveListingResponse extends BaseResponse {
-  listingId?: string;
-  dealId?: string;
-}
+export const CalculateFMVPayload = z.object({
+  listing: z.any()
+});
 
-export interface CreateDealResponse extends BaseResponse {
-  dealId?: string;
-}
+export const FMVCalculatedPayload = z.object({
+  fmv: z.number(),
+  confidence: z.number(),
+  breakdown: z.array(z.object({
+    component: z.string(),
+    value: z.number()
+  }))
+});
 
-export interface ScheduleFollowupResponse extends BaseResponse {
-  alarmName?: string;
-}
+export const SaveDealPayload = z.object({
+  listing: z.any(),
+  fmv: z.number(),
+  notes: z.string().optional()
+});
 
-export interface ExportCsvResponse extends BaseResponse {
-  csv?: string;
-  filename?: string;
-}
+export const NotificationPayload = z.object({
+  title: z.string(),
+  message: z.string(),
+  type: z.enum(['success', 'info', 'warning', 'error']),
+  dealId: z.string().optional()
+});
 
-export interface GetSettingsResponse extends BaseResponse {
-  settings?: Settings;
-}
+export const EventPayload = z.object({
+  name: z.string(),
+  category: z.string(),
+  properties: z.record(z.any()).optional()
+});
 
-export interface RequestPermissionResponse extends BaseResponse {
-  granted?: boolean;
-}
+// Message structure
+export const MessageSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('PARSE_LISTING'),
+    payload: ParseListingPayload
+  }),
+  z.object({
+    type: z.literal('LISTING_PARSED'),
+    payload: ListingParsedPayload
+  }),
+  z.object({
+    type: z.literal('CALCULATE_FMV'),
+    payload: CalculateFMVPayload
+  }),
+  z.object({
+    type: z.literal('FMV_CALCULATED'),
+    payload: FMVCalculatedPayload
+  }),
+  z.object({
+    type: z.literal('SAVE_DEAL'),
+    payload: SaveDealPayload
+  }),
+  z.object({
+    type: z.literal('DEAL_SAVED'),
+    payload: z.object({ dealId: z.string(), success: z.boolean() })
+  }),
+  z.object({
+    type: z.literal('GET_SETTINGS'),
+    payload: z.object({})
+  }),
+  z.object({
+    type: z.literal('SETTINGS_RETRIEVED'),
+    payload: z.object({ settings: z.any() })
+  }),
+  z.object({
+    type: z.literal('UPDATE_SETTINGS'),
+    payload: z.object({ settings: z.any() })
+  }),
+  z.object({
+    type: z.literal('SETTINGS_UPDATED'),
+    payload: z.object({ success: z.boolean() })
+  }),
+  z.object({
+    type: z.literal('SHOW_NOTIFICATION'),
+    payload: NotificationPayload
+  }),
+  z.object({
+    type: z.literal('TRACK_EVENT'),
+    payload: EventPayload
+  }),
+  z.object({
+    type: z.literal('ERROR'),
+    payload: z.object({ 
+      message: z.string(),
+      code: z.string().optional(),
+      details: z.any().optional()
+    })
+  })
+]);
 
-export interface GenerateDraftResponse extends BaseResponse {
-  draft?: string;
-  variables?: Record<string, string>;
-}
+export type Message = z.infer<typeof MessageSchema>;
 
-// Type inference
-export type MessageRequest = z.infer<typeof MessageRequestSchema>;
-export type ParsePageRequest = z.infer<typeof ParsePageRequestSchema>;
-export type CalcValuationRequest = z.infer<typeof CalcValuationRequestSchema>;
-export type SaveListingRequest = z.infer<typeof SaveListingRequestSchema>;
-export type CreateDealRequest = z.infer<typeof CreateDealRequestSchema>;
-export type UpdateDealStageRequest = z.infer<typeof UpdateDealStageRequestSchema>;
-export type ScheduleFollowupRequest = z.infer<typeof ScheduleFollowupRequestSchema>;
-export type ExportCsvRequest = z.infer<typeof ExportCsvRequestSchema>;
-export type ImportJsonRequest = z.infer<typeof ImportJsonRequestSchema>;
-export type GetSettingsRequest = z.infer<typeof GetSettingsRequestSchema>;
-export type SetSettingsRequest = z.infer<typeof SetSettingsRequestSchema>;
-export type RequestPermissionRequest = z.infer<typeof RequestPermissionSchema>;
-export type OpenDashboardRequest = z.infer<typeof OpenDashboardRequestSchema>;
-export type GenerateDraftRequest = z.infer<typeof GenerateDraftRequestSchema>;
-
-// Response map type
-export type MessageResponse<T extends MessageRequest> = 
-  T extends ParsePageRequest ? ParsePageResponse :
-  T extends CalcValuationRequest ? CalcValuationResponse :
-  T extends SaveListingRequest ? SaveListingResponse :
-  T extends CreateDealRequest ? CreateDealResponse :
-  T extends ScheduleFollowupRequest ? ScheduleFollowupResponse :
-  T extends ExportCsvRequest ? ExportCsvResponse :
-  T extends GetSettingsRequest ? GetSettingsResponse :
-  T extends RequestPermissionRequest ? RequestPermissionResponse :
-  T extends GenerateDraftRequest ? GenerateDraftResponse :
-  BaseResponse;
-
-// Message sending helper with type safety
-export async function sendMessage<T extends MessageRequest>(
-  request: T
-): Promise<MessageResponse<T>> {
+// Message sender
+export async function sendMessage<T extends Message>(
+  message: T
+): Promise<any> {
   try {
-    // Validate request
-    const validated = MessageRequestSchema.parse(request);
-    
-    // Send to background script
-    const response = await chrome.runtime.sendMessage(validated);
-    
-    // Type assertion based on discriminated union
-    return response as MessageResponse<T>;
+    const response = await chrome.runtime.sendMessage(message);
+    return response;
   } catch (error) {
-    console.error('Message validation/send error:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    } as MessageResponse<T>;
+    console.error('Message sending failed:', error);
+    throw error;
   }
 }
 
-// Message listener helper for background script
+// Tab message sender
+export async function sendMessageToTab<T extends Message>(
+  tabId: number,
+  message: T
+): Promise<any> {
+  try {
+    const response = await chrome.tabs.sendMessage(tabId, message);
+    return response;
+  } catch (error) {
+    console.error('Tab message sending failed:', error);
+    throw error;
+  }
+}
+
+// Message listener helper
 export function onMessage(
   handler: (
-    request: MessageRequest,
-    sender: chrome.runtime.MessageSender
-  ) => Promise<BaseResponse> | BaseResponse
-): void {
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    // Validate incoming message
-    const validation = MessageRequestSchema.safeParse(request);
-    
-    if (!validation.success) {
-      sendResponse({
-        success: false,
-        error: `Invalid message format: ${validation.error.message}`,
-      });
-      return true;
-    }
-
-    // Handle message
-    Promise.resolve(handler(validation.data, sender))
-      .then(sendResponse)
-      .catch(error => {
-        sendResponse({
-          success: false,
-          error: error.message || 'Handler error',
+    message: Message,
+    sender: chrome.runtime.MessageSender,
+    sendResponse: (response?: any) => void
+  ) => void | boolean | Promise<any>
+) {
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    try {
+      const validatedMessage = MessageSchema.parse(message);
+      const result = handler(validatedMessage, sender, sendResponse);
+      
+      // If handler returns a promise, handle it
+      if (result instanceof Promise) {
+        result.then(sendResponse).catch(error => {
+          sendResponse({ success: false, error: error.message });
         });
-      });
-
-    return true; // Keep channel open for async response
+        return true; // Keep channel open for async response
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Invalid message received:', error);
+      sendResponse({ success: false, error: 'Invalid message format' });
+      return false;
+    }
   });
-}
-
-// Utility to check if we're in a content script context
-export function isContentScript(): boolean {
-  return !chrome.runtime.getBackgroundPage;
-}
-
-// Utility to check if we have permission for a host
-export async function hasHostPermission(url: string): Promise<boolean> {
-  try {
-    const hasPermission = await chrome.permissions.contains({
-      origins: [new URL(url).origin + '/*'],
-    });
-    return hasPermission;
-  } catch {
-    return false;
-  }
 }

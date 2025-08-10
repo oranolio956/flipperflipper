@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PC Arbitrage Dashboard</title>
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <img src="icons/icon-48.png" alt="Logo" class="logo">
+        <h2>PC Arbitrage</h2>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <a href="#overview" class="nav-item active" data-section="overview">
+          <span class="icon">📊</span>
+          <span>Overview</span>
+        </a>
+        <a href="#deals" class="nav-item" data-section="deals">
+          <span class="icon">💼</span>
+          <span>Deals Pipeline</span>
+        </a>
+        <a href="#analytics" class="nav-item" data-section="analytics">
+          <span class="icon">📈</span>
+          <span>Analytics</span>
+        </a>
+        <a href="#inventory" class="nav-item" data-section="inventory">
+          <span class="icon">📦</span>
+          <span>Inventory</span>
+        </a>
+        <a href="#settings" class="nav-item" data-section="settings">
+          <span class="icon">⚙️</span>
+          <span>Settings</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Overview Section -->
+      <section id="overview" class="content-section active">
+        <header class="section-header">
+          <h1>Overview</h1>
+          <div class="header-actions">
+            <button id="export-data" class="btn btn-secondary">📥 Export Data</button>
+            <button id="quick-add" class="btn btn-primary">➕ Quick Add Deal</button>
+          </div>
+        </header>
+
+        <!-- Key Metrics -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <h3>Total Revenue</h3>
+            <p class="metric-value" id="total-revenue">$0</p>
+            <span class="metric-change positive">+0%</span>
+          </div>
+          <div class="metric-card">
+            <h3>Active Deals</h3>
+            <p class="metric-value" id="active-deals-count">0</p>
+            <span class="metric-change">0 this week</span>
+          </div>
+          <div class="metric-card">
+            <h3>Average ROI</h3>
+            <p class="metric-value" id="average-roi">0%</p>
+            <span class="metric-change positive">+0%</span>
+          </div>
+          <div class="metric-card">
+            <h3>Success Rate</h3>
+            <p class="metric-value" id="success-rate">0%</p>
+            <span class="metric-change">0/0 deals</span>
+          </div>
+        </div>
+
+        <!-- Performance Chart -->
+        <div class="chart-container">
+          <h3>Performance Over Time</h3>
+          <canvas id="performance-chart"></canvas>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="recent-activity">
+          <h3>Recent Activity</h3>
+          <div id="activity-list" class="activity-list">
+            <p class="empty-state">No recent activity</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Deals Pipeline Section -->
+      <section id="deals" class="content-section">
+        <header class="section-header">
+          <h1>Deals Pipeline</h1>
+          <div class="header-actions">
+            <select id="deals-filter" class="filter-select">
+              <option value="all">All Deals</option>
+              <option value="watching">Watching</option>
+              <option value="contacted">Contacted</option>
+              <option value="negotiating">Negotiating</option>
+              <option value="purchased">Purchased</option>
+              <option value="sold">Sold</option>
+            </select>
+            <button id="add-deal" class="btn btn-primary">➕ Add Deal</button>
+          </div>
+        </header>
+
+        <!-- Pipeline Stages -->
+        <div class="pipeline-container">
+          <div class="pipeline-stage" data-stage="watching">
+            <h3>Watching <span class="count">0</span></h3>
+            <div class="deals-column" id="watching-deals"></div>
+          </div>
+          <div class="pipeline-stage" data-stage="contacted">
+            <h3>Contacted <span class="count">0</span></h3>
+            <div class="deals-column" id="contacted-deals"></div>
+          </div>
+          <div class="pipeline-stage" data-stage="negotiating">
+            <h3>Negotiating <span class="count">0</span></h3>
+            <div class="deals-column" id="negotiating-deals"></div>
+          </div>
+          <div class="pipeline-stage" data-stage="purchased">
+            <h3>Purchased <span class="count">0</span></h3>
+            <div class="deals-column" id="purchased-deals"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Analytics Section -->
+      <section id="analytics" class="content-section">
+        <header class="section-header">
+          <h1>Analytics</h1>
+          <div class="header-actions">
+            <select id="analytics-period" class="filter-select">
+              <option value="week">Last Week</option>
+              <option value="month" selected>Last Month</option>
+              <option value="quarter">Last Quarter</option>
+              <option value="year">Last Year</option>
+            </select>
+          </div>
+        </header>
+
+        <!-- Analytics Grid -->
+        <div class="analytics-grid">
+          <!-- Component Breakdown -->
+          <div class="analytics-card">
+            <h3>Component Value Breakdown</h3>
+            <canvas id="component-chart"></canvas>
+          </div>
+
+          <!-- ROI Distribution -->
+          <div class="analytics-card">
+            <h3>ROI Distribution</h3>
+            <canvas id="roi-chart"></canvas>
+          </div>
+
+          <!-- Platform Performance -->
+          <div class="analytics-card">
+            <h3>Platform Performance</h3>
+            <div id="platform-stats" class="stats-list"></div>
+          </div>
+
+          <!-- Top Components -->
+          <div class="analytics-card">
+            <h3>Most Profitable Components</h3>
+            <div id="top-components" class="stats-list"></div>
+          </div>
+        </div>
+
+        <!-- Insights -->
+        <div class="insights-section">
+          <h3>Key Insights</h3>
+          <div id="insights-list" class="insights-list">
+            <p class="empty-state">Analyzing your data...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Inventory Section -->
+      <section id="inventory" class="content-section">
+        <header class="section-header">
+          <h1>Inventory</h1>
+          <div class="header-actions">
+            <input type="search" id="inventory-search" placeholder="Search inventory..." class="search-input">
+            <button id="add-inventory" class="btn btn-primary">➕ Add Item</button>
+          </div>
+        </header>
+
+        <!-- Inventory Table -->
+        <div class="inventory-container">
+          <table class="inventory-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Purchase Date</th>
+                <th>Cost</th>
+                <th>Current Value</th>
+                <th>ROI</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-tbody">
+              <tr>
+                <td colspan="7" class="empty-state">No inventory items yet</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Settings Section -->
+      <section id="settings" class="content-section">
+        <header class="section-header">
+          <h1>Settings</h1>
+        </header>
+
+        <div class="settings-container">
+          <!-- General Settings -->
+          <div class="settings-group">
+            <h3>General Settings</h3>
+            <div class="setting-item">
+              <label for="theme">Theme</label>
+              <select id="theme">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+                <option value="auto">Auto</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <label for="currency">Currency</label>
+              <select id="currency">
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Import/Export -->
+          <div class="settings-group">
+            <h3>Data Management</h3>
+            <div class="button-group">
+              <button id="export-all" class="btn btn-secondary">Export All Data</button>
+              <button id="import-data" class="btn btn-secondary">Import Data</button>
+              <button id="backup-now" class="btn btn-secondary">Backup Now</button>
+            </div>
+          </div>
+
+          <!-- Danger Zone -->
+          <div class="settings-group danger">
+            <h3>Danger Zone</h3>
+            <button id="clear-data" class="btn btn-danger">Clear All Data</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Deal Modal -->
+    <div id="deal-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-title">Deal Details</h2>
+          <button class="close-btn" onclick="closeDealModal()">×</button>
+        </div>
+        <div class="modal-body" id="deal-details">
+          <!-- Deal content will be injected here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart.js for analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

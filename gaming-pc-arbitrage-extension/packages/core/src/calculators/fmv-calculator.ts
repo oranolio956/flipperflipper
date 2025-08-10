@@ -17,7 +17,7 @@ import {
 
 // Component condition type
 type ComponentCondition = 'new' | 'excellent' | 'good' | 'fair' | 'poor';
-import { ALL_PRICING_TIERS, findPriceTier } from '../data/pricing-tiers';
+import { ALL_PRICING_TIERS, findPriceTier, getPriceRange } from '../data/pricing-tiers';
 import { Settings } from '../settings/schema';
 
 export interface FMVResult {
@@ -25,7 +25,11 @@ export interface FMVResult {
   componentBreakdown: ComponentValue[];
   confidence: number;
   adjustments: Adjustment[];
-  methodology: string;
+  priceRange: {
+    min: number;
+    max: number;
+  };
+  marketInsights: string[];
 }
 
 export interface ComponentValue {
@@ -35,64 +39,91 @@ export interface ComponentValue {
   baseValue: number;
   adjustedValue: number;
   confidence: number;
+  source: string;
 }
 
 export interface Adjustment {
-  reason: string;
+  type: string;
+  description: string;
   factor: number;
   impact: number;
 }
 
 export class FMVCalculator {
   private settings: Settings;
-  
+
   constructor(settings: Settings) {
     this.settings = settings;
   }
-  
+
+  updateSettings(settings: Settings) {
+    this.settings = settings;
+  }
+
   /**
-   * Calculate the FMV for a listing
+   * Calculate the fair market value of a listing
    */
-  async calculate(listing: Listing): Promise<FMVResult> {
+  calculate(listing: Listing): FMVResult {
     const componentValues: ComponentValue[] = [];
     const adjustments: Adjustment[] = [];
+    const marketInsights: string[] = [];
+    
+    // Determine overall condition
+    const condition = this.determineCondition(listing);
     
     // Calculate base component values
     if (listing.components?.cpu) {
       const cpuValue = this.calculateComponentValue(
         'CPU',
         listing.components.cpu.model,
-        'good' as ComponentCondition
+        condition
       );
-      componentValues.push(cpuValue);
+      if (cpuValue) {
+        componentValues.push(cpuValue);
+        if (cpuValue.confidence < 0.8) {
+          marketInsights.push(`CPU model "${listing.components.cpu.model}" not in database - using estimate`);
+        }
+      }
     }
     
     if (listing.components?.gpu) {
       const gpuValue = this.calculateComponentValue(
         'GPU',
         listing.components.gpu.model,
-        'good' as ComponentCondition
+        condition
       );
       
-      // Apply mining risk adjustment for GPUs
-      // Check for mining risk based on GPU model
-      const gpuModel = listing.components?.gpu?.model.toLowerCase() || '';
-      const isMiningGpu = gpuModel.includes('3060') || gpuModel.includes('3070') || 
-                         gpuModel.includes('3080') || gpuModel.includes('3090');
-      
-      if (isMiningGpu) {
-        const miningAdjustment = this.applyMiningAdjustment(gpuValue);
-        adjustments.push(miningAdjustment);
-        gpuValue.adjustedValue *= miningAdjustment.factor;
+      if (gpuValue) {
+        // Apply mining risk adjustment for RTX 30 series
+        const gpuModel = listing.components.gpu.model.toLowerCase();
+        const isMiningRisk = gpuModel.includes('3060') || gpuModel.includes('3070') || 
+                           gpuModel.includes('3080') || gpuModel.includes('3090');
+        
+        if (isMiningRisk) {
+          const miningAdjustment = this.applyMiningAdjustment(gpuValue);
+          adjustments.push(miningAdjustment);
+          gpuValue.adjustedValue *= miningAdjustment.factor;
+          marketInsights.push('GPU may have mining history - 15% reduction applied');
+        }
+        
+        componentValues.push(gpuValue);
       }
-      
-      componentValues.push(gpuValue);
     }
     
     // RAM - sum all modules
     if (listing.components?.ram && listing.components.ram.length > 0) {
-      for (const ram of listing.components.ram) {
-        const ramValue = this.calculateRAMValue(ram);
+      const totalCapacity = listing.components.ram.reduce((sum, r) => sum + (r.capacity || r.size || 0), 0);
+      const speed = Math.max(...listing.components.ram.map(r => r.speed || 3200));
+      const type = listing.components.ram[0].type || 'DDR4';
+      
+      const ramValue = this.calculateRAMValue({
+        capacity: totalCapacity,
+        speed,
+        type,
+        modules: listing.components.ram.length
+      } as RAMComponent, condition);
+      
+      if (ramValue) {
         componentValues.push(ramValue);
       }
     }
@@ -100,39 +131,45 @@ export class FMVCalculator {
     // Storage - sum all drives
     if (listing.components?.storage && listing.components.storage.length > 0) {
       for (const storage of listing.components.storage) {
-        const storageValue = this.calculateStorageValue(storage);
-        componentValues.push(storageValue);
+        const storageValue = this.calculateStorageValue(storage, condition);
+        if (storageValue) {
+          componentValues.push(storageValue);
+        }
       }
     }
     
     // Motherboard
     if (listing.components?.motherboard) {
-      const moboValue = this.calculateMotherboardValue(listing.components.motherboard);
-      componentValues.push(moboValue);
+      const moboValue = this.calculateMotherboardValue(listing.components.motherboard, condition);
+      if (moboValue) {
+        componentValues.push(moboValue);
+      }
     }
     
     // PSU
     if (listing.components?.psu) {
-      const psuValue = this.calculatePSUValue(listing.components.psu);
-      componentValues.push(psuValue);
+      const psuValue = this.calculatePSUValue(listing.components.psu, condition);
+      if (psuValue) {
+        componentValues.push(psuValue);
+      }
     }
     
     // Case
     if (listing.components?.case) {
-      const caseValue = this.calculateCaseValue(listing.components.case);
-      componentValues.push(caseValue);
+      const caseValue = this.calculateCaseValue(listing.components.case, condition);
+      if (caseValue) {
+        componentValues.push(caseValue);
+      }
     }
     
     // Cooling
-    if (listing.components?.cooling) {
-      const coolingValue = this.calculateCoolingValue(listing.components.cooling);
-      componentValues.push(coolingValue);
+    if (listing.components?.cooling || listing.components?.cooler) {
+      const cooling = listing.components.cooling || listing.components.cooler;
+      const coolingValue = this.calculateCoolingValue(cooling!, condition);
+      if (coolingValue) {
+        componentValues.push(coolingValue);
+      }
     }
-    
-    // Calculate subtotal
-    const subtotal = new Decimal(
-      componentValues.reduce((sum, cv) => sum + cv.adjustedValue, 0)
-    );
     
     // Apply global adjustments
     
@@ -142,11 +179,6 @@ export class FMVCalculator {
       adjustments.push(ageAdjustment);
     }
     
-    // Condition adjustment
-    const overall = typeof listing.condition === 'object' ? listing.condition.overall : 3;
-    const conditionAdjustment = this.calculateConditionAdjustment(overall || 3);
-    adjustments.push(conditionAdjustment);
-    
     // Completeness adjustment
     const completenessAdjustment = this.calculateCompletenessAdjustment(listing.components);
     adjustments.push(completenessAdjustment);
@@ -155,322 +187,486 @@ export class FMVCalculator {
     const demandAdjustment = this.calculateDemandAdjustment(listing.components);
     adjustments.push(demandAdjustment);
     
-    // Apply all adjustments
-    let finalValue = subtotal;
-    for (const adj of adjustments) {
-      finalValue = finalValue.mul(adj.factor);
+    // Calculate totals
+    const baseTotal = componentValues.reduce((sum, cv) => sum + cv.baseValue, 0);
+    const adjustedTotal = componentValues.reduce((sum, cv) => sum + cv.adjustedValue, 0);
+    
+    // Apply global adjustments
+    let finalTotal = adjustedTotal;
+    for (const adjustment of adjustments) {
+      if (adjustment.type !== 'mining') { // Mining already applied to GPU
+        finalTotal *= adjustment.factor;
+      }
     }
     
-    // Calculate confidence score
-    const confidence = this.calculateConfidence(componentValues, listing);
+    // Calculate confidence
+    const avgConfidence = componentValues.length > 0
+      ? componentValues.reduce((sum, cv) => sum + cv.confidence, 0) / componentValues.length
+      : 0.5;
+    
+    // Price range
+    const priceRange = this.calculatePriceRange(componentValues, adjustments);
+    
+    // Market insights
+    if (componentValues.length < 4) {
+      marketInsights.push('Limited component data - estimate may be less accurate');
+    }
+    if (finalTotal > listing.price * 1.5) {
+      marketInsights.push('Listing appears underpriced - verify all components');
+    }
+    if (finalTotal < listing.price * 0.7) {
+      marketInsights.push('Listing may be overpriced or missing key information');
+    }
     
     return {
-      total: finalValue.toNumber(),
+      total: Math.round(finalTotal),
       componentBreakdown: componentValues,
-      confidence,
+      confidence: avgConfidence,
       adjustments,
-      methodology: 'Component sum with condition, age, and market adjustments',
+      priceRange,
+      marketInsights
     };
   }
-  
+
   /**
-   * Calculate value for a generic component
+   * Determine overall condition from listing
+   */
+  private determineCondition(listing: Listing): ComponentCondition {
+    if (typeof listing.condition === 'string') {
+      switch (listing.condition) {
+        case 'new': return 'new';
+        case 'like-new': return 'excellent';
+        case 'good': return 'good';
+        case 'fair': return 'fair';
+        case 'parts': return 'poor';
+        default: return 'good';
+      }
+    }
+    
+    if (listing.condition?.overall) {
+      switch (listing.condition.overall) {
+        case 5: return 'excellent';
+        case 4: return 'good';
+        case 3: return 'fair';
+        case 2: return 'poor';
+        case 1: return 'poor';
+        default: return 'fair';
+      }
+    }
+    
+    return 'good'; // Default
+  }
+
+  /**
+   * Calculate component value using pricing tiers
    */
   private calculateComponentValue(
-    type: string,
+    type: 'CPU' | 'GPU',
     model: string,
     condition: ComponentCondition
-  ): ComponentValue {
-    const baseValue = findPriceTier(type, model, condition) || 0;
+  ): ComponentValue | null {
+    const priceTier = findPriceTier(type, model);
     
-    // If no exact match, try to estimate
-    let confidence = 1.0;
-    let estimatedValue = baseValue;
-    
-    if (baseValue === 0) {
-      estimatedValue = this.estimateComponentValue(type, model, condition);
-      confidence = 0.7; // Lower confidence for estimates
+    if (priceTier) {
+      const baseValue = priceTier.prices[condition];
+      return {
+        type,
+        name: model,
+        condition,
+        baseValue,
+        adjustedValue: baseValue,
+        confidence: 0.95,
+        source: 'pricing_tiers'
+      };
     }
+    
+    // Fallback to estimate
+    const priceRange = getPriceRange(type);
+    const estimate = this.estimateValue(type, model, condition, priceRange);
     
     return {
       type,
       name: model,
       condition,
-      baseValue: estimatedValue,
-      adjustedValue: estimatedValue,
-      confidence,
+      baseValue: estimate,
+      adjustedValue: estimate,
+      confidence: 0.7,
+      source: 'estimate'
     };
   }
-  
+
   /**
-   * Estimate value when no exact pricing data exists
+   * Estimate value when exact match not found
    */
-  private estimateComponentValue(
+  private estimateValue(
     type: string,
     model: string,
-    condition: ComponentCondition
+    condition: ComponentCondition,
+    priceRange: { min: number; max: number; avg: number }
   ): number {
-    // Find similar components and average their values
-    const similarComponents = ALL_PRICING_TIERS.filter(
-      tier => tier.type === type
-    );
+    const modelLower = model.toLowerCase();
+    let tierMultiplier = 0.5; // Default mid-tier
     
-    if (similarComponents.length === 0) {
-      // Fallback values by type
-      const fallbacks: Record<string, number> = {
-        CPU: 100,
-        GPU: 150,
-        RAM: 30,
-        Storage: 40,
-        PSU: 50,
-        Motherboard: 80,
-        Case: 40,
-      };
-      return fallbacks[type] || 30;
+    // CPU tier detection
+    if (type === 'CPU') {
+      if (modelLower.includes('i9') || modelLower.includes('ryzen 9')) tierMultiplier = 0.8;
+      else if (modelLower.includes('i7') || modelLower.includes('ryzen 7')) tierMultiplier = 0.65;
+      else if (modelLower.includes('i5') || modelLower.includes('ryzen 5')) tierMultiplier = 0.5;
+      else if (modelLower.includes('i3') || modelLower.includes('ryzen 3')) tierMultiplier = 0.3;
     }
     
-    // Average similar components
-    const avgPrice = similarComponents.reduce(
-      (sum, comp) => sum + comp.prices[condition],
-      0
-    ) / similarComponents.length;
+    // GPU tier detection
+    if (type === 'GPU') {
+      if (modelLower.includes('4090') || modelLower.includes('7900')) tierMultiplier = 0.9;
+      else if (modelLower.includes('4080') || modelLower.includes('4070')) tierMultiplier = 0.75;
+      else if (modelLower.includes('4060') || modelLower.includes('7600')) tierMultiplier = 0.6;
+      else if (modelLower.includes('3080') || modelLower.includes('3070')) tierMultiplier = 0.65;
+      else if (modelLower.includes('3060') || modelLower.includes('6600')) tierMultiplier = 0.5;
+      else if (modelLower.includes('1660') || modelLower.includes('1650')) tierMultiplier = 0.3;
+    }
     
-    return Math.round(avgPrice);
+    // Condition multiplier
+    const conditionMultipliers: Record<ComponentCondition, number> = {
+      'new': 1.0,
+      'excellent': 0.88,
+      'good': 0.75,
+      'fair': 0.62,
+      'poor': 0.45
+    };
+    
+    const baseEstimate = priceRange.min + (priceRange.max - priceRange.min) * tierMultiplier;
+    return Math.round(baseEstimate * conditionMultipliers[condition]);
   }
-  
+
   /**
    * Calculate RAM value
    */
-  private calculateRAMValue(ram: RAMComponent): ComponentValue {
-    // Price based on capacity and speed
-    let basePrice = 20; // Base for 8GB
+  private calculateRAMValue(ram: RAMComponent, condition: ComponentCondition): ComponentValue | null {
+    const model = `${ram.capacity}GB ${ram.type}-${ram.speed}`;
+    const priceTier = findPriceTier('RAM', model);
     
-    if (ram.size === 16) basePrice = 40;
-    else if (ram.size === 32) basePrice = 80;
-    else if (ram.size === 64) basePrice = 160;
+    if (priceTier) {
+      const baseValue = priceTier.prices[condition];
+      return {
+        type: 'RAM',
+        name: model,
+        condition,
+        baseValue,
+        adjustedValue: baseValue,
+        confidence: 0.9,
+        source: 'pricing_tiers'
+      };
+    }
     
-    // Adjust for speed
-    if (ram.speed >= 3600) basePrice *= 1.1;
-    else if (ram.speed <= 2400) basePrice *= 0.9;
+    // Estimate based on capacity and type
+    let basePrice = 20; // Base for 8GB DDR4
     
-    // Adjust for DDR generation
+    // Capacity multiplier
+    basePrice *= (ram.capacity / 8);
+    
+    // DDR5 premium
     if (ram.type === 'DDR5') basePrice *= 1.5;
-    else if (ram.type === 'DDR3') basePrice *= 0.6;
+    
+    // Speed bonus
+    if (ram.speed >= 3600) basePrice *= 1.1;
+    else if (ram.speed >= 3200) basePrice *= 1.05;
+    
+    // Condition adjustment
+    const conditionMultipliers: Record<ComponentCondition, number> = {
+      'new': 1.0,
+      'excellent': 0.85,
+      'good': 0.7,
+      'fair': 0.55,
+      'poor': 0.4
+    };
+    
+    basePrice *= conditionMultipliers[condition];
     
     return {
       type: 'RAM',
-      name: `${ram.size}GB ${ram.type}-${ram.speed}`,
-      condition: 'good' as ComponentCondition,
-      baseValue: basePrice,
-      adjustedValue: basePrice,
-      confidence: 0.9,
+      name: model,
+      condition,
+      baseValue: Math.round(basePrice),
+      adjustedValue: Math.round(basePrice),
+      confidence: 0.8,
+      source: 'estimate'
     };
   }
-  
+
   /**
    * Calculate storage value
    */
-  private calculateStorageValue(storage: StorageComponent): ComponentValue {
+  private calculateStorageValue(storage: StorageComponent, condition: ComponentCondition): ComponentValue | null {
+    const typeStr = storage.type.toUpperCase().includes('NVME') ? 'NVMe' : 
+                   storage.type.toUpperCase().includes('SSD') ? 'SATA SSD' : 'HDD';
+    const model = `${storage.capacity}GB ${typeStr}`;
+    const priceTier = findPriceTier('Storage', model);
+    
+    if (priceTier) {
+      const baseValue = priceTier.prices[condition];
+      return {
+        type: 'Storage',
+        name: model,
+        condition,
+        baseValue,
+        adjustedValue: baseValue,
+        confidence: 0.9,
+        source: 'pricing_tiers'
+      };
+    }
+    
+    // Estimate based on capacity and type
     let basePrice = 20;
     
     // Price by capacity
-    const pricePerGB = storage.type === 'NVMe' ? 0.08 :
-                      storage.type === 'SATA SSD' ? 0.06 :
-                      0.02; // HDD
+    if (storage.capacity <= 256) basePrice = 25;
+    else if (storage.capacity <= 512) basePrice = 35;
+    else if (storage.capacity <= 1000) basePrice = 50;
+    else if (storage.capacity <= 2000) basePrice = 80;
+    else basePrice = 100 + (storage.capacity - 2000) * 0.02;
     
-    basePrice = storage.capacity * pricePerGB;
+    // Type multiplier
+    if (typeStr === 'NVMe') basePrice *= 1.3;
+    else if (typeStr === 'HDD') basePrice *= 0.5;
     
-    // Cap at reasonable maximums
-    if (storage.type === 'NVMe') basePrice = Math.min(basePrice, 150);
-    else if (storage.type === 'SATA SSD') basePrice = Math.min(basePrice, 100);
-    else basePrice = Math.min(basePrice, 60);
+    // Condition adjustment
+    const conditionMultipliers: Record<ComponentCondition, number> = {
+      'new': 1.0,
+      'excellent': 0.85,
+      'good': 0.7,
+      'fair': 0.55,
+      'poor': 0.4
+    };
     
-    // Adjust for health if provided
-    if (storage.health && storage.health < 90) {
-      basePrice *= storage.health / 100;
-    }
+    basePrice *= conditionMultipliers[condition];
     
     return {
       type: 'Storage',
-      name: `${storage.capacity}GB ${storage.type}`,
-      condition: 'good' as ComponentCondition,
-      baseValue: basePrice,
-      adjustedValue: basePrice,
-      confidence: 0.9,
+      name: model,
+      condition,
+      baseValue: Math.round(basePrice),
+      adjustedValue: Math.round(basePrice),
+      confidence: 0.8,
+      source: 'estimate'
     };
   }
-  
+
   /**
    * Calculate motherboard value
    */
-  private calculateMotherboardValue(mobo: MotherboardComponent): ComponentValue {
+  private calculateMotherboardValue(mobo: MotherboardComponent, condition: ComponentCondition): ComponentValue | null {
     let basePrice = 80;
     
     // Adjust by chipset tier
-    if (mobo.chipset.includes('X') || mobo.chipset.includes('Z')) {
-      basePrice = 120; // High-end chipset
-    } else if (mobo.chipset.includes('B')) {
-      basePrice = 80; // Mid-range
-    } else if (mobo.chipset.includes('H') || mobo.chipset.includes('A')) {
-      basePrice = 60; // Entry-level
-    }
+    const chipset = mobo.chipset?.toLowerCase() || '';
+    if (chipset.includes('x670') || chipset.includes('z790')) basePrice = 250;
+    else if (chipset.includes('x570') || chipset.includes('z690')) basePrice = 200;
+    else if (chipset.includes('b650') || chipset.includes('b760')) basePrice = 150;
+    else if (chipset.includes('b550') || chipset.includes('b660')) basePrice = 120;
+    else if (chipset.includes('a520') || chipset.includes('h610')) basePrice = 80;
     
-    // Adjust by form factor
-    if (mobo.formFactor === 'ITX') basePrice *= 1.2;
-    else if (mobo.formFactor === 'mATX') basePrice *= 0.9;
+    // Form factor adjustment
+    if (mobo.formFactor?.includes('ITX')) basePrice *= 1.2;
+    else if (mobo.formFactor?.includes('E-ATX')) basePrice *= 1.3;
+    
+    // Condition adjustment
+    const conditionMultipliers: Record<ComponentCondition, number> = {
+      'new': 1.0,
+      'excellent': 0.85,
+      'good': 0.7,
+      'fair': 0.55,
+      'poor': 0.4
+    };
+    
+    basePrice *= conditionMultipliers[condition];
     
     return {
       type: 'Motherboard',
-      name: `${mobo.brand} ${mobo.model}`,
-      condition: 'good' as ComponentCondition,
-      baseValue: basePrice,
-      adjustedValue: basePrice,
-      confidence: 0.8,
+      name: `${mobo.brand || 'Generic'} ${mobo.chipset || mobo.model || 'Motherboard'}`,
+      condition,
+      baseValue: Math.round(basePrice),
+      adjustedValue: Math.round(basePrice),
+      confidence: 0.75,
+      source: 'estimate'
     };
   }
-  
+
   /**
    * Calculate PSU value
    */
-  private calculatePSUValue(psu: PSUComponent): ComponentValue {
-    // Base price by wattage
-    let basePrice = 40 + (psu.wattage - 400) * 0.05;
+  private calculatePSUValue(psu: PSUComponent, condition: ComponentCondition): ComponentValue | null {
+    const model = `${psu.wattage}W ${psu.efficiency || '80+'}`;
+    const priceTier = findPriceTier('PSU', model);
     
-    // Adjust for efficiency
-    const efficiencyMultipliers: Record<string, number> = {
-      '80+': 1.0,
-      '80+ Bronze': 1.1,
-      '80+ Silver': 1.2,
-      '80+ Gold': 1.3,
-      '80+ Platinum': 1.5,
-      '80+ Titanium': 1.7,
+    if (priceTier) {
+      const baseValue = priceTier.prices[condition];
+      return {
+        type: 'PSU',
+        name: model,
+        condition,
+        baseValue,
+        adjustedValue: baseValue,
+        confidence: 0.9,
+        source: 'pricing_tiers'
+      };
+    }
+    
+    // Estimate based on wattage and efficiency
+    let basePrice = 40 + (psu.wattage - 400) * 0.08;
+    
+    // Efficiency multiplier
+    const efficiency = psu.efficiency?.toLowerCase() || '';
+    if (efficiency.includes('titanium')) basePrice *= 1.4;
+    else if (efficiency.includes('platinum')) basePrice *= 1.25;
+    else if (efficiency.includes('gold')) basePrice *= 1.1;
+    else if (efficiency.includes('silver')) basePrice *= 1.05;
+    
+    // Modularity bonus
+    const modular = psu.modular?.toLowerCase() || '';
+    if (modular.includes('full')) basePrice *= 1.15;
+    else if (modular.includes('semi')) basePrice *= 1.08;
+    
+    // Condition adjustment
+    const conditionMultipliers: Record<ComponentCondition, number> = {
+      'new': 1.0,
+      'excellent': 0.85,
+      'good': 0.7,
+      'fair': 0.55,
+      'poor': 0.4
     };
     
-    basePrice *= efficiencyMultipliers[psu.efficiency] || 1.0;
-    
-    // Adjust for modularity
-    if (psu.modular === 'full-modular') basePrice *= 1.2;
-    else if (psu.modular === 'semi-modular') basePrice *= 1.1;
+    basePrice *= conditionMultipliers[condition];
     
     return {
       type: 'PSU',
-      name: `${psu.wattage}W ${psu.efficiency}`,
-      condition: 'good' as ComponentCondition,
-      baseValue: basePrice,
-      adjustedValue: basePrice,
-      confidence: 0.9,
+      name: model,
+      condition,
+      baseValue: Math.round(basePrice),
+      adjustedValue: Math.round(basePrice),
+      confidence: 0.8,
+      source: 'estimate'
     };
   }
-  
+
   /**
    * Calculate case value
    */
-  private calculateCaseValue(pcCase: CaseComponent): ComponentValue {
+  private calculateCaseValue(pcCase: CaseComponent, condition: ComponentCondition): ComponentValue | null {
     let basePrice = 50;
     
-    // Adjust by form factor
-    if (pcCase.formFactor === 'Full Tower') basePrice = 70;
-    else if (pcCase.formFactor === 'Mini Tower' || pcCase.formFactor === 'SFF') basePrice = 60;
+    // Form factor
+    const formFactor = pcCase.formFactor?.toLowerCase() || '';
+    if (formFactor.includes('full')) basePrice = 90;
+    else if (formFactor.includes('mid')) basePrice = 60;
+    else if (formFactor.includes('itx')) basePrice = 80;
     
-    // Adjust for features
-    if (pcCase.sidePanel === 'tempered glass') basePrice *= 1.3;
-    else if (pcCase.sidePanel === 'windowed') basePrice *= 1.1;
+    // Premium features
+    if (pcCase.sidePanel?.toLowerCase().includes('tempered')) basePrice *= 1.2;
+    if (pcCase.rgb) basePrice *= 1.15;
     
-    // Premium brands
-    if (pcCase.brand && ['Lian Li', 'Fractal', 'NZXT'].includes(pcCase.brand)) {
-      basePrice *= 1.2;
-    }
+    // Condition adjustment - cases depreciate less
+    const conditionMultipliers: Record<ComponentCondition, number> = {
+      'new': 1.0,
+      'excellent': 0.9,
+      'good': 0.8,
+      'fair': 0.65,
+      'poor': 0.5
+    };
+    
+    basePrice *= conditionMultipliers[condition];
     
     return {
       type: 'Case',
-      name: pcCase.brand ? `${pcCase.brand} ${pcCase.formFactor}` : pcCase.formFactor,
-      condition: 'good' as ComponentCondition,
-      baseValue: basePrice,
-      adjustedValue: basePrice,
-      confidence: 0.8,
+      name: pcCase.brand ? `${pcCase.brand} ${pcCase.model || 'Case'}` : 'Generic Case',
+      condition,
+      baseValue: Math.round(basePrice),
+      adjustedValue: Math.round(basePrice),
+      confidence: 0.75,
+      source: 'estimate'
     };
   }
-  
+
   /**
    * Calculate cooling value
    */
-  private calculateCoolingValue(cooling: CoolerComponent): ComponentValue {
+  private calculateCoolingValue(cooling: CoolerComponent, condition: ComponentCondition): ComponentValue | null {
     let basePrice = 20;
     
-    if (cooling.type === 'stock') {
-      basePrice = 10;
+    if (cooling.type === 'stock' || !cooling.type) {
+      basePrice = 15;
     } else if (cooling.type === 'air') {
-      basePrice = 40;
+      basePrice = cooling.brand?.toLowerCase().includes('noctua') ? 80 : 40;
     } else if (cooling.type === 'aio') {
-      basePrice = 60;
-      if (cooling.size && cooling.size >= 280) basePrice = 80;
-      if (cooling.size && cooling.size >= 360) basePrice = 100;
-    } else if (cooling.type === 'custom-loop') {
-      basePrice = 200; // Custom loops are expensive
+      // AIO pricing by radiator size
+      if (cooling.radiatorSize) {
+        if (cooling.radiatorSize >= 360) basePrice = 120;
+        else if (cooling.radiatorSize >= 280) basePrice = 100;
+        else if (cooling.radiatorSize >= 240) basePrice = 80;
+        else basePrice = 60;
+      } else {
+        basePrice = 80; // Default AIO price
+      }
+    } else if (cooling.type === 'custom' || cooling.type === 'custom-loop') {
+      basePrice = 300; // Custom loops are expensive
     }
+    
+    // RGB premium
+    if (cooling.rgb) basePrice *= 1.1;
+    
+    // Condition adjustment
+    const conditionMultipliers: Record<ComponentCondition, number> = {
+      'new': 1.0,
+      'excellent': 0.85,
+      'good': 0.7,
+      'fair': 0.55,
+      'poor': 0.4
+    };
+    
+    basePrice *= conditionMultipliers[condition];
     
     return {
       type: 'Cooling',
-      name: cooling.brand ? `${cooling.brand} ${cooling.type}` : cooling.type,
-      condition: 'good' as ComponentCondition,
-      baseValue: basePrice,
-      adjustedValue: basePrice,
-      confidence: 0.8,
+      name: cooling.brand ? `${cooling.brand} ${cooling.model || cooling.type}` : cooling.type,
+      condition,
+      baseValue: Math.round(basePrice),
+      adjustedValue: Math.round(basePrice),
+      confidence: 0.75,
+      source: 'estimate'
     };
   }
-  
+
   /**
-   * Mining adjustment for GPUs
+   * Apply mining wear adjustment for GPUs
    */
   private applyMiningAdjustment(gpuValue: ComponentValue): Adjustment {
     return {
-      reason: 'GPU mining wear risk',
-      factor: 0.8,
-      impact: -gpuValue.baseValue * 0.2,
+      type: 'mining',
+      description: 'Potential mining wear adjustment',
+      factor: 0.85,
+      impact: -15
     };
   }
-  
+
   /**
    * Age-based depreciation
    */
   private calculateAgeAdjustment(ageMonths: number): Adjustment {
-    // Depreciation curve: lose 20% first year, then 10% per year
     let factor = 1.0;
     
-    if (ageMonths <= 12) {
-      factor = 1 - (0.20 * (ageMonths / 12));
-    } else {
-      factor = 0.8 - (0.10 * ((ageMonths - 12) / 12));
-    }
-    
-    factor = Math.max(factor, 0.3); // Floor at 30% of original value
+    if (ageMonths <= 6) factor = 0.95;
+    else if (ageMonths <= 12) factor = 0.9;
+    else if (ageMonths <= 24) factor = 0.8;
+    else if (ageMonths <= 36) factor = 0.7;
+    else factor = 0.6;
     
     return {
-      reason: `Age depreciation (${ageMonths} months)`,
+      type: 'age',
+      description: `Age depreciation (${ageMonths} months)`,
       factor,
-      impact: -(1 - factor) * 100,
+      impact: -(1 - factor) * 100
     };
   }
-  
-  /**
-   * Overall condition adjustment
-   */
-  private calculateConditionAdjustment(condition: 1 | 2 | 3 | 4 | 5): Adjustment {
-    const factors: Record<number, number> = {
-      5: 1.0,  // Excellent
-      4: 0.9,  // Good
-      3: 0.75, // Fair
-      2: 0.6,  // Poor
-      1: 0.4,  // Parts only
-    };
-    
-    return {
-      reason: `Overall condition score: ${condition}/5`,
-      factor: factors[condition],
-      impact: -(1 - factors[condition]) * 100,
-    };
-  }
-  
+
   /**
    * Completeness adjustment - full builds worth more than sum of parts
    */
@@ -484,27 +680,30 @@ export class FMVCalculator {
     if (hasCore && hasMemory && hasStorage && hasPower && hasCase) {
       // Complete system bonus
       return {
-        reason: 'Complete system bonus',
+        type: 'completeness',
+        description: 'Complete system premium',
         factor: 1.1,
-        impact: 10,
+        impact: 10
       };
     } else if (hasCore && hasMemory && hasStorage) {
-      // Near-complete system
+      // Nearly complete
       return {
-        reason: 'Near-complete system',
-        factor: 1.05,
-        impact: 5,
+        type: 'completeness',
+        description: 'Nearly complete system',
+        factor: 1.0,
+        impact: 0
+      };
+    } else {
+      // Incomplete - parts only
+      return {
+        type: 'completeness',
+        description: 'Incomplete system (parts value)',
+        factor: 0.9,
+        impact: -10
       };
     }
-    
-    // Incomplete system
-    return {
-      reason: 'Incomplete system',
-      factor: 0.95,
-      impact: -5,
-    };
   }
-  
+
   /**
    * Market demand adjustment based on component desirability
    */
@@ -513,54 +712,62 @@ export class FMVCalculator {
     
     // High-demand GPUs
     if (components?.gpu) {
-      const highDemandGPUs = ['3060', '3070', '3080', '4060', '4070', '6700'];
-      if (highDemandGPUs.some(model => components.gpu!.model.includes(model))) {
-        demandScore *= 1.1;
+      const highDemandGPUs = ['4060', '4070', '4080', '4090', '7600', '7700', '7800', '7900'];
+      const gpuModel = components.gpu.model.toLowerCase();
+      if (highDemandGPUs.some(model => gpuModel.includes(model))) {
+        demandScore *= 1.05;
       }
     }
     
     // Current gen CPUs
     if (components?.cpu) {
-      if (components.cpu.generation && components.cpu.generation >= 12) {
-        demandScore *= 1.05;
+      const cpuModel = components.cpu.model.toLowerCase();
+      if (cpuModel.includes('13th') || cpuModel.includes('7000') || 
+          cpuModel.includes('13') || cpuModel.includes('7')) {
+        demandScore *= 1.03;
       }
     }
     
     // DDR5 systems
-    if (components.ram?.some(r => r.type === 'DDR5')) {
-      demandScore *= 1.05;
+    if (components?.ram && components.ram.length > 0 && components.ram[0].type === 'DDR5') {
+      demandScore *= 1.02;
     }
     
     return {
-      reason: 'Market demand adjustment',
+      type: 'demand',
+      description: 'Market demand adjustment',
       factor: demandScore,
-      impact: (demandScore - 1) * 100,
+      impact: (demandScore - 1) * 100
     };
   }
-  
+
   /**
-   * Calculate confidence score for the FMV estimate
+   * Calculate price range based on confidence
    */
-  private calculateConfidence(componentValues: ComponentValue[], listing: Listing): number {
-    let confidence = 0.5; // Base confidence
+  private calculatePriceRange(
+    componentValues: ComponentValue[],
+    adjustments: Adjustment[]
+  ): { min: number; max: number } {
+    const total = componentValues.reduce((sum, cv) => sum + cv.adjustedValue, 0);
+    const avgConfidence = componentValues.length > 0
+      ? componentValues.reduce((sum, cv) => sum + cv.confidence, 0) / componentValues.length
+      : 0.5;
     
-    // More components identified = higher confidence
-    confidence += componentValues.length * 0.05;
+    // Apply adjustments
+    let adjustedTotal = total;
+    for (const adj of adjustments) {
+      if (adj.type !== 'mining') {
+        adjustedTotal *= adj.factor;
+      }
+    }
     
-    // Higher individual component confidence = higher overall
-    const avgComponentConfidence = componentValues.reduce(
-      (sum, cv) => sum + cv.confidence,
-      0
-    ) / componentValues.length;
-    confidence += avgComponentConfidence * 0.3;
+    // Range based on confidence
+    const variance = 1 - avgConfidence;
+    const margin = adjustedTotal * variance * 0.2; // 20% max variance
     
-    // More photos = higher confidence
-    if (listing.images.length >= 5) confidence += 0.1;
-    else if (listing.images.length >= 3) confidence += 0.05;
-    
-    // Detailed description = higher confidence
-    if (listing.description.length > 200) confidence += 0.05;
-    
-    return Math.min(confidence, 0.95); // Cap at 95%
+    return {
+      min: Math.round(adjustedTotal - margin),
+      max: Math.round(adjustedTotal + margin)
+    };
   }
 }
