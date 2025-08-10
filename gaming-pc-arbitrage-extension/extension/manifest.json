@@ -1,0 +1,115 @@
+{
+  "manifest_version": 3,
+  "name": "Gaming PC Arbitrage Assistant",
+  "version": "1.0.0",
+  "description": "Find and flip gaming PCs profitably across Facebook Marketplace, Craigslist, and OfferUp",
+  
+  "permissions": [
+    "storage",
+    "alarms",
+    "notifications",
+    "activeTab"
+  ],
+  
+  "optional_permissions": [
+    "identity"
+  ],
+  
+  "optional_host_permissions": [
+    "*://*.facebook.com/*",
+    "*://*.craigslist.org/*",
+    "*://*.offerup.com/*",
+    "*://*.ebay.com/*"
+  ],
+  
+  "background": {
+    "service_worker": "js/background.js",
+    "type": "module"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.facebook.com/marketplace/*",
+        "*://www.facebook.com/marketplace/*"
+      ],
+      "js": ["js/content-facebook.js"],
+      "css": ["css/overlay.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://*.craigslist.org/*"
+      ],
+      "js": ["js/content-craigslist.js"],
+      "css": ["css/overlay.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://offerup.com/*",
+        "*://www.offerup.com/*"
+      ],
+      "js": ["js/content-offerup.js"],
+      "css": ["css/overlay.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  
+  "options_page": "options.html",
+  
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icons/*",
+        "css/*",
+        "js/injected.js"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  
+  "commands": {
+    "analyze-listing": {
+      "suggested_key": {
+        "default": "Alt+A"
+      },
+      "description": "Analyze current listing"
+    },
+    "track-deal": {
+      "suggested_key": {
+        "default": "Alt+T"
+      },
+      "description": "Track current deal"
+    },
+    "open-dashboard": {
+      "suggested_key": {
+        "default": "Alt+D"
+      },
+      "description": "Open dashboard"
+    }
+  },
+  
+  "minimum_chrome_version": "100"
+}

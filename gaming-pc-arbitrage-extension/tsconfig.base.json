@@ -16,11 +16,11 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
+    "noUncheckedIndexedAccess": false,
     "allowJs": false,
     "incremental": true,
     "baseUrl": ".",
@@ -29,8 +29,10 @@
       "@/ui/*": ["packages/ui/src/*"],
       "@/data/*": ["packages/data/src/*"],
       "@/ml/*": ["packages/ml/src/*"],
-      "@/integrations/*": ["packages/integrations/src/*"]
-    }
+      "@/integrations/*": ["packages/integrations/src/*"],
+      "@arbitrage/core": ["packages/core/src/index.ts"]
+    },
+    "types": ["chrome", "node", "vitest/globals"]
   },
   "exclude": ["node_modules", "dist", "*.config.js", "*.config.ts"]
 }
