@@ -130,6 +130,30 @@ export const PrivacySettingsSchema = z.object({
   clearDataOnUninstall: z.boolean().default(true),
 });
 
+// Integrations Schema
+const IntegrationsSchema = z.object({
+  sheets: z.object({
+    enabled: z.boolean().default(false),
+    clientId: z.string().default(''),
+    spreadsheetId: z.string().default(''),
+    auth: z.object({
+      email: z.string().optional(),
+      accessToken: z.string().optional(),
+      expiresAt: z.number().optional(),
+    }).optional(),
+    sync: z.object({
+      enabled: z.boolean().default(false),
+      direction: z.enum(['push', 'pull', 'both']).default('both'),
+      cadenceMin: z.number().min(0).default(60),
+    }).default({}),
+    mappings: z.object({
+      deals: z.any().optional(),
+      analytics: z.any().optional(),
+      inventory: z.any().optional(),
+    }).default({}),
+  }).default({}),
+});
+
 // Main Settings Schema
 export const SettingsSchema = z.object({
   version: z.string().default('1.0.0'),
@@ -153,7 +177,7 @@ export const SettingsSchema = z.object({
   
   // System Settings
   automation: AutomationSettingsSchema,
-  integrations: IntegrationSettingsSchema,
+  integrations: IntegrationsSchema,
   privacy: PrivacySettingsSchema,
   
   // Feature Flags

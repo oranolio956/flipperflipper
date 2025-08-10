@@ -28,6 +28,11 @@ export const MessageType = {
   REQUEST_PERMISSION: 'REQUEST_PERMISSION',
   OPEN_DASHBOARD: 'OPEN_DASHBOARD',
   GENERATE_DRAFT: 'GENERATE_DRAFT',
+  // Google Sheets
+  SHEETS_AUTH: 'SHEETS_AUTH',
+  SHEETS_SYNC: 'SHEETS_SYNC',
+  SHEETS_PUSH_NOW: 'SHEETS_PUSH_NOW',
+  SHEETS_PULL_NOW: 'SHEETS_PULL_NOW',
 } as const;
 
 // Request schemas
@@ -108,6 +113,25 @@ export const GenerateDraftRequestSchema = z.object({
   variables: z.record(z.string()).optional(),
 });
 
+// Google Sheets request schemas
+export const SheetsAuthRequestSchema = z.object({
+  type: z.literal(MessageType.SHEETS_AUTH),
+  action: z.enum(['connect', 'disconnect']),
+});
+
+export const SheetsSyncRequestSchema = z.object({
+  type: z.literal(MessageType.SHEETS_SYNC),
+  direction: z.enum(['push', 'pull', 'both']).optional(),
+});
+
+export const SheetsPushNowRequestSchema = z.object({
+  type: z.literal(MessageType.SHEETS_PUSH_NOW),
+});
+
+export const SheetsPullNowRequestSchema = z.object({
+  type: z.literal(MessageType.SHEETS_PULL_NOW),
+});
+
 // Union of all request types
 export const MessageRequestSchema = z.discriminatedUnion('type', [
   ParsePageRequestSchema,
@@ -123,6 +147,10 @@ export const MessageRequestSchema = z.discriminatedUnion('type', [
   RequestPermissionSchema,
   OpenDashboardRequestSchema,
   GenerateDraftRequestSchema,
+  SheetsAuthRequestSchema,
+  SheetsSyncRequestSchema,
+  SheetsPushNowRequestSchema,
+  SheetsPullNowRequestSchema,
 ]);
 
 // Response types

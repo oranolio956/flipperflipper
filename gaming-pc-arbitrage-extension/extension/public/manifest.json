@@ -9,7 +9,9 @@
     "activeTab",
     "storage",
     "alarms",
-    "notifications"
+    "notifications",
+    "identity",
+    "downloads"
   ],
   
   "optional_host_permissions": [

@@ -42,6 +42,7 @@ import {
   Deal,
   generateId,
 } from '@/core';
+import { initializeSync, handleSyncAlarm, triggerSync } from './sync';
 
 // Rate limiting
 const requestCounts = new Map<string, number>();
@@ -54,6 +55,9 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   
   // Initialize settings
   await initializeSettings();
+  
+  // Initialize Google Sheets sync
+  await initializeSync();
   
   // Set up alarms for follow-ups
   chrome.alarms.create('followup-check', { periodInMinutes: 60 });
@@ -78,6 +82,8 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     await checkFollowUps();
   } else if (alarm.name === 'cleanup') {
     await performCleanup();
+  } else if (alarm.name === 'sheets-sync') {
+    await handleSyncAlarm();
   } else if (alarm.name.startsWith('followup-')) {
     // Individual follow-up alarm
     const dealId = alarm.name.replace('followup-', '');
@@ -149,6 +155,19 @@ onMessage(async (request: MessageRequest, sender) => {
         
       case MessageType.GENERATE_DRAFT:
         return await handleGenerateDraft(request);
+      
+      // Google Sheets handlers
+      case MessageType.SHEETS_SYNC:
+        await triggerSync((request as any).direction);
+        return { success: true };
+        
+      case MessageType.SHEETS_PUSH_NOW:
+        await triggerSync('push');
+        return { success: true };
+        
+      case MessageType.SHEETS_PULL_NOW:
+        await triggerSync('pull');
+        return { success: true };
         
       default:
         return { success: false, error: 'Unknown message type' };

@@ -104,6 +104,38 @@ export class ArbitrageDB extends Dexie {
       attachments: '++_id, dealId, type, timestamp',
       migrations: '++_id, version, appliedAt',
     });
+    
+    // Version 2 - Add integrations
+    this.version(2).stores({
+      listings: '++_id, id, platform, [platform+externalId], metadata.createdAt, metadata.status',
+      deals: '++_id, id, listingId, stage, metadata.createdAt',
+      threads: '++_id, dealId, lastActivity',
+      offers: '++_id, dealId, timestamp, status',
+      settings: '++_id, version',
+      events: '++_id, timestamp, category, name',
+      partsBin: '++_id, name, category',
+      attachments: '++_id, dealId, type, timestamp',
+      migrations: '++_id, version, appliedAt',
+    }).upgrade(async trans => {
+      // Add integrations to existing settings
+      await trans.settings.toCollection().modify(setting => {
+        if (!setting.integrations) {
+          setting.integrations = {
+            sheets: {
+              enabled: false,
+              clientId: '',
+              spreadsheetId: '',
+              sync: {
+                enabled: false,
+                direction: 'both',
+                cadenceMin: 60,
+              },
+              mappings: {},
+            },
+          };
+        }
+      });
+    });
 
     // Apply encryption middleware for sensitive fields
     applyEncryptionMiddleware(
