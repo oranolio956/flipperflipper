@@ -28,6 +28,15 @@ export interface QuickListing {
   roi?: number;
   riskScore?: number;
   dealScore?: number;
+  
+  // Enhanced fields
+  distance?: number;
+  gpuTier?: string;
+  condition?: string;
+  seller?: {
+    name: string;
+    responseTime?: string;
+  };
 }
 
 /**
@@ -154,28 +163,85 @@ export function scanSearchResults(): QuickListing[] {
 }
 
 /**
+ * Enhanced scan with filters
+ */
+export interface ScanOptions {
+  minPrice?: number;
+  maxPrice?: number;
+  maxDistance?: number;
+  gpuTiers?: string[];
+  minROI?: number;
+}
+
+/**
+ * Apply filters to listings
+ */
+function applyFilters(listings: QuickListing[], options: ScanOptions): QuickListing[] {
+  return listings.filter(listing => {
+    if (options.minPrice && listing.price < options.minPrice) return false;
+    if (options.maxPrice && listing.price > options.maxPrice) return false;
+    if (options.maxDistance && listing.distance && listing.distance > options.maxDistance) return false;
+    if (options.minROI && listing.roi && listing.roi < options.minROI) return false;
+    if (options.gpuTiers && options.gpuTiers.length > 0 && listing.gpuTier && 
+        !options.gpuTiers.includes(listing.gpuTier)) return false;
+    return true;
+  });
+}
+
+/**
  * Create results panel UI
  */
-export function createResultsPanel(listings: QuickListing[]) {
+export function createResultsPanel(listings: QuickListing[], options?: ScanOptions) {
   // Remove existing panel
   const existing = document.getElementById('arbitrage-scanner-panel');
   if (existing) existing.remove();
+  
+  // Apply initial filters
+  let filteredListings = options ? applyFilters(listings, options) : listings;
   
   const panel = document.createElement('div');
   panel.id = 'arbitrage-scanner-panel';
   panel.innerHTML = `
     <div class="scanner-header">
-      <h3>Scan Results (${listings.length})</h3>
+      <h3>Scan Results (${filteredListings.length} of ${listings.length})</h3>
       <button class="close-btn">×</button>
     </div>
     <div class="scanner-filters">
-      <select class="filter-select" id="sort-by">
-        <option value="dealScore">Deal Score</option>
-        <option value="roi">ROI %</option>
-        <option value="price">Price</option>
-        <option value="daysListed">Days Listed</option>
-      </select>
-      <input type="number" class="filter-input" id="min-roi" placeholder="Min ROI %">
+      <div class="filter-row">
+        <select class="filter-select" id="sort-by">
+          <option value="dealScore">Deal Score</option>
+          <option value="roi">ROI %</option>
+          <option value="price">Price</option>
+          <option value="daysListed">Days Listed</option>
+          <option value="distance">Distance</option>
+        </select>
+        <input type="number" class="filter-input" id="min-roi" placeholder="Min ROI %">
+        <input type="number" class="filter-input" id="max-distance" placeholder="Max miles">
+      </div>
+      <div class="filter-row">
+        <div class="filter-price-range">
+          <input type="number" class="filter-input small" id="min-price" placeholder="Min $">
+          <span>-</span>
+          <input type="number" class="filter-input small" id="max-price" placeholder="Max $">
+        </div>
+        <select class="filter-select" id="gpu-tier">
+          <option value="">All GPUs</option>
+          <option value="S">S-Tier</option>
+          <option value="A">A-Tier</option>
+          <option value="B">B-Tier</option>
+          <option value="C">C-Tier</option>
+        </select>
+      </div>
+    </div>
+    <div class="scanner-actions">
+      <div class="selection-info">
+        <span id="selected-count">0 selected</span>
+      </div>
+      <div class="bulk-actions">
+        <button class="action-btn" id="select-all">Select All</button>
+        <button class="action-btn" id="open-selected" disabled>Open Selected</button>
+        <button class="action-btn" id="draft-ping" disabled>Draft Ping</button>
+      </div>
     </div>
     <div class="scanner-results">
       ${listings.map(listing => `

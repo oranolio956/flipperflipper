@@ -44,7 +44,8 @@ import {
 } from '@/core';
 import { initializeSync, handleSyncAlarm, triggerSync } from './sync';
 import { initializeBackup, handleBackupAlarm, triggerBackup } from './backup';
-import { handleOfferFollowUp } from './offers';
+import { handleOfferFollowUp, initializeOfferAlarms } from './offers';
+import { getSearchesDue } from '@/lib/watches';
 
 // Rate limiting
 const requestCounts = new Map<string, number>();
@@ -89,11 +90,13 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     await performCleanup();
   } else if (alarm.name === 'sheets-sync') {
     await handleSyncAlarm();
-      } else if (alarm.name === 'auto-backup') {
-      await handleBackupAlarm();
-    } else if (alarm.name === 'offer-followup') {
-      await handleOfferFollowUp();
-    } else if (alarm.name.startsWith('followup-')) {
+  } else if (alarm.name === 'auto-backup') {
+    await handleBackupAlarm();
+  } else if (alarm.name === 'offer-followup') {
+    await handleOfferFollowUp();
+  } else if (alarm.name === 'saved-searches') {
+    await checkSavedSearches();
+  } else if (alarm.name.startsWith('followup-')) {
     // Individual follow-up alarm
     const dealId = alarm.name.replace('followup-', '');
     await sendFollowUpNotification(dealId);
@@ -545,6 +548,34 @@ async function performCleanup() {
   cutoff.setDate(cutoff.getDate() - 90);
   
   await db.events.where('timestamp').below(cutoff).delete();
+}
+
+async function checkSavedSearches() {
+  try {
+    const searches = await getSearchesDue();
+    
+    for (const search of searches) {
+      // Send notification for each due search
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: chrome.runtime.getURL('icons/icon-128.png'),
+        title: 'Search Monitor Ready',
+        message: `"${search.name}" is ready to run`,
+        buttons: [
+          { title: 'Run Search' },
+          { title: 'Skip' },
+        ],
+        requireInteraction: true,
+      }, (notificationId) => {
+        // Store search ID for button handling
+        chrome.storage.session.set({
+          [`search-${notificationId}`]: search.id,
+        });
+      });
+    }
+  } catch (error) {
+    console.error('Check saved searches error:', error);
+  }
 }
 
 // Handle notification clicks

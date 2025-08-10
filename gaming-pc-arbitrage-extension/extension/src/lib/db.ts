@@ -172,6 +172,10 @@ export class ArbitrageDB extends Dexie {
   experiments!: Table<DBExperiment>;
   comps!: Table<DBComp>;
   watchedListings!: Table<DBWatchedListing>;
+  sellerProfiles!: Table<DBSellerProfile>;
+  priceHistory!: Table<any>;
+  savedSearches!: Table<any>;
+  savedSearchRuns!: Table<any>;
 
   constructor() {
     super('ArbitrageDB');
@@ -335,6 +339,29 @@ export class ArbitrageDB extends Dexie {
       experiments: '++_id, id, name, createdAt',
       comps: '++_id, id, source, [source+url], timestamp, expiresAt',
       watchedListings: '++_id, id, listingId, platform, url, lastCheckedAt, notified',
+      sellerProfiles: '++_id, sellerId, lastUpdated',
+    });
+
+    // Version 8 - Add price history and saved searches
+    this.version(8).stores({
+      listings: '++_id, id, platform, [platform+externalId], metadata.createdAt, metadata.status',
+      deals: '++_id, id, listingId, stage, metadata.createdAt',
+      threads: '++_id, id, listingId, sellerId, lastMsgAt, nextFollowUpAt',
+      offers: '++_id, id, listingId, [listingId+amount], status, timestamp',
+      settings: '++_id, version',
+      events: '++_id, timestamp, category, name, actorUserId',
+      partsBin: '++_id, name, category',
+      attachments: '++_id, dealId, type, timestamp',
+      migrations: '++_id, version, appliedAt',
+      users: '++_id, id, name, role, createdAt',
+      assignments: '++_id, id, dealId, userId, [dealId+userId]',
+      experiments: '++_id, id, name, createdAt',
+      comps: '++_id, id, source, [source+url], timestamp, expiresAt',
+      watchedListings: '++_id, id, listingId, platform, url, lastCheckedAt, notified',
+      sellerProfiles: '++_id, sellerId, lastUpdated',
+      priceHistory: '++_id, id, listingId, timestamp',
+      savedSearches: '++_id, id, name, enabled, lastRunAt',
+      savedSearchRuns: '++_id, id, searchId, timestamp',
     });
 
     // Apply encryption middleware for sensitive fields
