@@ -1,68 +1,55 @@
 /**
- * Core Package - Main Export
- * Central export point for all core functionality
+ * @arbitrage/core
+ * Core business logic for Gaming PC Arbitrage Extension
  */
 
 // Types
 export * from './types';
 
-// Settings
+// Settings & Schema
 export * from './settings/schema';
-
-// Data
-export * from './data/pricing-tiers';
-
-// Parsers
-export { ListingParser } from './parsers';
-export { ComponentDetector } from './parsers/component-detector';
-export type { ParsedListing, ParserStrategy } from './parsers';
+export * from './settings/defaults';
 
 // Calculators
-export { FMVCalculator } from './calculators/fmv-calculator';
-export { ROICalculator } from './calculators/roi-calculator';
-export type { FMVResult, ComponentValue, Adjustment } from './calculators/fmv-calculator';
-export type { ROIResult, OfferStrategy } from './calculators/roi-calculator';
+export * from './calculators/fmv-calculator';
+export * from './calculators/roi-calculator';
 
-// Negotiation
-export * from './negotiation/templates';
+// Parsers
+export * from './parsers/facebook';
+export * from './parsers/craigslist';
+export * from './parsers/offerup';
+export * from './parsers/advancedParser';
 
-// Risk Engine
-export { RiskEngine } from './risk/risk-engine';
-export type { RiskAssessment, RiskFlag } from './risk/risk-engine';
-export * from './risk/scamRules';
+// ML & AI
+export * from './ml/pricePredictor';
+export * from './ml/anomalyDetector';
+export * from './ml/models';
+export * from './ml/priceModel';
 
-// Utilities
-export { formatCurrency, formatPercentage, formatNumber } from './utils/formatters';
-export { calculateDistance, isWithinRadius } from './utils/geo';
-export { generateId, hashString } from './utils/crypto';
+// Risk Assessment
+export * from './risk/engine';
 
-// Constants
-// Export analytics
-export * from './analytics';
-
-// Export A/B testing
-export * from './abtest';
-
-// Export comps
+// Market Comps
 export * from './comps';
 
-// Export pricing integrations
-export * from './pricing/integrations';
+// Competitors
+export * from './competitors';
 
-// Export competition
-export * from './competition/signals';
+// Experiments
+export * from './experiments';
 
-// Export finance
-export * from './finance/pnl';
+// Scraping
+export * from './scraping/detectionAvoidance';
 
-// Export ML
-export * from './ml/priceModel';
+// Backup
+export * from './backup';
 
 // Export data
 export * from './data/gpuHierarchy';
 
 // Export pricing adjusters
 export * from './pricing/adjusters';
+export * from './pricing/integrations';
 
 // Export strategy modules
 export * from './strategy/upgradePath';
@@ -76,7 +63,71 @@ export * from './costs/operating';
 export * from './perf/benchPredictor';
 export * from './perf/bottleneck';
 
+// Export capture modules
+export * from './capture/ocr/photoExtractor';
+export * from './capture/quickAdd';
+export * from './capture/voiceNotes';
+
+// Export automation modules
+export * from './automation/dealFlow';
+export * from './automation/workflowTemplates';
+
+// Export enrichment modules
+export * from './enrichment/dataEnricher';
+
+// Export communication and scheduling modules
+export * from './communication/messageTemplates';
+export * from './scheduling/meetingScheduler';
+
+// Export inventory and pipeline
+export * from './inventory/inventoryManager';
+export * from './pipeline/pipelineManager';
+
+// Export analytics
+export * from './analytics/advancedAnalytics';
+
+// Export privacy and compliance
+export * from './privacy/privacyManager';
+export * from './compliance/complianceManager';
+
+// Export performance and reliability
+export * from './performance/performanceMonitor';
+export * from './reliability/reliabilityManager';
+
+// Export migration
+export * from './migration/migrationManager';
+
+// Constants
 export const VERSION = '1.0.0';
 export const SUPPORTED_PLATFORMS = ['facebook', 'craigslist', 'offerup'] as const;
 export const MAX_ACTIVE_DEALS = 50;
-export const MAX_LISTING_AGE_DAYS = 30;
+export const MAX_INVENTORY_ITEMS = 200;
+export const DEFAULT_CACHE_TTL = 300; // 5 minutes
+
+// Feature flags
+export const FEATURES = {
+  ML_PREDICTIONS: true,
+  OCR_PROCESSING: true,
+  VOICE_COMMANDS: true,
+  ADVANCED_ANALYTICS: true,
+  AUTO_BUNDLING: true,
+  ROUTE_OPTIMIZATION: true,
+  COMPETITOR_TRACKING: true,
+  AB_TESTING: true,
+} as const;
+
+// Platform limits
+export const PLATFORM_LIMITS = {
+  facebook: {
+    messagesPerHour: 20,
+    listingsPerDay: 5,
+  },
+  craigslist: {
+    listingsPerCategory: 1,
+    listingCooldown: 48 * 60 * 60 * 1000, // 48 hours
+  },
+  offerup: {
+    messagesPerHour: 30,
+    listingsPerDay: 10,
+  },
+} as const;
