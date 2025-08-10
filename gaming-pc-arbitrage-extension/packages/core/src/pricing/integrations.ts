@@ -6,6 +6,7 @@
 import { CompStats } from '../comps';
 import { ComponentValue } from '../calculators/fmv-calculator';
 import { ModelWeights } from '../ml/priceModel';
+import { applyAllAdjustments, type AdjustmentResult } from './adjusters';
 
 /**
  * Adjust component value based on comp stats
@@ -69,14 +70,33 @@ export function calculateEnhancedFMV(
   compStats: CompStats | null,
   mlPrediction: number | null,
   modelWeights: ModelWeights | null,
-  mlSettings?: { enabled: boolean; blend: number }
-): ComponentValue {
+  mlSettings?: { enabled: boolean; blend: number },
+  adjustmentOptions?: {
+    date?: Date;
+    state?: string;
+    brand?: string;
+    category?: 'cpu' | 'gpu' | 'case' | 'psu' | 'motherboard';
+    enabled?: boolean;
+  }
+): ComponentValue & { adjustments?: AdjustmentResult } {
   // Start with comp-adjusted value
   let value = adjustValueWithComps(baseValue, compStats);
   
   // Apply ML if enabled
   if (mlSettings?.enabled && mlPrediction) {
     value = adjustValueWithML(value, mlPrediction, modelWeights, mlSettings.blend);
+  }
+  
+  // Apply seasonal/regional/brand adjustments
+  if (adjustmentOptions?.enabled) {
+    const adjustmentResult = applyAllAdjustments(value.fmv, adjustmentOptions);
+    
+    return {
+      ...value,
+      fmv: adjustmentResult.adjustedValue,
+      source: `${value.source} + Adjustments`,
+      adjustments: adjustmentResult,
+    };
   }
   
   return value;

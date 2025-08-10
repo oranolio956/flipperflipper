@@ -191,6 +191,65 @@ const PriceDropSchema = z.object({
   autoRemoveAfterDays: z.number().min(7).max(90).default(30),
 });
 
+// Pricing Adjusters Schema
+const PricingAdjustersSchema = z.object({
+  enabled: z.boolean().default(true),
+  seasonal: z.object({
+    enabled: z.boolean().default(true),
+    multipliers: z.array(z.object({
+      month: z.number().min(1).max(12),
+      multiplier: z.number().min(0.5).max(2),
+      reason: z.string(),
+    })).default([]),
+  }),
+  regional: z.object({
+    enabled: z.boolean().default(true),
+    multipliers: z.array(z.object({
+      state: z.string().length(2),
+      multiplier: z.number().min(0.5).max(2),
+      notes: z.string().optional(),
+    })).default([]),
+  }),
+  brand: z.object({
+    enabled: z.boolean().default(true),
+    premiums: z.array(z.object({
+      brand: z.string(),
+      category: z.enum(['cpu', 'gpu', 'case', 'psu', 'motherboard']),
+      premium: z.number().min(-50).max(50),
+    })).default([]),
+  }),
+});
+
+// Operating Costs Schema
+const OperatingCostsSchema = z.object({
+  enabled: z.boolean().default(true),
+  electricity: z.object({
+    kwhRate: z.number().min(0).max(1).default(0.12), // US average ~$0.12/kWh
+    defaultUsageHours: z.number().min(0).max(24).default(8),
+    includeInTCO: z.boolean().default(true),
+  }),
+  mining: z.object({
+    enabled: z.boolean().default(false), // Off by default
+    algorithm: z.enum(['ethash', 'kawpow', 'autolykos']).default('ethash'),
+    revenuePerMhPerDay: z.number().min(0).default(0.05),
+    warnOnUsedGpu: z.boolean().default(true),
+  }),
+  warranty: z.object({
+    enabled: z.boolean().default(true),
+    multipliers: z.record(z.string(), z.number()).default({
+      'evga': 1.3,
+      'asus': 1.2,
+      'msi': 1.1,
+      'corsair': 1.2,
+    }),
+  }),
+  holdingCosts: z.object({
+    perDayAmount: z.number().min(0).default(2),
+    includeOpportunityCost: z.boolean().default(true),
+    opportunityRate: z.number().min(0).max(0.5).default(0.05), // 5% annual
+  }),
+});
+
 // Main Settings Schema
 export const SettingsSchema = z.object({
   version: z.string().default('1.0.0'),
@@ -220,6 +279,8 @@ export const SettingsSchema = z.object({
   backup: BackupSchema,
   macros: MacroSchema,
   priceDrops: PriceDropSchema,
+  pricingAdjusters: PricingAdjustersSchema,
+  operatingCosts: OperatingCostsSchema,
   
   // Feature Flags
   features: z.object({

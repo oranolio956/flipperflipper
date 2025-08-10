@@ -61,6 +61,21 @@ export * from './ml/priceModel';
 // Export data
 export * from './data/gpuHierarchy';
 
+// Export pricing adjusters
+export * from './pricing/adjusters';
+
+// Export strategy modules
+export * from './strategy/upgradePath';
+export * from './strategy/partOut';
+export * from './strategy/quickFlip';
+
+// Export operating costs
+export * from './costs/operating';
+
+// Export performance modules
+export * from './perf/benchPredictor';
+export * from './perf/bottleneck';
+
 export const VERSION = '1.0.0';
 export const SUPPORTED_PLATFORMS = ['facebook', 'craigslist', 'offerup'] as const;
 export const MAX_ACTIVE_DEALS = 50;
