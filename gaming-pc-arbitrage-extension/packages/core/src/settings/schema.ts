@@ -167,6 +167,21 @@ const BackupSchema = z.object({
   passphrase: z.string().default(''),
 });
 
+// Macro Schema
+const MacroSchema = z.object({
+  enabled: z.boolean().default(true),
+  showHotkeys: z.boolean().default(true),
+  buttons: z.object({
+    draftOpener: z.boolean().default(true),
+    followUp24h: z.boolean().default(true),
+    priceCalculator: z.boolean().default(true),
+    addCalendar: z.boolean().default(true),
+    markAcquired: z.boolean().default(true),
+    createInvoice: z.boolean().default(false),
+  }),
+  customHotkeys: z.record(z.string()).default({}),
+});
+
 // Main Settings Schema
 export const SettingsSchema = z.object({
   version: z.string().default('1.0.0'),
@@ -194,6 +209,7 @@ export const SettingsSchema = z.object({
   privacy: PrivacySettingsSchema,
   team: TeamSchema,
   backup: BackupSchema,
+  macros: MacroSchema,
   
   // Feature Flags
   features: z.object({

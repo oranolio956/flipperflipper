@@ -340,6 +340,17 @@ export interface Deal {
     actualProfit?: number;
   };
   
+  // Additional financial fields for P&L
+  purchasePrice?: number;
+  sellPrice?: number;
+  sellPlatform?: 'facebook' | 'ebay' | 'offerup' | 'craigslist';
+  soldAt?: Date;
+  expenses?: {
+    supplies?: number;
+    repairs?: number;
+    other?: number;
+  };
+  
   // Inventory
   inventory?: {
     receivedDate?: Date;

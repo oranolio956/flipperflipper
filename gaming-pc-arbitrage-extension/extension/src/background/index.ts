@@ -44,6 +44,7 @@ import {
 } from '@/core';
 import { initializeSync, handleSyncAlarm, triggerSync } from './sync';
 import { initializeBackup, handleBackupAlarm, triggerBackup } from './backup';
+import { handleOfferFollowUp } from './offers';
 
 // Rate limiting
 const requestCounts = new Map<string, number>();
@@ -88,9 +89,11 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     await performCleanup();
   } else if (alarm.name === 'sheets-sync') {
     await handleSyncAlarm();
-  } else if (alarm.name === 'auto-backup') {
-    await handleBackupAlarm();
-  } else if (alarm.name.startsWith('followup-')) {
+      } else if (alarm.name === 'auto-backup') {
+      await handleBackupAlarm();
+    } else if (alarm.name === 'offer-followup') {
+      await handleOfferFollowUp();
+    } else if (alarm.name.startsWith('followup-')) {
     // Individual follow-up alarm
     const dealId = alarm.name.replace('followup-', '');
     await sendFollowUpNotification(dealId);

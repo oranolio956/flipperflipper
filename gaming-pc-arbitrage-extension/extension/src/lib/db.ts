@@ -26,7 +26,9 @@ export interface DBDeal extends Deal {
 
 export interface DBThread {
   _id?: number;
-  dealId: string;
+  id: string;
+  listingId: string;
+  sellerId: string;
   platform: string;
   messages: Array<{
     id: string;
@@ -35,17 +37,23 @@ export interface DBThread {
     direction: 'sent' | 'received';
     template?: string;
   }>;
-  lastActivity: Date;
+  lastMsgAt: Date;
+  cadence: '1h' | '24h' | '3d';
+  nextFollowUpAt?: Date;
+  status: 'active' | 'archived';
 }
 
 export interface DBOffer {
   _id?: number;
-  dealId: string;
+  id: string;
+  listingId: string;
   amount: number;
-  message: string;
+  message?: string;
+  variantId?: string;
   timestamp: Date;
-  status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'counter';
+  status: 'draft' | 'sent' | 'countered' | 'accepted' | 'rejected' | 'expired';
   response?: string;
+  threadId?: string;
 }
 
 export interface DBEvent extends AnalyticsEvent {
@@ -262,6 +270,23 @@ export class ArbitrageDB extends Dexie {
       deals: '++_id, id, listingId, stage, metadata.createdAt',
       threads: '++_id, dealId, lastActivity',
       offers: '++_id, dealId, timestamp, status',
+      settings: '++_id, version',
+      events: '++_id, timestamp, category, name, actorUserId',
+      partsBin: '++_id, name, category',
+      attachments: '++_id, dealId, type, timestamp',
+      migrations: '++_id, version, appliedAt',
+      users: '++_id, id, name, role, createdAt',
+      assignments: '++_id, id, dealId, userId, [dealId+userId]',
+      experiments: '++_id, id, name, createdAt',
+      comps: '++_id, id, source, [source+url], timestamp, expiresAt',
+    });
+    
+    // Version 6 - Update offers and threads tables
+    this.version(6).stores({
+      listings: '++_id, id, platform, [platform+externalId], metadata.createdAt, metadata.status',
+      deals: '++_id, id, listingId, stage, metadata.createdAt',
+      threads: '++_id, id, listingId, sellerId, lastMsgAt, nextFollowUpAt',
+      offers: '++_id, id, listingId, [listingId+amount], status, timestamp',
       settings: '++_id, version',
       events: '++_id, timestamp, category, name, actorUserId',
       partsBin: '++_id, name, category',

@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { createHashRouter, Navigate, Outlet } from 'react-router-dom';
-import { Home, Package, BarChart3, Settings as SettingsIcon, Map, Flask } from 'lucide-react';
+import { Home, Package, BarChart3, Settings as SettingsIcon, Map, Flask, DollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Pipeline } from './pages/Pipeline';
 import { ListingDetail } from './pages/ListingDetail';
@@ -13,6 +13,7 @@ import { Routes } from './pages/Routes';
 import { Analytics } from './pages/Analytics';
 import { Experiments } from './pages/Experiments';
 import { Comps } from './pages/Comps';
+import { Finance } from './pages/Finance';
 
 // Layout component with navigation
 function Layout() {
@@ -23,6 +24,7 @@ function Layout() {
     { path: '/routes', label: 'Routes', icon: Map },
     { path: '/analytics', label: 'Analytics', icon: BarChart3 },
     { path: '/comps', label: 'Comps', icon: BarChart3 },
+    { path: '/finance', label: 'Finance', icon: DollarSign },
     { path: '/experiments', label: 'Experiments', icon: Flask },
     { path: '/settings', label: 'Settings', icon: SettingsIcon },
   ];
@@ -99,6 +101,10 @@ export const router = createHashRouter([
       {
         path: 'comps',
         element: <Comps />,
+      },
+      {
+        path: 'finance',
+        element: <Finance />,
       },
       {
         path: 'experiments',

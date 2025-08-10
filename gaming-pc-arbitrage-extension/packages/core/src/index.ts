@@ -49,6 +49,12 @@ export * from './comps';
 // Export pricing integrations
 export * from './pricing/integrations';
 
+// Export competition
+export * from './competition/signals';
+
+// Export finance
+export * from './finance/pnl';
+
 export const VERSION = '1.0.0';
 export const SUPPORTED_PLATFORMS = ['facebook', 'craigslist', 'offerup'] as const;
 export const MAX_ACTIVE_DEALS = 50;
