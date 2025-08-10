@@ -1,0 +1,124 @@
+{
+  "manifest_version": 3,
+  "name": "Gaming PC Arbitrage Pro",
+  "version": "1.0.0",
+  "description": "Maximize profits in gaming PC arbitrage with intelligent automation and real-time market analysis",
+  "author": "Arbitrage Pro Team",
+  
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "alarms",
+    "notifications",
+    "clipboardWrite",
+    "activeTab",
+    "contextMenus",
+    "offscreen"
+  ],
+  
+  "host_permissions": [
+    "https://*.facebook.com/*",
+    "https://www.facebook.com/*",
+    "https://*.craigslist.org/*",
+    "https://offerup.com/*"
+  ],
+  
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.facebook.com/marketplace/*",
+        "https://www.facebook.com/marketplace/*",
+        "https://*.craigslist.org/*",
+        "https://offerup.com/*"
+      ],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Gaming PC Arbitrage Pro - Click for dashboard",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  
+  "options_page": "options.html",
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y"
+      },
+      "description": "Open popup dashboard"
+    },
+    "quick_add": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+A",
+        "mac": "Command+Shift+A"
+      },
+      "description": "Quick add current listing to pipeline"
+    },
+    "calculate_roi": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+R",
+        "mac": "Command+Shift+R"
+      },
+      "description": "Calculate ROI for current listing"
+    },
+    "toggle_overlay": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+O",
+        "mac": "Command+Shift+O"
+      },
+      "description": "Toggle analysis overlay"
+    },
+    "draft_message": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+M",
+        "mac": "Command+Shift+M"
+      },
+      "description": "Generate negotiation message"
+    }
+  },
+  
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none';"
+  },
+  
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "fonts/*",
+        "icons/*",
+        "overlay.html"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  
+  "minimum_chrome_version": "114"
+}
