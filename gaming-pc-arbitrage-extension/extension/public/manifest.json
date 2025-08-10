@@ -6,46 +6,47 @@
   "author": "Arbitrage Pro Team",
   
   "permissions": [
-    "storage",
-    "unlimitedStorage",
-    "alarms",
-    "notifications",
-    "clipboardWrite",
     "activeTab",
-    "contextMenus",
-    "offscreen"
+    "storage",
+    "alarms",
+    "notifications"
   ],
   
-  "host_permissions": [
-    "https://*.facebook.com/*",
-    "https://www.facebook.com/*",
+  "optional_host_permissions": [
+    "https://www.facebook.com/marketplace/*",
     "https://*.craigslist.org/*",
     "https://offerup.com/*"
   ],
   
   "background": {
-    "service_worker": "background.js",
+    "service_worker": "background/index.js",
     "type": "module"
   },
   
   "content_scripts": [
     {
-      "matches": [
-        "https://*.facebook.com/marketplace/*",
-        "https://www.facebook.com/marketplace/*",
-        "https://*.craigslist.org/*",
-        "https://offerup.com/*"
-      ],
-      "js": ["content.js"],
-      "css": ["content.css"],
-      "run_at": "document_idle",
-      "all_frames": false
+      "matches": ["https://www.facebook.com/marketplace/*"],
+      "js": ["content/fb/index.js"],
+      "css": ["content/fb/styles.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://*.craigslist.org/*"],
+      "js": ["content/craigslist/index.js"],
+      "css": ["content/craigslist/styles.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://offerup.com/*"],
+      "js": ["content/offerup/index.js"],
+      "css": ["content/offerup/styles.css"],
+      "run_at": "document_idle"
     }
   ],
   
   "action": {
-    "default_popup": "popup.html",
-    "default_title": "Gaming PC Arbitrage Pro - Click for dashboard",
+    "default_popup": "popup/index.html",
+    "default_title": "Gaming PC Arbitrage Pro",
     "default_icon": {
       "16": "icons/icon-16.png",
       "32": "icons/icon-32.png",
@@ -61,64 +62,22 @@
     "128": "icons/icon-128.png"
   },
   
-  "options_page": "options.html",
-  "options_ui": {
-    "page": "options.html",
-    "open_in_tab": true
-  },
-  
-  "commands": {
-    "_execute_action": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+Y",
-        "mac": "Command+Shift+Y"
-      },
-      "description": "Open popup dashboard"
-    },
-    "quick_add": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+A",
-        "mac": "Command+Shift+A"
-      },
-      "description": "Quick add current listing to pipeline"
-    },
-    "calculate_roi": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+R",
-        "mac": "Command+Shift+R"
-      },
-      "description": "Calculate ROI for current listing"
-    },
-    "toggle_overlay": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+O",
-        "mac": "Command+Shift+O"
-      },
-      "description": "Toggle analysis overlay"
-    },
-    "draft_message": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+M",
-        "mac": "Command+Shift+M"
-      },
-      "description": "Generate negotiation message"
-    }
-  },
-  
-  "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'none';"
-  },
+  "options_page": "options/index.html",
   
   "web_accessible_resources": [
     {
       "resources": [
-        "fonts/*",
-        "icons/*",
-        "overlay.html"
+        "dashboard/*",
+        "assets/*",
+        "fonts/*"
       ],
       "matches": ["<all_urls>"]
     }
   ],
+  
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'none';"
+  },
   
   "minimum_chrome_version": "114"
 }
