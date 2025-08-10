@@ -180,7 +180,7 @@ export function generatePnLTimeSeries(
   deals: Deal[],
   granularity: 'daily' | 'weekly' | 'monthly' = 'monthly'
 ): PnLTimeSeries[] {
-  const soldDeals = deals.filter(d => d.stage === 'sold' && d.soldAt);
+  const soldDeals = deals.filter(d => d.stage === 'sold' && (d.soldAt || d.soldDate));
   
   if (soldDeals.length === 0) return [];
   
@@ -188,7 +188,7 @@ export function generatePnLTimeSeries(
   const grouped = new Map<string, Deal[]>();
   
   soldDeals.forEach(deal => {
-    const date = new Date(deal.soldAt!);
+    const date = new Date(deal.soldAt || deal.soldDate!);
     let key: string;
     
     if (granularity === 'daily') {
@@ -253,8 +253,8 @@ export function exportPnLCsv(deals: Deal[]): string {
     const pnl = computeDealPnL(deal);
     
     return [
-      deal.soldAt ? new Date(deal.soldAt).toLocaleDateString() : '',
-      `"${deal.listing.title.replace(/"/g, '""')}"`,
+      (deal.soldAt || deal.soldDate) ? new Date(deal.soldAt || deal.soldDate).toLocaleDateString() : '',
+      `"${deal.listing?.title?.replace(/"/g, '""') || deal.listingId}"`,
       pnl.cogs.toFixed(2),
       pnl.revenue.toFixed(2),
       pnl.fees.toFixed(2),

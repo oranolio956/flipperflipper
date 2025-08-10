@@ -451,7 +451,7 @@ healthMonitor.register('storage', async () => {
 
 healthMonitor.register('memory', async () => {
   // Check memory usage
-  if (performance.memory) {
+  if ('memory' in performance && performance.memory) {
     const usage = performance.memory.usedJSHeapSize / performance.memory.jsHeapSizeLimit;
     return usage < 0.9; // Less than 90%
   }

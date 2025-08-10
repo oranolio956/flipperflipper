@@ -145,10 +145,7 @@ export class FacebookParser implements ParserStrategy {
         }
         
         if (url && !url.includes('static.xx.fbcdn.net/rsrc')) { // Filter out FB UI images
-          images.push({
-            url,
-            primary: index === 0,
-          });
+          images.push(url);
         }
       });
     }
@@ -162,11 +159,8 @@ export class FacebookParser implements ParserStrategy {
     for (const selector of thumbnailSelectors) {
       const elements = document.querySelectorAll<HTMLImageElement>(selector);
       elements.forEach(img => {
-        if (img.src && !images.some(i => i.url === img.src)) {
-          images.push({
-            url: img.src,
-            primary: false,
-          });
+        if (img.src && !images.includes(img.src)) {
+          images.push(img.src);
         }
       });
     }

@@ -28,7 +28,7 @@ function checkPriceAnomaly(
 ): ScamSignal | null {
   if (!comps || comps.n < 3) return null;
   
-  const price = listing.price.amount;
+  const price = typeof listing.price === 'number' ? listing.price : listing.price.amount;
   const percentBelow = (comps.p25 - price) / comps.p25;
   
   if (percentBelow > 0.5) {
@@ -156,7 +156,8 @@ function checkNewSeller(listing: Listing): ScamSignal | null {
   const isNewSeller = listing.seller.memberSince && 
     (Date.now() - new Date(listing.seller.memberSince).getTime()) < 30 * 24 * 60 * 60 * 1000;
   
-  const isHighValue = listing.price.amount > 1000;
+  const price = typeof listing.price === 'number' ? listing.price : listing.price.amount;
+  const isHighValue = price > 1000;
   
   if (isNewSeller && isHighValue) {
     return {

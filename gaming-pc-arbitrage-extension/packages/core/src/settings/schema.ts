@@ -324,6 +324,7 @@ export const SettingsSchema = z.object({
 
 // Type inference
 export type Settings = z.infer<typeof SettingsSchema>;
+export type ExtensionSettingsSchema = Settings; // Alias to avoid conflicts
 export type GeographySettings = z.infer<typeof GeographySettingsSchema>;
 export type FinancialSettings = z.infer<typeof FinancialSettingsSchema>;
 export type RiskToleranceSettings = z.infer<typeof RiskToleranceSchema>;

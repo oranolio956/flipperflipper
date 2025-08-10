@@ -81,10 +81,7 @@ export class CraigslistParser implements ParserStrategy {
     
     document.querySelectorAll('.gallery img, .thumb img').forEach((img, index) => {
       if (img instanceof HTMLImageElement && img.src) {
-        images.push({
-          url: img.src,
-          primary: index === 0,
-        });
+        images.push(img.src);
       }
     });
     

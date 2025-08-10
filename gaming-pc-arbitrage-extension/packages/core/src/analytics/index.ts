@@ -62,8 +62,8 @@ export function cohortsByMonth(deals: Deal[]): CohortMetrics[] {
     const sold = cohortDeals.filter(d => d.stage === 'sold').length;
     
     const margins = cohortDeals
-      .filter(d => d.stage === 'sold' && d.metrics?.roi)
-      .map(d => d.metrics!.roi);
+      .filter(d => d.stage === 'sold' && d.salePrice && d.purchasePrice)
+      .map(d => ((d.salePrice! - d.purchasePrice!) / d.purchasePrice!) * 100);
     
     const avgMarginPct = margins.length > 0 
       ? margins.reduce((a, b) => a + b, 0) / margins.length * 100
@@ -109,7 +109,7 @@ export function seasonalityFactors(deals: Deal[]): SeasonalityFactors {
     const date = new Date(deal.soldAt!);
     const weekday = date.getDay();
     const month = date.getMonth();
-    const revenue = deal.soldPrice || deal.listing.price;
+    const revenue = deal.salePrice || deal.listing?.price || deal.askingPrice;
     
     weekdayCounts[weekday]++;
     monthCounts[month]++;
@@ -141,9 +141,9 @@ export function seasonalityFactors(deals: Deal[]): SeasonalityFactors {
  */
 export function priceElasticity(deals: Deal[]): ElasticityResult {
   const dataPoints = deals
-    .filter(d => d.stage === 'sold' && d.soldAt && d.soldPrice)
+    .filter(d => d.stage === 'sold' && (d.soldAt || d.soldDate) && d.salePrice)
     .map(d => {
-      const discount = (d.listing.price - d.soldPrice!) / d.listing.price;
+      const discount = ((d.listing?.price || d.askingPrice) - d.salePrice!) / (d.listing?.price || d.askingPrice);
       const daysToSell = Math.ceil(
         (new Date(d.soldAt!).getTime() - new Date(d.metadata.createdAt).getTime()) / 
         (1000 * 60 * 60 * 24)
@@ -190,17 +190,20 @@ export function demandScoreByComponent(deals: Deal[]): DemandScore[] {
   for (const deal of deals.filter(d => d.stage === 'sold')) {
     const components = [];
     
-    if (deal.listing.components.cpu) {
+    if (deal.listing?.components?.cpu) {
       components.push(`CPU: ${deal.listing.components.cpu.model}`);
     }
-    if (deal.listing.components.gpu) {
+    if (deal.listing?.components?.gpu) {
       components.push(`GPU: ${deal.listing.components.gpu.model}`);
     }
     
-    const margin = deal.metrics?.roi || 0;
-    const days = deal.soldAt 
-      ? Math.ceil((new Date(deal.soldAt).getTime() - new Date(deal.metadata.createdAt).getTime()) / (1000 * 60 * 60 * 24))
-      : 30;
+    const margin = deal.salePrice && deal.purchasePrice 
+      ? ((deal.salePrice - deal.purchasePrice) / deal.purchasePrice) * 100 
+      : 0;
+          const soldDate = deal.soldAt || deal.soldDate;
+      const days = soldDate
+        ? Math.ceil((new Date(soldDate).getTime() - new Date(deal.metadata.createdAt).getTime()) / (1000 * 60 * 60 * 24))
+        : 30;
     
     for (const comp of components) {
       if (!componentStats.has(comp)) {
@@ -238,7 +241,7 @@ export function demandScoreByComponent(deals: Deal[]): DemandScore[] {
  */
 export function marginTrend(deals: Deal[], windowDays = 30): MarginTrend[] {
   const soldDeals = deals
-    .filter(d => d.stage === 'sold' && d.soldAt && d.metrics?.roi)
+    .filter(d => d.stage === 'sold' && (d.soldAt || d.soldDate))
     .sort((a, b) => new Date(a.soldAt!).getTime() - new Date(b.soldAt!).getTime());
   
   if (soldDeals.length === 0) return [];
@@ -261,7 +264,12 @@ export function marginTrend(deals: Deal[], windowDays = 30): MarginTrend[] {
     });
     
     if (windowDeals.length > 0) {
-      const avgMargin = windowDeals.reduce((sum, d) => sum + d.metrics!.roi, 0) / windowDeals.length;
+      const avgMargin = windowDeals.reduce((sum, d) => {
+        const roi = d.salePrice && d.purchasePrice 
+          ? ((d.salePrice - d.purchasePrice) / d.purchasePrice) * 100 
+          : 0;
+        return sum + roi;
+      }, 0) / windowDeals.length;
       
       results.push({
         date: current.toISOString().split('T')[0],

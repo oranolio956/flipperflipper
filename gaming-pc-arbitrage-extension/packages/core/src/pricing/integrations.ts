@@ -23,13 +23,14 @@ export function adjustValueWithComps(
   
   // Blend tier-based estimate with comp median
   const compValue = compStats.median;
-  const blendedFmv = baseValue.fmv * (1 - blendFactor) + compValue * blendFactor;
+  const baseFmv = baseValue.fmv || baseValue.value;
+  const blendedFmv = baseFmv * (1 - blendFactor) + compValue * blendFactor;
   
   return {
     ...baseValue,
     fmv: Math.round(blendedFmv),
     confidence: Math.min(baseValue.confidence + 0.2, 0.95), // Boost confidence with comps
-    source: `${baseValue.source} + ${compStats.n} comps`,
+    source: `${baseValue.source || 'tier'} + ${compStats.n} comps`,
   };
 }
 
@@ -52,13 +53,14 @@ export function adjustValueWithML(
   }
   
   // Blend with ML prediction
-  const blendedFmv = baseValue.fmv * (1 - blendFactor) + mlPrediction * blendFactor;
+  const baseFmv = baseValue.fmv || baseValue.value;
+  const blendedFmv = baseFmv * (1 - blendFactor) + mlPrediction * blendFactor;
   
   return {
     ...baseValue,
     fmv: Math.round(blendedFmv),
     confidence: Math.min(baseValue.confidence + 0.1, 0.95),
-    source: `${baseValue.source} + ML (R²=${modelWeights.metrics.r2.toFixed(2)})`,
+    source: `${baseValue.source || 'tier'} + ML (R²=${modelWeights.metrics.r2.toFixed(2)})`,
   };
 }
 
@@ -89,12 +91,13 @@ export function calculateEnhancedFMV(
   
   // Apply seasonal/regional/brand adjustments
   if (adjustmentOptions?.enabled) {
-    const adjustmentResult = applyAllAdjustments(value.fmv, adjustmentOptions);
+    const fmv = value.fmv || value.value;
+    const adjustmentResult = applyAllAdjustments(fmv, adjustmentOptions);
     
     return {
       ...value,
       fmv: adjustmentResult.adjustedValue,
-      source: `${value.source} + Adjustments`,
+      source: `${value.source || 'calculated'} + Adjustments`,
       adjustments: adjustmentResult,
     };
   }

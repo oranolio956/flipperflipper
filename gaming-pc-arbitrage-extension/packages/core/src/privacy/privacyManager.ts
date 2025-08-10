@@ -130,16 +130,16 @@ export function anonymizeData<T extends Record<string, any>>(
   
   for (const field of fields) {
     if (field in anonymized) {
-      const value = anonymized[field];
+      const value = (anonymized as any)[field];
       if (typeof value === 'string') {
         // Hash the value for consistency
-        anonymized[field] = hashString(value);
+        (anonymized as any)[field] = hashString(value);
       } else if (typeof value === 'number') {
         // Round numbers to reduce precision
-        anonymized[field] = Math.round(value / 10) * 10;
+        (anonymized as any)[field] = Math.round(value / 10) * 10;
       } else if (value instanceof Date) {
         // Remove time component
-        anonymized[field] = new Date(value.toDateString());
+        (anonymized as any)[field] = new Date(value.toDateString());
       }
     }
   }

@@ -13,6 +13,7 @@ import {
   CaseComponent,
   CoolingComponent,
   Listing,
+  ListingComponents,
 } from '../types';
 
 export class ComponentDetector {
@@ -84,10 +85,29 @@ export class ComponentDetector {
   /**
    * Detect all components from text
    */
-  async detectAllComponents(text: string): Promise<Listing['components']> {
-    const components: Listing['components'] = {};
+  async detectAllComponents(text: string): Promise<ListingComponents> {
+    const components: ListingComponents = {};
     
     // Detect each component type
+    components.cpu = this.detectCPU(text);
+    components.gpu = this.detectGPU(text);
+    components.ram = this.detectRAM(text);
+    components.storage = this.detectStorage(text);
+    components.motherboard = this.detectMotherboard(text);
+    components.psu = this.detectPSU(text);
+    components.case = this.detectCase(text);
+    components.cooling = this.detectCooling(text);
+    
+    return components;
+  }
+  
+  /**
+   * Alias for backward compatibility
+   */
+  detectAll(text: string): ListingComponents {
+    // Synchronous version
+    const components: ListingComponents = {};
+    
     components.cpu = this.detectCPU(text);
     components.gpu = this.detectGPU(text);
     components.ram = this.detectRAM(text);

@@ -2,13 +2,14 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import webExtension from 'vite-plugin-web-extension';
 import { resolve } from 'path';
+import fs from 'fs';
 
 export default defineConfig({
   plugins: [
     react(),
     webExtension({
       manifest: () => ({
-        ...JSON.parse(require('fs').readFileSync('./public/manifest.json', 'utf-8')),
+        ...JSON.parse(fs.readFileSync('./manifest.json', 'utf-8')),
         // Add development-specific overrides if needed
       }),
       additionalInputs: [

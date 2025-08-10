@@ -4,7 +4,19 @@
  */
 
 import Decimal from 'decimal.js';
-import { Listing, ComponentCondition } from '../types';
+import { 
+  Listing, 
+  RAMComponent, 
+  StorageComponent, 
+  MotherboardComponent, 
+  PSUComponent, 
+  CaseComponent, 
+  CoolerComponent,
+  ListingComponents 
+} from '../types';
+
+// Component condition type
+type ComponentCondition = 'new' | 'excellent' | 'good' | 'fair' | 'poor';
 import { ALL_PRICING_TIERS, findPriceTier } from '../data/pricing-tiers';
 import { Settings } from '../settings/schema';
 
@@ -46,24 +58,29 @@ export class FMVCalculator {
     const adjustments: Adjustment[] = [];
     
     // Calculate base component values
-    if (listing.components.cpu) {
+    if (listing.components?.cpu) {
       const cpuValue = this.calculateComponentValue(
         'CPU',
         listing.components.cpu.model,
-        listing.components.cpu.condition
+        'good' as ComponentCondition
       );
       componentValues.push(cpuValue);
     }
     
-    if (listing.components.gpu) {
+    if (listing.components?.gpu) {
       const gpuValue = this.calculateComponentValue(
         'GPU',
         listing.components.gpu.model,
-        listing.components.gpu.condition
+        'good' as ComponentCondition
       );
       
       // Apply mining risk adjustment for GPUs
-      if (listing.components.gpu.miningRisk) {
+      // Check for mining risk based on GPU model
+      const gpuModel = listing.components?.gpu?.model.toLowerCase() || '';
+      const isMiningGpu = gpuModel.includes('3060') || gpuModel.includes('3070') || 
+                         gpuModel.includes('3080') || gpuModel.includes('3090');
+      
+      if (isMiningGpu) {
         const miningAdjustment = this.applyMiningAdjustment(gpuValue);
         adjustments.push(miningAdjustment);
         gpuValue.adjustedValue *= miningAdjustment.factor;
@@ -73,7 +90,7 @@ export class FMVCalculator {
     }
     
     // RAM - sum all modules
-    if (listing.components.ram && listing.components.ram.length > 0) {
+    if (listing.components?.ram && listing.components.ram.length > 0) {
       for (const ram of listing.components.ram) {
         const ramValue = this.calculateRAMValue(ram);
         componentValues.push(ramValue);
@@ -81,7 +98,7 @@ export class FMVCalculator {
     }
     
     // Storage - sum all drives
-    if (listing.components.storage && listing.components.storage.length > 0) {
+    if (listing.components?.storage && listing.components.storage.length > 0) {
       for (const storage of listing.components.storage) {
         const storageValue = this.calculateStorageValue(storage);
         componentValues.push(storageValue);
@@ -89,25 +106,25 @@ export class FMVCalculator {
     }
     
     // Motherboard
-    if (listing.components.motherboard) {
+    if (listing.components?.motherboard) {
       const moboValue = this.calculateMotherboardValue(listing.components.motherboard);
       componentValues.push(moboValue);
     }
     
     // PSU
-    if (listing.components.psu) {
+    if (listing.components?.psu) {
       const psuValue = this.calculatePSUValue(listing.components.psu);
       componentValues.push(psuValue);
     }
     
     // Case
-    if (listing.components.case) {
+    if (listing.components?.case) {
       const caseValue = this.calculateCaseValue(listing.components.case);
       componentValues.push(caseValue);
     }
     
     // Cooling
-    if (listing.components.cooling) {
+    if (listing.components?.cooling) {
       const coolingValue = this.calculateCoolingValue(listing.components.cooling);
       componentValues.push(coolingValue);
     }
@@ -120,13 +137,14 @@ export class FMVCalculator {
     // Apply global adjustments
     
     // Age adjustment
-    if (listing.condition.ageEstimate) {
+    if (typeof listing.condition === 'object' && listing.condition.ageEstimate) {
       const ageAdjustment = this.calculateAgeAdjustment(listing.condition.ageEstimate);
       adjustments.push(ageAdjustment);
     }
     
     // Condition adjustment
-    const conditionAdjustment = this.calculateConditionAdjustment(listing.condition.overall);
+    const overall = typeof listing.condition === 'object' ? listing.condition.overall : 3;
+    const conditionAdjustment = this.calculateConditionAdjustment(overall || 3);
     adjustments.push(conditionAdjustment);
     
     // Completeness adjustment
@@ -194,7 +212,7 @@ export class FMVCalculator {
   ): number {
     // Find similar components and average their values
     const similarComponents = ALL_PRICING_TIERS.filter(
-      tier => tier.type === type && tier.condition === condition
+      tier => tier.type === type
     );
     
     if (similarComponents.length === 0) {
@@ -223,7 +241,7 @@ export class FMVCalculator {
   /**
    * Calculate RAM value
    */
-  private calculateRAMValue(ram: Listing['components']['ram'][0]): ComponentValue {
+  private calculateRAMValue(ram: RAMComponent): ComponentValue {
     // Price based on capacity and speed
     let basePrice = 20; // Base for 8GB
     
@@ -242,7 +260,7 @@ export class FMVCalculator {
     return {
       type: 'RAM',
       name: `${ram.size}GB ${ram.type}-${ram.speed}`,
-      condition: ram.condition,
+      condition: 'good' as ComponentCondition,
       baseValue: basePrice,
       adjustedValue: basePrice,
       confidence: 0.9,
@@ -252,7 +270,7 @@ export class FMVCalculator {
   /**
    * Calculate storage value
    */
-  private calculateStorageValue(storage: Listing['components']['storage'][0]): ComponentValue {
+  private calculateStorageValue(storage: StorageComponent): ComponentValue {
     let basePrice = 20;
     
     // Price by capacity
@@ -275,7 +293,7 @@ export class FMVCalculator {
     return {
       type: 'Storage',
       name: `${storage.capacity}GB ${storage.type}`,
-      condition: storage.condition,
+      condition: 'good' as ComponentCondition,
       baseValue: basePrice,
       adjustedValue: basePrice,
       confidence: 0.9,
@@ -285,7 +303,7 @@ export class FMVCalculator {
   /**
    * Calculate motherboard value
    */
-  private calculateMotherboardValue(mobo: Listing['components']['motherboard']): ComponentValue {
+  private calculateMotherboardValue(mobo: MotherboardComponent): ComponentValue {
     let basePrice = 80;
     
     // Adjust by chipset tier
@@ -304,7 +322,7 @@ export class FMVCalculator {
     return {
       type: 'Motherboard',
       name: `${mobo.brand} ${mobo.model}`,
-      condition: mobo.condition,
+      condition: 'good' as ComponentCondition,
       baseValue: basePrice,
       adjustedValue: basePrice,
       confidence: 0.8,
@@ -314,7 +332,7 @@ export class FMVCalculator {
   /**
    * Calculate PSU value
    */
-  private calculatePSUValue(psu: Listing['components']['psu']): ComponentValue {
+  private calculatePSUValue(psu: PSUComponent): ComponentValue {
     // Base price by wattage
     let basePrice = 40 + (psu.wattage - 400) * 0.05;
     
@@ -337,7 +355,7 @@ export class FMVCalculator {
     return {
       type: 'PSU',
       name: `${psu.wattage}W ${psu.efficiency}`,
-      condition: psu.condition,
+      condition: 'good' as ComponentCondition,
       baseValue: basePrice,
       adjustedValue: basePrice,
       confidence: 0.9,
@@ -347,7 +365,7 @@ export class FMVCalculator {
   /**
    * Calculate case value
    */
-  private calculateCaseValue(pcCase: Listing['components']['case']): ComponentValue {
+  private calculateCaseValue(pcCase: CaseComponent): ComponentValue {
     let basePrice = 50;
     
     // Adjust by form factor
@@ -366,7 +384,7 @@ export class FMVCalculator {
     return {
       type: 'Case',
       name: pcCase.brand ? `${pcCase.brand} ${pcCase.formFactor}` : pcCase.formFactor,
-      condition: pcCase.condition,
+      condition: 'good' as ComponentCondition,
       baseValue: basePrice,
       adjustedValue: basePrice,
       confidence: 0.8,
@@ -376,7 +394,7 @@ export class FMVCalculator {
   /**
    * Calculate cooling value
    */
-  private calculateCoolingValue(cooling: Listing['components']['cooling']): ComponentValue {
+  private calculateCoolingValue(cooling: CoolerComponent): ComponentValue {
     let basePrice = 20;
     
     if (cooling.type === 'stock') {
@@ -394,7 +412,7 @@ export class FMVCalculator {
     return {
       type: 'Cooling',
       name: cooling.brand ? `${cooling.brand} ${cooling.type}` : cooling.type,
-      condition: cooling.condition,
+      condition: 'good' as ComponentCondition,
       baseValue: basePrice,
       adjustedValue: basePrice,
       confidence: 0.8,
@@ -456,12 +474,12 @@ export class FMVCalculator {
   /**
    * Completeness adjustment - full builds worth more than sum of parts
    */
-  private calculateCompletenessAdjustment(components: Listing['components']): Adjustment {
-    const hasCore = !!(components.cpu && components.gpu && components.motherboard);
-    const hasMemory = !!(components.ram && components.ram.length > 0);
-    const hasStorage = !!(components.storage && components.storage.length > 0);
-    const hasPower = !!components.psu;
-    const hasCase = !!components.case;
+  private calculateCompletenessAdjustment(components: ListingComponents | undefined): Adjustment {
+    const hasCore = !!(components?.cpu && components?.gpu && components?.motherboard);
+    const hasMemory = !!(components?.ram && components.ram.length > 0);
+    const hasStorage = !!(components?.storage && components.storage.length > 0);
+    const hasPower = !!components?.psu;
+    const hasCase = !!components?.case;
     
     if (hasCore && hasMemory && hasStorage && hasPower && hasCase) {
       // Complete system bonus
@@ -490,11 +508,11 @@ export class FMVCalculator {
   /**
    * Market demand adjustment based on component desirability
    */
-  private calculateDemandAdjustment(components: Listing['components']): Adjustment {
+  private calculateDemandAdjustment(components: ListingComponents | undefined): Adjustment {
     let demandScore = 1.0;
     
     // High-demand GPUs
-    if (components.gpu) {
+    if (components?.gpu) {
       const highDemandGPUs = ['3060', '3070', '3080', '4060', '4070', '6700'];
       if (highDemandGPUs.some(model => components.gpu!.model.includes(model))) {
         demandScore *= 1.1;
@@ -502,7 +520,7 @@ export class FMVCalculator {
     }
     
     // Current gen CPUs
-    if (components.cpu) {
+    if (components?.cpu) {
       if (components.cpu.generation && components.cpu.generation >= 12) {
         demandScore *= 1.05;
       }

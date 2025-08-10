@@ -107,10 +107,7 @@ export class OfferUpParser implements ParserStrategy {
     
     document.querySelectorAll('[class*="image-gallery"] img').forEach((img, index) => {
       if (img instanceof HTMLImageElement && img.src) {
-        images.push({
-          url: img.src,
-          primary: index === 0,
-        });
+        images.push(img.src);
       }
     });
     

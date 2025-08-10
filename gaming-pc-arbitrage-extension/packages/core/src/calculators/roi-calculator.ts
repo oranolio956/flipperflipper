@@ -42,6 +42,9 @@ export interface ROIResult {
   // Risk assessment
   riskAdjustedROI: number;
   confidence: number;
+  
+  // Alias for compatibility
+  percentage?: number;
 }
 
 export interface OfferStrategy {
@@ -50,6 +53,14 @@ export interface OfferStrategy {
   conservative: number;
   recommended: number;
   rationale: string;
+}
+
+// Helper function for backward compatibility
+export function calculateROI(deal: Deal): ROIResult {
+  const calculator = new ROICalculator({} as Settings);
+  const listing = deal.listing || {} as Listing;
+  const fmv = { total: listing.analysis?.fmv || 1000 } as FMVResult;
+  return calculator.calculate(listing, fmv, 30);
 }
 
 export class ROICalculator {
@@ -146,7 +157,7 @@ export class ROICalculator {
       roi,
       profitMargin,
       netProfit,
-      listing.risks.score,
+      listing.risks?.score || 0,
       fmvResult.confidence,
       dailyROI
     );
@@ -154,7 +165,7 @@ export class ROICalculator {
     // Risk adjustment
     const riskAdjustedROI = this.calculateRiskAdjustedROI(
       roi,
-      listing.risks.score,
+      listing.risks?.score || 0,
       fmvResult.confidence
     );
     
@@ -181,6 +192,7 @@ export class ROICalculator {
       dailyROI,
       riskAdjustedROI,
       confidence: fmvResult.confidence,
+      percentage: roi, // Alias for compatibility
     };
   }
   
@@ -218,13 +230,14 @@ export class ROICalculator {
     let rationale = 'Standard fair offer based on market value';
     
     // Adjust based on market conditions
-    if (listing.risks.score > 7) {
+    if ((listing.risks?.score || 0) > 7) {
       recommended = aggressive;
       rationale = 'High risk detected - aggressive offer recommended';
-    } else if (listing.metadata.priceHistory.length > 1) {
+          } else if (listing.metadata?.priceHistory && listing.metadata.priceHistory.length > 1) {
       // Price has been reduced
-      const priceDrops = listing.metadata.priceHistory.filter(
-        (p, i) => i > 0 && p.price < listing.metadata.priceHistory[i - 1].price
+              const priceHistory = (listing.metadata as any).priceHistory || [];
+        const priceDrops = priceHistory.filter(
+          (p: any, i: number) => i > 0 && p.price < priceHistory[i - 1].price
       );
       if (priceDrops.length > 0) {
         recommended = aggressive;
@@ -275,10 +288,10 @@ export class ROICalculator {
     refurbCost += this.settings.parts_bin.cleaning_supplies;
     
     // Thermal paste if older than 2 years or thermal issues mentioned
-    if (listing.condition.ageEstimate && listing.condition.ageEstimate > 24) {
+    if (typeof listing.condition === 'object' && listing.condition?.ageEstimate && listing.condition.ageEstimate > 24) {
       refurbCost += this.settings.parts_bin.thermal_paste;
     }
-    if (listing.condition.issues.some(i => i.issue.includes('thermal'))) {
+    if (typeof listing.condition === 'object' && listing.condition?.issues?.some((i: any) => i.issue?.includes('thermal'))) {
       refurbCost += this.settings.parts_bin.thermal_paste;
     }
     

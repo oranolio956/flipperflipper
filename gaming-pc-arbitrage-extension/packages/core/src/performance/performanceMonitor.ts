@@ -297,7 +297,7 @@ export class MemoryLeakDetector {
   }
   
   private takeSnapshot(): void {
-    if (performance.memory) {
+    if ('memory' in performance && performance.memory) {
       this.snapshots.push({
         time: Date.now(),
         memory: performance.memory.usedJSHeapSize,
@@ -440,7 +440,7 @@ function identifyBottlenecks(metrics: PerformanceMetric[]): PerformanceReport['b
 }
 
 function getResourceUsage(): PerformanceReport['resourceUsage'] {
-  const memory = performance.memory ? {
+  const memory = ('memory' in performance && performance.memory) ? {
     current: performance.memory.usedJSHeapSize,
     peak: performance.memory.jsHeapSizeLimit,
     limit: performance.memory.jsHeapSizeLimit,
