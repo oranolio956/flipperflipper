@@ -8,20 +8,18 @@ export default defineConfig({
     react(),
     webExtension({
       manifest: () => ({
-        ...require('./public/manifest.json'),
+        ...JSON.parse(require('fs').readFileSync('./public/manifest.json', 'utf-8')),
         // Add development-specific overrides if needed
       }),
-      additionalInputs: {
-        scripts: [
-          'src/background/index.ts',
-          'src/content/index.ts',
-        ],
-        html: [
-          'public/popup.html',
-          'public/options.html',
-          'public/overlay.html',
-        ],
-      },
+      additionalInputs: [
+        'src/background/index.ts',
+        'src/content/fb/index.ts',
+        'src/content/craigslist/index.ts',
+        'src/content/offerup/index.ts',
+        'public/popup.html',
+        'public/options.html',
+        'public/overlay.html',
+      ],
       webExtConfig: {
         startUrl: 'https://www.facebook.com/marketplace',
         chromiumBinary: process.env.CHROME_PATH,

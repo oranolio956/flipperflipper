@@ -10,7 +10,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@arbitrage/core": "workspace:*"
+    "@arbitrage/core": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

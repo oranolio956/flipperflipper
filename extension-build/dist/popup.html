@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      width: 350px;
+      padding: 16px;
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      font-size: 18px;
+      margin: 0 0 16px 0;
+    }
+    .status {
+      padding: 12px;
+      background: #f0f0f0;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      width: 100%;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    .secondary {
+      background: #2196F3;
+      margin-top: 8px;
+    }
+    .secondary:hover {
+      background: #0b7dda;
+    }
+  </style>
+</head>
+<body>
+  <h1>Gaming PC Arbitrage</h1>
+  
+  <div class="status">
+    <strong>Status:</strong> Ready to scan listings
+  </div>
+  
+  <button id="scanPage">Scan Current Page</button>
+  <button id="openDashboard" class="secondary">Open Dashboard</button>
+  <button id="openSettings" class="secondary">Settings</button>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
