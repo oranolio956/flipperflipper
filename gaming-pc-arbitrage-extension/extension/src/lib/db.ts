@@ -110,6 +110,24 @@ export interface DBExperiment {
   updatedAt: Date;
 }
 
+export interface DBComp {
+  _id?: number;
+  id: string;
+  source: 'ebay' | 'fb' | 'cl' | 'csv';
+  title: string;
+  price: number;
+  currency: string;
+  timestamp: Date;
+  location?: { city?: string; state?: string };
+  cpu?: string;
+  gpu?: string;
+  ram?: number;
+  storage?: number;
+  condition?: 'new' | 'used' | 'refurbished' | 'parts';
+  url?: string;
+  expiresAt: Date;
+}
+
 // Database class
 export class ArbitrageDB extends Dexie {
   listings!: Table<DBListing>;
@@ -124,6 +142,7 @@ export class ArbitrageDB extends Dexie {
   users!: Table<DBUser>;
   assignments!: Table<DBAssignment>;
   experiments!: Table<DBExperiment>;
+  comps!: Table<DBComp>;
 
   constructor() {
     super('ArbitrageDB');
@@ -235,6 +254,23 @@ export class ArbitrageDB extends Dexie {
         updatedAt: new Date(),
       };
       await trans.experiments.add(defaultExperiment);
+    });
+    
+    // Version 5 - Add comps table
+    this.version(5).stores({
+      listings: '++_id, id, platform, [platform+externalId], metadata.createdAt, metadata.status',
+      deals: '++_id, id, listingId, stage, metadata.createdAt',
+      threads: '++_id, dealId, lastActivity',
+      offers: '++_id, dealId, timestamp, status',
+      settings: '++_id, version',
+      events: '++_id, timestamp, category, name, actorUserId',
+      partsBin: '++_id, name, category',
+      attachments: '++_id, dealId, type, timestamp',
+      migrations: '++_id, version, appliedAt',
+      users: '++_id, id, name, role, createdAt',
+      assignments: '++_id, id, dealId, userId, [dealId+userId]',
+      experiments: '++_id, id, name, createdAt',
+      comps: '++_id, id, source, [source+url], timestamp, expiresAt',
     });
 
     // Apply encryption middleware for sensitive fields

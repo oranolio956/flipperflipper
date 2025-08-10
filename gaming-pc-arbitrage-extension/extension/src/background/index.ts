@@ -179,6 +179,11 @@ onMessage(async (request: MessageRequest, sender) => {
         const filename = await triggerBackup();
         return { success: true, filename };
         
+      case MessageType.SAVE_COMPS:
+        const { saveComps } = await import('@/lib/comps.store');
+        await saveComps((request as any).comps);
+        return { success: true };
+        
       default:
         return { success: false, error: 'Unknown message type' };
     }

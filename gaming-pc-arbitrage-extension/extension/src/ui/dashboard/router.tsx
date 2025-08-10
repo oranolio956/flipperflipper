@@ -12,6 +12,7 @@ import { Settings } from './pages/Settings';
 import { Routes } from './pages/Routes';
 import { Analytics } from './pages/Analytics';
 import { Experiments } from './pages/Experiments';
+import { Comps } from './pages/Comps';
 
 // Layout component with navigation
 function Layout() {
@@ -21,6 +22,7 @@ function Layout() {
     { path: '/pipeline', label: 'Pipeline', icon: Package },
     { path: '/routes', label: 'Routes', icon: Map },
     { path: '/analytics', label: 'Analytics', icon: BarChart3 },
+    { path: '/comps', label: 'Comps', icon: BarChart3 },
     { path: '/experiments', label: 'Experiments', icon: Flask },
     { path: '/settings', label: 'Settings', icon: SettingsIcon },
   ];
@@ -93,6 +95,10 @@ export const router = createHashRouter([
       {
         path: 'analytics',
         element: <Analytics />,
+      },
+      {
+        path: 'comps',
+        element: <Comps />,
       },
       {
         path: 'experiments',

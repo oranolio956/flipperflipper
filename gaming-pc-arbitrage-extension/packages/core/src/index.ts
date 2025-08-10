@@ -29,6 +29,7 @@ export * from './negotiation/templates';
 // Risk Engine
 export { RiskEngine } from './risk/risk-engine';
 export type { RiskAssessment, RiskFlag } from './risk/risk-engine';
+export * from './risk/scamRules';
 
 // Utilities
 export { formatCurrency, formatPercentage, formatNumber } from './utils/formatters';
@@ -41,6 +42,12 @@ export * from './analytics';
 
 // Export A/B testing
 export * from './abtest';
+
+// Export comps
+export * from './comps';
+
+// Export pricing integrations
+export * from './pricing/integrations';
 
 export const VERSION = '1.0.0';
 export const SUPPORTED_PLATFORMS = ['facebook', 'craigslist', 'offerup'] as const;

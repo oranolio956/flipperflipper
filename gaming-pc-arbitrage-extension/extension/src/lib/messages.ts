@@ -35,6 +35,8 @@ export const MessageType = {
   SHEETS_PULL_NOW: 'SHEETS_PULL_NOW',
   // Backup
   BACKUP_NOW: 'BACKUP_NOW',
+  // Comps
+  SAVE_COMPS: 'SAVE_COMPS',
 } as const;
 
 // Request schemas
@@ -138,6 +140,11 @@ export const BackupNowRequestSchema = z.object({
   type: z.literal(MessageType.BACKUP_NOW),
 });
 
+export const SaveCompsRequestSchema = z.object({
+  type: z.literal(MessageType.SAVE_COMPS),
+  comps: z.array(z.any()),
+});
+
 // Union of all request types
 export const MessageRequestSchema = z.discriminatedUnion('type', [
   ParsePageRequestSchema,
@@ -158,6 +165,7 @@ export const MessageRequestSchema = z.discriminatedUnion('type', [
   SheetsPushNowRequestSchema,
   SheetsPullNowRequestSchema,
   BackupNowRequestSchema,
+  SaveCompsRequestSchema,
 ]);
 
 // Response types
