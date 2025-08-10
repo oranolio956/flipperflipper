@@ -1,60 +1,94 @@
 /**
- * Anomaly Detector
- * Detects unusual patterns in listings
+ * Anomaly Detection Module
+ * Facade for the statistical anomaly detection system
  */
 
+import { statisticalAnomalyDetector, type AnomalyResult } from './statisticalAnomalyDetector';
+import { Listing } from '../types';
+
 export interface Anomaly {
-  type: 'price' | 'specs' | 'description';
-  severity: 'low' | 'medium' | 'high';
-  message: string;
+  type: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
   confidence: number;
+  description: string;
+  evidence?: string[];
+  recommendation?: string;
 }
 
 export class AnomalyDetector {
-  detect(listing: {
+  private initialized = false;
+
+  /**
+   * Initialize the detector
+   */
+  private async ensureInitialized(): Promise<void> {
+    if (!this.initialized) {
+      await statisticalAnomalyDetector.initialize();
+      this.initialized = true;
+    }
+  }
+
+  /**
+   * Detect anomalies in a listing
+   * @param listing - The listing to analyze
+   * @returns Array of detected anomalies
+   */
+  async detect(listing: {
     price: number;
     title: string;
     description: string;
     components?: any;
-  }): Anomaly[] {
-    const anomalies: Anomaly[] = [];
-    
-    // Check for suspiciously low prices
-    if (listing.components?.gpu && listing.price < 200) {
-      anomalies.push({
-        type: 'price',
-        severity: 'high',
-        message: 'Price unusually low for a system with dedicated GPU',
-        confidence: 0.9
-      });
-    }
-    
-    // Check for mismatched title/description
-    const titleLower = listing.title.toLowerCase();
-    const descLower = listing.description.toLowerCase();
-    
-    if (titleLower.includes('rtx') && !descLower.includes('rtx') && !descLower.includes('nvidia')) {
-      anomalies.push({
-        type: 'specs',
-        severity: 'medium',
-        message: 'GPU mentioned in title but not in description',
-        confidence: 0.7
-      });
-    }
-    
-    // Check for scam keywords
-    const scamKeywords = ['wire transfer', 'western union', 'gift card', 'zelle only'];
-    for (const keyword of scamKeywords) {
-      if (descLower.includes(keyword)) {
-        anomalies.push({
-          type: 'description',
-          severity: 'high',
-          message: `Suspicious payment method mentioned: ${keyword}`,
-          confidence: 0.95
-        });
-      }
-    }
-    
-    return anomalies;
+    platform?: string;
+    images?: string[];
+  }): Promise<Anomaly[]> {
+    await this.ensureInitialized();
+
+    // Convert to full Listing object
+    const fullListing: Listing = {
+      id: `temp-${Date.now()}`,
+      externalId: '',
+      url: '',
+      platform: listing.platform || 'unknown',
+      title: listing.title,
+      description: listing.description,
+      price: listing.price,
+      location: { city: '', state: '', zipCode: '' },
+      seller: { id: '', name: 'Unknown', responseRate: 0, memberSince: new Date() },
+      images: listing.images || [],
+      condition: 'unknown',
+      category: 'gaming-pc',
+      subcategory: 'desktop',
+      attributes: {},
+      postedAt: new Date(),
+      lastUpdated: new Date(),
+      status: 'active',
+      viewCount: 0,
+      savedCount: 0,
+      components: listing.components
+    };
+
+    // Get detailed analysis
+    const result: AnomalyResult = await statisticalAnomalyDetector.detect(fullListing);
+
+    // Convert to simplified format for backward compatibility
+    return result.anomalies.map(anomaly => ({
+      type: anomaly.type,
+      severity: anomaly.severity,
+      confidence: anomaly.confidence,
+      description: anomaly.description,
+      evidence: anomaly.evidence,
+      recommendation: anomaly.recommendation
+    }));
+  }
+
+  /**
+   * Get anomaly analysis with full details
+   */
+  async analyze(listing: Listing): Promise<AnomalyResult> {
+    await this.ensureInitialized();
+    return statisticalAnomalyDetector.detect(listing);
   }
 }
+
+// Export types
+export type { AnomalyResult, DetailedAnomaly } from './statisticalAnomalyDetector';

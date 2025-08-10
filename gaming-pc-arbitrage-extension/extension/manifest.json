@@ -1,61 +1,23 @@
 {
   "manifest_version": 3,
   "name": "Gaming PC Arbitrage Assistant",
-  "version": "1.0.0",
-  "description": "Find and flip gaming PCs profitably across Facebook Marketplace, Craigslist, and OfferUp",
-  
+  "version": "2.0.0",
+  "description": "Find profitable gaming PC deals across marketplaces",
   "permissions": [
     "storage",
-    "alarms",
     "notifications",
-    "activeTab"
+    "activeTab",
+    "scripting"
   ],
-  
-  "optional_permissions": [
-    "identity"
+  "host_permissions": [
+    "https://*.facebook.com/*",
+    "https://*.craigslist.org/*",
+    "https://*.offerup.com/*"
   ],
-  
-  "optional_host_permissions": [
-    "*://*.facebook.com/*",
-    "*://*.craigslist.org/*",
-    "*://*.offerup.com/*",
-    "*://*.ebay.com/*"
-  ],
-  
   "background": {
     "service_worker": "js/background.js",
     "type": "module"
   },
-  
-  "content_scripts": [
-    {
-      "matches": [
-        "*://*.facebook.com/marketplace/*",
-        "*://www.facebook.com/marketplace/*"
-      ],
-      "js": ["js/content-facebook.js"],
-      "css": ["css/overlay.css"],
-      "run_at": "document_idle"
-    },
-    {
-      "matches": [
-        "*://*.craigslist.org/*"
-      ],
-      "js": ["js/content-craigslist.js"],
-      "css": ["css/overlay.css"],
-      "run_at": "document_idle"
-    },
-    {
-      "matches": [
-        "*://offerup.com/*",
-        "*://www.offerup.com/*"
-      ],
-      "js": ["js/content-offerup.js"],
-      "css": ["css/overlay.css"],
-      "run_at": "document_idle"
-    }
-  ],
-  
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -65,51 +27,47 @@
       "128": "icons/icon-128.png"
     }
   },
-  
+  "content_scripts": [
+    {
+      "matches": ["https://*.facebook.com/*"],
+      "js": ["js/content-facebook.js"],
+      "css": ["css/overlay.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://*.craigslist.org/*"],
+      "js": ["js/content-craigslist.js"],
+      "css": ["css/overlay.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://*.offerup.com/*"],
+      "js": ["js/content-offerup.js"],
+      "css": ["css/overlay.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "dashboard.html",
+        "options.html",
+        "photo-capture.html",
+        "css/*",
+        "js/*",
+        "icons/*",
+        "tesseract/*"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
   },
-  
-  "options_page": "options.html",
-  
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "icons/*",
-        "css/*",
-        "js/injected.js"
-      ],
-      "matches": ["<all_urls>"]
-    }
-  ],
-  
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'"
-  },
-  
-  "commands": {
-    "analyze-listing": {
-      "suggested_key": {
-        "default": "Alt+A"
-      },
-      "description": "Analyze current listing"
-    },
-    "track-deal": {
-      "suggested_key": {
-        "default": "Alt+T"
-      },
-      "description": "Track current deal"
-    },
-    "open-dashboard": {
-      "suggested_key": {
-        "default": "Alt+D"
-      },
-      "description": "Open dashboard"
-    }
-  },
-  
-  "minimum_chrome_version": "100"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'none'"
+  }
 }
