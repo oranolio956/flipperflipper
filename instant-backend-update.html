@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proxy Assessment Tool - Live Backend</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0b;
+            --bg-secondary: #141418;
+            --text-primary: #ffffff;
+            --accent: #7c3aed;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--accent), #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #6b2fc7;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .proxy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .proxy-card {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .proxy-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent);
+        }
+
+        .status-working { color: var(--success); }
+        .status-failed { color: var(--danger); }
+        .status-testing { color: var(--accent); }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #333;
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-secondary);
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            border: 1px solid var(--accent);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Proxy Assessment Tool</h1>
+            <p>Live Backend API - Real Proxy Discovery</p>
+        </header>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="totalProxies">0</div>
+                <div>Total Proxies</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="workingProxies">0</div>
+                <div>Working</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="testedProxies">0</div>
+                <div>Tested</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgSpeed">0ms</div>
+                <div>Avg Speed</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button onclick="discover()">🔍 Discover Proxies</button>
+            <button onclick="testAll()" id="testBtn" disabled>🧪 Test All</button>
+            <button onclick="exportData()">💾 Export</button>
+            <button onclick="clearAll()">🗑️ Clear</button>
+        </div>
+
+        <div id="loading" class="loader" style="display: none;"></div>
+        <div id="proxyGrid" class="proxy-grid"></div>
+    </div>
+
+    <script>
+        // LIVE BACKEND API - Using Worker
+        const API_URL = 'https://proxy-backend.xqt0e8n.workers.dev';
+        
+        // State
+        let proxies = [];
+
+        // Show notification
+        function notify(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        // Discover proxies from backend
+        async function discover() {
+            document.getElementById('loading').style.display = 'block';
+            try {
+                const response = await fetch(`${API_URL}/api/discover`);
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    proxies = data.proxies;
+                    notify(`Found ${data.count} proxies!`);
+                    document.getElementById('testBtn').disabled = false;
+                } else {
+                    notify('Discovery failed');
+                }
+            } catch (error) {
+                notify('Error connecting to backend');
+                console.error(error);
+            }
+            document.getElementById('loading').style.display = 'none';
+            updateUI();
+        }
+
+        // Test all proxies
+        async function testAll() {
+            document.getElementById('loading').style.display = 'block';
+            
+            for (let i = 0; i < proxies.length; i++) {
+                if (proxies[i].status !== 'tested') {
+                    try {
+                        const response = await fetch(`${API_URL}/api/test`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                ip: proxies[i].ip,
+                                port: proxies[i].port
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        proxies[i] = { ...proxies[i], ...result, status: 'tested' };
+                        updateUI();
+                    } catch (error) {
+                        proxies[i].status = 'failed';
+                    }
+                }
+            }
+            
+            document.getElementById('loading').style.display = 'none';
+            notify('Testing complete!');
+        }
+
+        // Update UI
+        function updateUI() {
+            // Update stats
+            document.getElementById('totalProxies').textContent = proxies.length;
+            
+            const tested = proxies.filter(p => p.status === 'tested');
+            const working = tested.filter(p => p.working);
+            
+            document.getElementById('workingProxies').textContent = working.length;
+            document.getElementById('testedProxies').textContent = tested.length;
+            
+            const avgSpeed = working.length > 0 
+                ? Math.round(working.reduce((sum, p) => sum + (p.responseTime || 0), 0) / working.length)
+                : 0;
+            document.getElementById('avgSpeed').textContent = avgSpeed + 'ms';
+
+            // Update grid
+            const grid = document.getElementById('proxyGrid');
+            grid.innerHTML = proxies.map(p => `
+                <div class="proxy-card">
+                    <h3>${p.ip}:${p.port}</h3>
+                    <p class="status-${p.working ? 'working' : p.status === 'tested' ? 'failed' : 'testing'}">
+                        Status: ${p.working ? 'Working' : p.status === 'tested' ? 'Failed' : 'Untested'}
+                    </p>
+                    ${p.country ? `<p>Location: ${p.city || 'Unknown'}, ${p.country}</p>` : ''}
+                    ${p.responseTime ? `<p>Response: ${p.responseTime}ms</p>` : ''}
+                    ${p.source ? `<p>Source: ${p.source}</p>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Export data
+        function exportData() {
+            const data = {
+                exported: new Date().toISOString(),
+                total: proxies.length,
+                working: proxies.filter(p => p.working).length,
+                proxies: proxies.filter(p => p.working)
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `proxies-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            
+            notify('Exported working proxies!');
+        }
+
+        // Clear all
+        function clearAll() {
+            proxies = [];
+            updateUI();
+            document.getElementById('testBtn').disabled = true;
+            notify('Cleared all data');
+        }
+
+        // Check backend on load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                if (data.status === 'online') {
+                    notify('✅ Backend connected!');
+                }
+            } catch (error) {
+                notify('⚠️ Backend offline - some features limited');
+            }
+        });
+    </script>
+</body>
+</html>
