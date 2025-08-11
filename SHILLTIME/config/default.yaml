@@ -1,0 +1,161 @@
+# ProxyAssessmentTool Default Configuration
+# This file contains all configurable options with safe defaults
+
+consent_id: ""  # Required: Must be set before scanning
+
+scope:
+  cidrs:
+    - "10.0.0.0/8"      # Example private ranges
+    - "172.16.0.0/12"
+    - "192.168.0.0/16"
+  cloud_accounts: []    # Example: [{provider: "aws", account_id: "123456789012"}]
+  do_not_scan:
+    - "10.0.0.1"        # Example: critical infrastructure
+  enforce_strict_boundaries: true
+
+discovery:
+  rate_limit_per_cidr_per_min: 60
+  ipv6_enabled: true
+  default_ports:
+    - 1080   # SOCKS
+    - 3128   # HTTP Proxy
+    - 8080   # HTTP Proxy Alt
+    - 8000   # Common proxy
+    - 8001   # Common proxy
+    - 8888   # Common proxy
+    - 9050   # Tor SOCKS
+  max_concurrent_scans: 10
+  timeout_seconds: 5
+  max_retries: 2
+  backoff_strategy: "exponential"
+
+canary:
+  endpoints:
+    - "canary1.internal.local:443"
+    - "canary2.internal.local:8080"
+  echo_pattern: "PROXY-TEST-{timestamp}"
+  timeout_seconds: 10
+  require_tls: true
+
+usage:
+  lookback_days: 30
+  thresholds:
+    unused_max_requests_per_day: 0
+    low_usage_max_requests_per_day: 50
+    moderate_usage_max_requests_per_day: 500
+    high_usage_min_requests_per_day: 5000
+  telemetry_sources:
+    - "proxy_logs"
+    - "netflow"
+    - "vpc_flow_logs"
+  include_internal_traffic: false
+
+reputation:
+  mode: "offline"              # offline, vendor, hybrid
+  accept_only_fraud_score: 0   # Strict gate: only 0/10 allowed
+  vendor_api_key: ""          # Set if mode includes vendor
+  vendor_endpoint: ""
+  cache_duration_hours: 24
+  offline_model_path: "models/fraud-detection.bin"
+
+geo:
+  require_country_iso: "US"
+  enrich_state_city: true
+  mobile_asn_allowlist:
+    - "AS22394"  # Verizon Wireless
+    - "AS20057"  # AT&T Mobility
+    - "AS21928"  # T-Mobile USA
+    - "AS310"    # Sprint
+    - "AS6181"   # Sprint PCS
+    - "AS7018"   # AT&T Services
+    - "AS15290"  # US Cellular
+    - "AS30274"  # Cricket Wireless
+    - "AS53571"  # Metro by T-Mobile
+    - "AS22773"  # Cox Communications (mobile)
+  geoip_database_path: "data/GeoLite2-City.mmdb"
+  asn_database_path: "data/GeoLite2-ASN.mmdb"
+
+selection:
+  require_protocol: "socks5"
+  require_no_auth: true
+  require_mobile: true
+  require_us_location: true
+  require_fraud_score: 0
+
+social_compat:
+  mode: "synthetic"            # synthetic, platform_authorized, both
+  tls_requirements:
+    min_version: "TLS1.2"
+    http2_required: true
+    http3_required: true
+    required_cipher_suites: []
+  webrtc_stun_checks: true
+  dns_through_proxy_required: true
+  platform_tests: []          # Requires explicit authorization
+
+leakage_checks:
+  dns_leak: "enforce"         # ignore, warn, enforce
+  webrtc_stun: "warn"
+  ipv6_policy: "allow_with_controls"  # disable, allow_with_controls, require_dual_stack
+
+uptime:
+  slo_target_30d: 99.5
+  probe_intervals:
+    tcp: "60s"
+    socks5_handshake: "5m"
+    functional: "15m"
+  max_consecutive_failures: 3
+  alert_on_downtime: true
+
+security:
+  rbac_roles:
+    - "Viewer"
+    - "Operator"
+    - "Admin"
+    - "Auditor"
+  sso_oidc_enabled: false
+  sso_provider: ""            # Example: "okta", "azure", "ping"
+  sso_client_id: ""
+  sso_tenant_id: ""
+  pii_scrubbing: "strict"     # none, basic, strict
+  session_timeout_minutes: 30
+  require_mfa: false
+
+packaging:
+  output: "self-contained-exe"
+  code_signing: true
+  auto_update:
+    enabled: true
+    signature_required: true
+    update_url: ""
+    check_interval: "24h"
+  signing_certificate_thumbprint: ""
+
+integrations:
+  siem:
+    format: "json-cef"        # json-cef, leef, splunk
+    enabled: false
+    endpoint: ""
+    api_key: ""
+    batch_size: 100
+  
+  tickets:
+    system: "jira"            # jira, servicenow, github
+    enabled: false
+    endpoint: ""
+    api_key: ""
+    project_key: ""
+    field_mappings: {}
+  
+  webhooks:
+    enabled: false
+    endpoints: []
+    retry_count: 3
+    timeout: "30s"
+
+api:
+  localhost_readonly: true
+  headless_cli: true
+  port: 5000
+  bind_address: "127.0.0.1"
+  require_api_key: true

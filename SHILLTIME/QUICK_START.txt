@@ -1,0 +1,44 @@
+===========================================================
+ProxyAssessmentTool v1.1.0 - Quick Start Guide
+===========================================================
+
+INSTALLATION (Windows Only)
+---------------------------
+1. Right-click on "INSTALL_ProxyAssessmentTool.bat"
+2. Select "Run as administrator"
+3. Follow the on-screen instructions
+4. Application will be installed to Program Files
+
+The installer will:
+- Automatically assemble the 230MB executable from parts
+- Install all required files
+- Create desktop shortcut
+- Create Start Menu entries
+- Set up application directories
+
+FIRST RUN
+---------
+- Double-click the desktop shortcut
+- Or navigate to: C:\Program Files\ProxyAssessmentTool
+- Run ProxyAssessmentTool.exe
+
+IMPORTANT LEGAL NOTICE
+----------------------
+This tool is for AUTHORIZED SECURITY ASSESSMENTS ONLY.
+Use only on systems you own or have explicit written
+permission to assess. Unauthorized use is illegal.
+
+REQUIREMENTS
+------------
+- Windows 10/11 x64
+- Administrator privileges (for installation)
+- ~300MB disk space
+- No .NET runtime required (self-contained)
+
+SUPPORT
+-------
+- Check logs folder for troubleshooting
+- See README.md for detailed documentation
+- Review BUILD_AND_RUN.md for development info
+
+===========================================================

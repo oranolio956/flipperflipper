@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProxyAssessmentTool Pro - Enterprise Proxy Testing</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #7289DA;
+            --primary-dark: #5B6EAE;
+            --success: #43B581;
+            --danger: #F04747;
+            --warning: #FFD700;
+            --info: #3498DB;
+            --dark: #23272A;
+            --darker: #2C2F33;
+            --light: #99AAB5;
+            --white: #FFFFFF;
+            --purple: #9B59B6;
+            --orange: #FAA61A;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--darker);
+            color: var(--white);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Header */
+        .header {
+            background: var(--dark);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--primary);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logo h1 {
+            font-size: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--danger);
+            transition: background 0.3s;
+        }
+        
+        .status-dot.connected {
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Main Layout */
+        .main-container {
+            display: grid;
+            grid-template-columns: 250px 1fr 400px;
+            height: calc(100vh - 70px);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background: var(--dark);
+            padding: 1.5rem;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar h3 {
+            color: var(--light);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+        
+        .control-group {
+            margin-bottom: 2rem;
+        }
+        
+        .control-group label {
+            display: block;
+            color: var(--light);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .control-group input,
+        .control-group select,
+        .control-group textarea {
+            width: 100%;
+            padding: 0.5rem;
+            background: var(--darker);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 4px;
+            color: var(--white);
+            font-size: 0.875rem;
+        }
+        
+        .control-group textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: monospace;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 0.5rem;
+        }
+        
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+        
+        .btn:disabled {
+            background: #4A4D52;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn.btn-danger {
+            background: var(--danger);
+        }
+        
+        .btn.btn-success {
+            background: var(--success);
+        }
+        
+        .btn.btn-warning {
+            background: var(--warning);
+            color: #000;
+        }
+        
+        /* Center Content */
+        .center-content {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Stats Bar */
+        .stats-container {
+            background: var(--dark);
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        
+        .stat-card:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: var(--dark);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .tab:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .tab.active {
+            color: var(--primary);
+        }
+        
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary);
+        }
+        
+        /* Tab Content */
+        .tab-content {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .tab-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+            overflow-y: auto;
+        }
+        
+        .tab-panel.active {
+            display: block;
+        }
+        
+        /* Map */
+        #map {
+            height: 100%;
+            background: var(--dark);
+        }
+        
+        /* Results Table */
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .results-table th {
+            background: var(--dark);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--light);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .results-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .results-table tr:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-badge.working {
+            background: var(--success);
+        }
+        
+        .status-badge.dead {
+            background: var(--danger);
+        }
+        
+        .status-badge.testing {
+            background: var(--warning);
+            color: #000;
+        }
+        
+        /* Live Feed */
+        .live-feed {
+            background: var(--dark);
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .feed-header {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .feed-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--danger);
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .feed-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        
+        .feed-item {
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .feed-item:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(-2px);
+        }
+        
+        .feed-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feed-ip {
+            font-family: monospace;
+            font-weight: bold;
+        }
+        
+        .feed-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--light);
+        }
+        
+        /* Mobile Tag */
+        .tag {
+            display: inline-block;
+            padding: 0.125rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .tag.mobile {
+            background: var(--purple);
+        }
+        
+        .tag.elite {
+            background: var(--success);
+        }
+        
+        .tag.rotating {
+            background: var(--info);
+        }
+        
+        /* Charts */
+        .chart-container {
+            padding: 2rem;
+            height: 400px;
+        }
+        
+        /* Loading */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--light);
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Notifications */
+        .notifications {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .notification {
+            background: var(--success);
+            color: var(--white);
+            padding: 1rem 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            animation: slideInRight 0.3s ease;
+            min-width: 300px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .notification.error {
+            background: var(--danger);
+        }
+        
+        .notification.warning {
+            background: var(--warning);
+            color: #000;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr 350px;
+            }
+            
+            .sidebar {
+                position: fixed;
+                left: -250px;
+                top: 70px;
+                bottom: 0;
+                z-index: 100;
+                transition: left 0.3s;
+            }
+            
+            .sidebar.open {
+                left: 0;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .live-feed {
+                position: fixed;
+                right: -400px;
+                top: 70px;
+                bottom: 0;
+                width: 100%;
+                max-width: 400px;
+                transition: right 0.3s;
+                z-index: 99;
+            }
+            
+            .live-feed.open {
+                right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <h1>🔒 ProxyAssessmentTool Pro</h1>
+        </div>
+        <div class="connection-status">
+            <span class="status-dot" id="connectionDot"></span>
+            <span id="connectionText">Disconnected</span>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <aside class="sidebar" id="sidebar">
+            <h3>Proxy Sources</h3>
+            <div class="control-group">
+                <button class="btn btn-success" onclick="discoverProxies()">
+                    🔍 Auto-Discover Proxies
+                </button>
+                <small style="display: block; margin-top: 0.5rem; color: var(--light)">
+                    Automatically discovers proxies from multiple sources
+                </small>
+            </div>
+            
+            <div class="control-group">
+                <label>Manual Proxy List (IP:Port)</label>
+                <textarea id="proxyList" placeholder="Enter proxies, one per line&#10;Example:&#10;192.168.1.1:1080&#10;10.0.0.1:8080"></textarea>
+            </div>
+            
+            <div class="control-group">
+                <label>Import From URL</label>
+                <input type="url" id="proxyUrl" placeholder="https://example.com/proxies.txt">
+                <button class="btn" onclick="importFromUrl()">Import</button>
+            </div>
+            
+            <h3>Test Settings</h3>
+            <div class="control-group">
+                <label>Protocol</label>
+                <select id="protocol">
+                    <option value="socks5">SOCKS5</option>
+                    <option value="socks4">SOCKS4</option>
+                    <option value="http">HTTP</option>
+                    <option value="https">HTTPS</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>Concurrent Tests</label>
+                <input type="number" id="concurrent" value="10" min="1" max="100">
+            </div>
+            
+            <div class="control-group">
+                <label>Timeout (seconds)</label>
+                <input type="number" id="timeout" value="10" min="1" max="60">
+            </div>
+            
+            <h3>Filters</h3>
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="filterMobile" checked>
+                    Include Mobile Proxies
+                </label>
+            </div>
+            
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="filterElite" checked>
+                    Elite Anonymity Only
+                </label>
+            </div>
+            
+            <div class="control-group">
+                <label>Max Fraud Score</label>
+                <input type="range" id="maxFraud" min="0" max="100" value="50">
+                <span id="fraudValue">50</span>
+            </div>
+            
+            <h3>Actions</h3>
+            <button class="btn btn-success" id="startBtn" onclick="startTesting()">
+                ▶️ Start Testing
+            </button>
+            <button class="btn btn-danger" id="stopBtn" onclick="stopTesting()" disabled>
+                ⏹️ Stop Testing
+            </button>
+            <button class="btn btn-warning" onclick="exportResults()">
+                📥 Export Results
+            </button>
+            <button class="btn" onclick="clearResults()">
+                🗑️ Clear All
+            </button>
+        </aside>
+        
+        <div class="center-content">
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalTested">0</div>
+                    <div class="stat-label">Total Tested</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="workingCount" style="color: var(--success)">0</div>
+                    <div class="stat-label">Working</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="mobileCount" style="color: var(--purple)">0</div>
+                    <div class="stat-label">Mobile</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="eliteCount" style="color: var(--warning)">0</div>
+                    <div class="stat-label">Elite</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avgSpeed">0ms</div>
+                    <div class="stat-label">Avg Speed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="testRate">0/s</div>
+                    <div class="stat-label">Test Rate</div>
+                </div>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('map')">🗺️ Map View</div>
+                <div class="tab" onclick="switchTab('table')">📊 Table View</div>
+                <div class="tab" onclick="switchTab('analytics')">📈 Analytics</div>
+            </div>
+            
+            <div class="tab-content">
+                <div class="tab-panel active" id="mapPanel">
+                    <div id="map"></div>
+                </div>
+                
+                <div class="tab-panel" id="tablePanel">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>IP:Port</th>
+                                <th>Status</th>
+                                <th>Type</th>
+                                <th>Anonymity</th>
+                                <th>Location</th>
+                                <th>ISP</th>
+                                <th>Speed</th>
+                                <th>Fraud Score</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody">
+                            <!-- Results will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="tab-panel" id="analyticsPanel">
+                    <div class="chart-container">
+                        <canvas id="analyticsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <aside class="live-feed" id="liveFeed">
+            <div class="feed-header">
+                <div class="feed-title">
+                    <span class="live-dot"></span>
+                    Live Feed
+                </div>
+                <span id="feedCount">0 proxies</span>
+            </div>
+            <div class="feed-content" id="feedContent">
+                <!-- Live feed items will be added here -->
+            </div>
+        </aside>
+    </div>
+    
+    <div class="notifications" id="notifications"></div>
+    
+    <script>
+        // Configuration - Dynamic backend URL
+        let API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:8000' 
+            : 'https://proxy-assessment-backend.onrender.com';
+        
+        let ws = null;
+        let map = null;
+        let markers = new Map();
+        let proxies = new Map();
+        let testing = false;
+        let stats = {
+            total: 0,
+            working: 0,
+            mobile: 0,
+            elite: 0,
+            totalSpeed: 0,
+            testStartTime: null
+        };
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeMap();
+            connectWebSocket();
+            setupEventListeners();
+            initializeCharts();
+        });
+        
+        // WebSocket connection
+        function connectWebSocket() {
+            const wsUrl = API_URL.replace('http', 'ws') + '/ws';
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = () => {
+                updateConnectionStatus(true);
+                showNotification('Connected to backend', 'success');
+            };
+            
+            ws.onclose = () => {
+                updateConnectionStatus(false);
+                showNotification('Disconnected from backend', 'error');
+                // Attempt reconnection after 5 seconds
+                setTimeout(connectWebSocket, 5000);
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleWebSocketMessage(data);
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                showNotification('Connection error', 'error');
+            };
+        }
+        
+        // Handle WebSocket messages
+        function handleWebSocketMessage(data) {
+            if (data.type === 'proxy_tested') {
+                const proxy = data.data;
+                proxies.set(`${proxy.ip}:${proxy.port}`, proxy);
+                
+                // Update stats
+                updateStats(proxy);
+                
+                // Add to live feed
+                addToLiveFeed(proxy);
+                
+                // Update map
+                if (proxy.country !== 'Unknown') {
+                    addProxyToMap(proxy);
+                }
+                
+                // Update table
+                updateResultsTable(proxy);
+            } else if (data.type === 'discovery_complete') {
+                showNotification(`Discovered ${data.data.count} proxies! Starting tests...`, 'success');
+            }
+        }
+        
+        // Initialize map
+        function initializeMap() {
+            map = L.map('map', {
+                center: [20, 0],
+                zoom: 2,
+                preferCanvas: true
+            });
+            
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+        }
+        
+        // Start testing proxies
+        async function startTesting() {
+            const proxyListText = document.getElementById('proxyList').value.trim();
+            if (!proxyListText) {
+                showNotification('Please enter proxies to test', 'warning');
+                return;
+            }
+            
+            testing = true;
+            stats.testStartTime = Date.now();
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+            
+            const proxies = proxyListText.split('\n')
+                .map(line => line.trim())
+                .filter(line => line && line.includes(':'))
+                .map(line => {
+                    const [ip, port] = line.split(':');
+                    return { ip, port: parseInt(port), protocol: document.getElementById('protocol').value };
+                });
+            
+            if (proxies.length === 0) {
+                showNotification('No valid proxies found', 'error');
+                return;
+            }
+            
+            showNotification(`Testing ${proxies.length} proxies...`, 'success');
+            
+            // Send batch test request
+            try {
+                const response = await fetch(`${API_URL}/test/batch`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(proxies)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to start testing');
+                }
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+                stopTesting();
+            }
+        }
+        
+        // Stop testing
+        function stopTesting() {
+            testing = false;
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            showNotification('Testing stopped', 'warning');
+        }
+        
+        // Discover proxies automatically
+        async function discoverProxies() {
+            try {
+                showNotification('🔍 Discovering proxies from multiple sources...', 'success');
+                
+                const response = await fetch(`${API_URL}/discover`);
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    // Convert discovered proxies to text format
+                    const proxyText = data.proxies
+                        .map(p => `${p.ip}:${p.port}`)
+                        .join('\n');
+                    
+                    document.getElementById('proxyList').value = proxyText;
+                    
+                    // Show source statistics
+                    let sourceInfo = 'Discovery complete!\n';
+                    for (const [source, stats] of Object.entries(data.sources)) {
+                        sourceInfo += `\n${source}: ${stats.success_count} successful fetches`;
+                    }
+                    
+                    showNotification(`Found ${data.count} proxies! ${sourceInfo}`, 'success');
+                    
+                    // Optionally auto-start testing
+                    if (confirm(`Found ${data.count} proxies. Start testing now?`)) {
+                        startTesting();
+                    }
+                } else {
+                    showNotification('Discovery failed: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showNotification('Discovery error: ' + error.message, 'error');
+            }
+        }
+        
+        // Import from URL
+        async function importFromUrl() {
+            const url = document.getElementById('proxyUrl').value.trim();
+            if (!url) {
+                showNotification('Please enter a URL', 'warning');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/import?url=${encodeURIComponent(url)}`);
+                const text = await response.text();
+                document.getElementById('proxyList').value = text;
+                showNotification('Imported successfully', 'success');
+            } catch (error) {
+                showNotification('Failed to import: ' + error.message, 'error');
+            }
+        }
+        
+        // Update stats
+        function updateStats(proxy) {
+            stats.total++;
+            
+            if (proxy.working) {
+                stats.working++;
+                stats.totalSpeed += proxy.response_time;
+                
+                if (proxy.is_mobile) stats.mobile++;
+                if (proxy.anonymity_level === 'Elite') stats.elite++;
+            }
+            
+            // Update UI
+            document.getElementById('totalTested').textContent = stats.total;
+            document.getElementById('workingCount').textContent = stats.working;
+            document.getElementById('mobileCount').textContent = stats.mobile;
+            document.getElementById('eliteCount').textContent = stats.elite;
+            
+            if (stats.working > 0) {
+                const avgSpeed = Math.round(stats.totalSpeed / stats.working);
+                document.getElementById('avgSpeed').textContent = avgSpeed + 'ms';
+            }
+            
+            // Calculate test rate
+            if (stats.testStartTime) {
+                const elapsed = (Date.now() - stats.testStartTime) / 1000;
+                const rate = (stats.total / elapsed).toFixed(1);
+                document.getElementById('testRate').textContent = rate + '/s';
+            }
+            
+            document.getElementById('feedCount').textContent = `${proxies.size} proxies`;
+        }
+        
+        // Add proxy to map
+        function addProxyToMap(proxy) {
+            // You would need to geocode the location or use the lat/lon from the API
+            // This is a simplified version
+            const icon = L.divIcon({
+                className: `proxy-marker ${proxy.working ? 'working' : 'dead'} ${proxy.is_mobile ? 'mobile' : ''}`,
+                iconSize: [12, 12]
+            });
+            
+            // For demo, using random coordinates - in production, use real coordinates
+            const lat = Math.random() * 160 - 80;
+            const lon = Math.random() * 360 - 180;
+            
+            const marker = L.marker([lat, lon], { icon })
+                .bindPopup(`
+                    <b>${proxy.ip}:${proxy.port}</b><br>
+                    Status: ${proxy.working ? 'Working' : 'Dead'}<br>
+                    Type: ${proxy.protocol}<br>
+                    Location: ${proxy.city}, ${proxy.country}<br>
+                    ISP: ${proxy.isp}<br>
+                    Speed: ${proxy.response_time}ms
+                `);
+            
+            marker.addTo(map);
+            markers.set(`${proxy.ip}:${proxy.port}`, marker);
+        }
+        
+        // Add to live feed
+        function addToLiveFeed(proxy) {
+            const feedContent = document.getElementById('feedContent');
+            
+            const feedItem = document.createElement('div');
+            feedItem.className = 'feed-item';
+            feedItem.innerHTML = `
+                <div class="feed-item-header">
+                    <span class="feed-ip">${proxy.ip}:${proxy.port}</span>
+                    <span class="status-badge ${proxy.working ? 'working' : 'dead'}">
+                        ${proxy.working ? 'Working' : 'Dead'}
+                    </span>
+                </div>
+                <div class="feed-details">
+                    <div>
+                        <span>Location:</span>
+                        <span>${proxy.city}, ${proxy.country}</span>
+                    </div>
+                    <div>
+                        <span>Type:</span>
+                        <span>
+                            ${proxy.protocol.toUpperCase()}
+                            ${proxy.is_mobile ? '<span class="tag mobile">Mobile</span>' : ''}
+                            ${proxy.anonymity_level === 'Elite' ? '<span class="tag elite">Elite</span>' : ''}
+                            ${proxy.is_rotating ? '<span class="tag rotating">Rotating</span>' : ''}
+                        </span>
+                    </div>
+                    <div>
+                        <span>ISP:</span>
+                        <span>${proxy.isp}</span>
+                    </div>
+                    <div>
+                        <span>Speed:</span>
+                        <span>${proxy.response_time}ms</span>
+                    </div>
+                    <div>
+                        <span>Fraud:</span>
+                        <span>${proxy.fraud_score}%</span>
+                    </div>
+                    <div>
+                        <span>Anonymity:</span>
+                        <span>${proxy.anonymity_level}</span>
+                    </div>
+                </div>
+            `;
+            
+            feedItem.onclick = () => {
+                copyToClipboard(`${proxy.ip}:${proxy.port}`);
+            };
+            
+            feedContent.insertBefore(feedItem, feedContent.firstChild);
+            
+            // Limit feed items
+            while (feedContent.children.length > 100) {
+                feedContent.removeChild(feedContent.lastChild);
+            }
+        }
+        
+        // Update results table
+        function updateResultsTable(proxy) {
+            const tbody = document.getElementById('resultsTableBody');
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td style="font-family: monospace">${proxy.ip}:${proxy.port}</td>
+                <td><span class="status-badge ${proxy.working ? 'working' : 'dead'}">${proxy.working ? 'Working' : 'Dead'}</span></td>
+                <td>${proxy.protocol.toUpperCase()}</td>
+                <td>${proxy.anonymity_level}</td>
+                <td>${proxy.city}, ${proxy.country}</td>
+                <td>${proxy.isp}</td>
+                <td>${proxy.response_time}ms</td>
+                <td>${proxy.fraud_score}%</td>
+                <td>
+                    <button class="btn" style="padding: 0.25rem 0.5rem" onclick="copyToClipboard('${proxy.ip}:${proxy.port}')">Copy</button>
+                </td>
+            `;
+            
+            tbody.insertBefore(row, tbody.firstChild);
+        }
+        
+        // Export results
+        function exportResults() {
+            const workingProxies = Array.from(proxies.values())
+                .filter(p => p.working)
+                .sort((a, b) => a.response_time - b.response_time);
+            
+            if (workingProxies.length === 0) {
+                showNotification('No working proxies to export', 'warning');
+                return;
+            }
+            
+            let content = '# Working Proxies Export\n';
+            content += `# Generated: ${new Date().toISOString()}\n`;
+            content += `# Total: ${workingProxies.length} proxies\n\n`;
+            
+            // Group by type
+            const mobile = workingProxies.filter(p => p.is_mobile);
+            const elite = workingProxies.filter(p => p.anonymity_level === 'Elite');
+            
+            if (mobile.length > 0) {
+                content += '## MOBILE PROXIES\n';
+                mobile.forEach(p => {
+                    content += `${p.ip}:${p.port} # ${p.country} | ${p.isp} | ${p.response_time}ms\n`;
+                });
+                content += '\n';
+            }
+            
+            if (elite.length > 0) {
+                content += '## ELITE PROXIES\n';
+                elite.forEach(p => {
+                    content += `${p.ip}:${p.port} # ${p.country} | ${p.response_time}ms | Fraud: ${p.fraud_score}%\n`;
+                });
+                content += '\n';
+            }
+            
+            content += '## ALL WORKING PROXIES\n';
+            workingProxies.forEach(p => {
+                content += `${p.ip}:${p.port} # ${p.protocol} | ${p.country} | ${p.response_time}ms\n`;
+            });
+            
+            // Download file
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `proxies_${new Date().toISOString().slice(0,10)}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showNotification(`Exported ${workingProxies.length} working proxies`, 'success');
+        }
+        
+        // Clear results
+        function clearResults() {
+            if (!confirm('Clear all results?')) return;
+            
+            proxies.clear();
+            markers.forEach(marker => map.removeLayer(marker));
+            markers.clear();
+            
+            document.getElementById('feedContent').innerHTML = '';
+            document.getElementById('resultsTableBody').innerHTML = '';
+            
+            stats = {
+                total: 0,
+                working: 0,
+                mobile: 0,
+                elite: 0,
+                totalSpeed: 0,
+                testStartTime: null
+            };
+            
+            updateStats({ working: false });
+            showNotification('All results cleared', 'success');
+        }
+        
+        // Utility functions
+        function updateConnectionStatus(connected) {
+            const dot = document.getElementById('connectionDot');
+            const text = document.getElementById('connectionText');
+            
+            if (connected) {
+                dot.classList.add('connected');
+                text.textContent = 'Connected';
+            } else {
+                dot.classList.remove('connected');
+                text.textContent = 'Disconnected';
+            }
+        }
+        
+        function showNotification(message, type = 'success') {
+            const container = document.getElementById('notifications');
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <span>${message}</span>
+                <span style="cursor: pointer" onclick="this.parentElement.remove()">✕</span>
+            `;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+        
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification(`Copied: ${text}`, 'success');
+            });
+        }
+        
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update panels
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.getElementById(tabName + 'Panel').classList.add('active');
+            
+            // Refresh map if switching to map view
+            if (tabName === 'map' && map) {
+                setTimeout(() => map.invalidateSize(), 100);
+            }
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Fraud score slider
+            const fraudSlider = document.getElementById('maxFraud');
+            const fraudValue = document.getElementById('fraudValue');
+            fraudSlider.oninput = () => {
+                fraudValue.textContent = fraudSlider.value;
+            };
+            
+            // Mobile menu toggles
+            const menuToggle = document.createElement('button');
+            menuToggle.className = 'btn';
+            menuToggle.style.position = 'fixed';
+            menuToggle.style.left = '10px';
+            menuToggle.style.bottom = '10px';
+            menuToggle.style.zIndex = '1000';
+            menuToggle.innerHTML = '☰';
+            menuToggle.onclick = () => {
+                document.getElementById('sidebar').classList.toggle('open');
+            };
+            
+            if (window.innerWidth <= 1200) {
+                document.body.appendChild(menuToggle);
+            }
+        }
+        
+        // Initialize charts
+        function initializeCharts() {
+            const ctx = document.getElementById('analyticsChart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Working', 'Dead', 'Mobile', 'Elite'],
+                    datasets: [{
+                        data: [0, 0, 0, 0],
+                        backgroundColor: [
+                            'rgb(67, 181, 129)',
+                            'rgb(240, 71, 71)',
+                            'rgb(155, 89, 182)',
+                            'rgb(255, 215, 0)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#fff'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Update chart periodically
+            setInterval(() => {
+                if (stats.total > 0) {
+                    chart.data.datasets[0].data = [
+                        stats.working,
+                        stats.total - stats.working,
+                        stats.mobile,
+                        stats.elite
+                    ];
+                    chart.update();
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
