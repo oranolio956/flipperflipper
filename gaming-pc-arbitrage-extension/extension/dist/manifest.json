@@ -1,0 +1,81 @@
+{
+  "manifest_version": 3,
+  "name": "Gaming PC Arbitrage Assistant",
+  "version": "3.2.0",
+  "description": "Find profitable gaming PC deals across marketplaces",
+  "permissions": [
+    "storage",
+    "notifications",
+    "activeTab",
+    "scripting",
+    "alarms",
+    "tabs",
+    "idle",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "https://*.facebook.com/*",
+    "https://*.craigslist.org/*",
+    "https://*.offerup.com/*"
+  ],
+  "background": {
+    "service_worker": "js/background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.facebook.com/*"
+      ],
+      "js": [
+        "js/content-facebook.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://*.craigslist.org/*"
+      ],
+      "js": [
+        "js/content-craigslist.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://*.offerup.com/*"
+      ],
+      "js": [
+        "js/content-offerup.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "dashboard.html",
+        "css/*",
+        "js/*",
+        "icons/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }
+}
