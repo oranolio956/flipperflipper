@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:prod": "node scripts/build-prod.js",
+    "package": "npm run build && npm run build:prod",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
