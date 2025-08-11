@@ -1,0 +1,86 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Obsidian Luxe Color Palette (SRGB) -->
+    
+    <!-- Base Colors -->
+    <Color x:Key="ObsidianColor">#0B0B0C</Color>
+    <Color x:Key="GraphiteColor">#141416</Color>
+    <Color x:Key="OnyxColor">#1C1D21</Color>
+    <Color x:Key="MistColor">#E6E7EA</Color>
+    <Color x:Key="SnowColor">#F4F5F7</Color>
+    <Color x:Key="PlatinumColor">#C8CAD0</Color>
+    
+    <!-- Accent Colors -->
+    <Color x:Key="RoyalVioletColor">#6E56CF</Color>
+    <Color x:Key="PulseColor">#3CA9FF</Color>
+    <Color x:Key="SuccessColor">#10B981</Color>
+    <Color x:Key="WarningColor">#F59E0B</Color>
+    <Color x:Key="ErrorColor">#EF4444</Color>
+    
+    <!-- Semantic Colors -->
+    <Color x:Key="TextPrimaryColor">#F4F5F7</Color>
+    <Color x:Key="TextSecondaryColor">#E6E7EA</Color>
+    <Color x:Key="TextMutedColor">#9CA3AF</Color>
+    <Color x:Key="BorderColor">#C8CAD0</Color>
+    <Color x:Key="BorderSubtleColor">#2A2B30</Color>
+    
+    <!-- Elevation Colors with Opacity -->
+    <Color x:Key="Elevation1Color">#14141610</Color>
+    <Color x:Key="Elevation2Color">#14141620</Color>
+    <Color x:Key="Elevation3Color">#14141630</Color>
+    
+    <!-- Brushes -->
+    <SolidColorBrush x:Key="ObsidianBrush" Color="{StaticResource ObsidianColor}"/>
+    <SolidColorBrush x:Key="GraphiteBrush" Color="{StaticResource GraphiteColor}"/>
+    <SolidColorBrush x:Key="OnyxBrush" Color="{StaticResource OnyxColor}"/>
+    <SolidColorBrush x:Key="MistBrush" Color="{StaticResource MistColor}"/>
+    <SolidColorBrush x:Key="SnowBrush" Color="{StaticResource SnowColor}"/>
+    <SolidColorBrush x:Key="PlatinumBrush" Color="{StaticResource PlatinumColor}"/>
+    <SolidColorBrush x:Key="RoyalVioletBrush" Color="{StaticResource RoyalVioletColor}"/>
+    <SolidColorBrush x:Key="PulseBrush" Color="{StaticResource PulseColor}"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
+    <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}"/>
+    
+    <!-- Gradient Brushes -->
+    <LinearGradientBrush x:Key="ObsidianGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="{StaticResource ObsidianColor}" Offset="0"/>
+        <GradientStop Color="{StaticResource GraphiteColor}" Offset="1"/>
+    </LinearGradientBrush>
+    
+    <LinearGradientBrush x:Key="AccentGradientBrush" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="{StaticResource RoyalVioletColor}" Offset="0"/>
+        <GradientStop Color="{StaticResource PulseColor}" Offset="1"/>
+    </LinearGradientBrush>
+    
+    <!-- Noise Overlay -->
+    <ImageBrush x:Key="NoiseOverlayBrush" 
+                TileMode="Tile" 
+                Viewport="0,0,128,128" 
+                ViewportUnits="Absolute"
+                Opacity="0.02">
+        <ImageBrush.ImageSource>
+            <DrawingImage>
+                <DrawingImage.Drawing>
+                    <GeometryDrawing>
+                        <GeometryDrawing.Brush>
+                            <VisualBrush TileMode="Tile">
+                                <VisualBrush.Visual>
+                                    <Canvas Width="2" Height="2">
+                                        <Rectangle Width="1" Height="1" Fill="#FFFFFF" Opacity="0.5"/>
+                                        <Rectangle Width="1" Height="1" Fill="#000000" Opacity="0.5" Canvas.Left="1" Canvas.Top="1"/>
+                                    </Canvas>
+                                </VisualBrush.Visual>
+                            </VisualBrush>
+                        </GeometryDrawing.Brush>
+                        <GeometryDrawing.Geometry>
+                            <RectangleGeometry Rect="0,0,128,128"/>
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                </DrawingImage.Drawing>
+            </DrawingImage>
+        </ImageBrush.ImageSource>
+    </ImageBrush>
+    
+</ResourceDictionary>
