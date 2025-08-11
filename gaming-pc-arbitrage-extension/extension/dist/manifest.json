@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Gaming PC Arbitrage Assistant",
-  "version": "3.2.0",
+  "version": "3.11.0",
   "description": "Find profitable gaming PC deals across marketplaces",
   "permissions": [
     "storage",
