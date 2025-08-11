@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proxy Analytics Dashboard - ProxyAssessmentTool</title>
+    
+    <!-- D3.js v7 -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    
+    <!-- Chart.js for additional charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <!-- DataTables for advanced tables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #6C63FF;
+            --secondary: #FF6584;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --dark: #1F2937;
+            --light: #F3F4F6;
+            --white: #FFFFFF;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #F8FAFC;
+            color: var(--dark);
+        }
+        
+        /* Dashboard Layout */
+        .dashboard-header {
+            background: var(--gradient);
+            color: white;
+            padding: 2rem 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+        
+        .metric-label {
+            color: #6B7280;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .metric-trend {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .trend-up {
+            color: var(--success);
+        }
+        
+        .trend-down {
+            color: var(--danger);
+        }
+        
+        /* Charts */
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+        
+        /* D3 Specific Styles */
+        .d3-tooltip {
+            position: absolute;
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 6px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .axis {
+            font-size: 12px;
+        }
+        
+        .axis-label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        /* Heatmap */
+        .heatmap-cell {
+            stroke: #E5E7EB;
+            stroke-width: 1px;
+            cursor: pointer;
+        }
+        
+        /* Network Graph */
+        .node {
+            cursor: pointer;
+        }
+        
+        .node:hover {
+            stroke-width: 3px;
+        }
+        
+        .link {
+            fill: none;
+            stroke: #999;
+            stroke-opacity: 0.6;
+        }
+        
+        /* Sankey Diagram */
+        .sankey-node {
+            cursor: move;
+            fill-opacity: 0.9;
+            shape-rendering: crispEdges;
+        }
+        
+        .sankey-link {
+            fill: none;
+            stroke: #000;
+            stroke-opacity: 0.2;
+        }
+        
+        .sankey-link:hover {
+            stroke-opacity: 0.5;
+        }
+        
+        /* Real-time Updates */
+        .live-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+        
+        /* Filters */
+        .filter-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Analytics Dashboard
+                    </h1>
+                    <p class="mb-0 mt-2 opacity-75">Real-time proxy performance insights</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <span class="live-indicator me-2"></span>
+                    <span class="me-3">Live Data</span>
+                    <button class="btn btn-light btn-sm" onclick="exportDashboard()">
+                        <i class="fas fa-download me-1"></i> Export
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard -->
+    <main class="container my-4">
+        <!-- Key Metrics -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="metric-card">
+                    <div class="metric-icon position-absolute top-0 end-0 p-3 opacity-25">
+                        <i class="fas fa-server fa-3x text-primary"></i>
+                    </div>
+                    <div class="metric-label">Total Proxies</div>
+                    <div class="metric-value text-primary" id="totalProxies">0</div>
+                    <div class="metric-trend trend-up">
+                        <i class="fas fa-arrow-up me-1"></i>
+                        <span id="proxiesTrend">+12.5%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="metric-card">
+                    <div class="metric-icon position-absolute top-0 end-0 p-3 opacity-25">
+                        <i class="fas fa-check-circle fa-3x text-success"></i>
+                    </div>
+                    <div class="metric-label">Success Rate</div>
+                    <div class="metric-value text-success" id="successRate">0%</div>
+                    <div class="metric-trend trend-up">
+                        <i class="fas fa-arrow-up me-1"></i>
+                        <span id="successTrend">+2.3%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="metric-card">
+                    <div class="metric-icon position-absolute top-0 end-0 p-3 opacity-25">
+                        <i class="fas fa-tachometer-alt fa-3x text-warning"></i>
+                    </div>
+                    <div class="metric-label">Avg Response Time</div>
+                    <div class="metric-value text-warning" id="avgResponseTime">0ms</div>
+                    <div class="metric-trend trend-down">
+                        <i class="fas fa-arrow-down me-1"></i>
+                        <span id="responseTrend">-15ms</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="metric-card">
+                    <div class="metric-icon position-absolute top-0 end-0 p-3 opacity-25">
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger"></i>
+                    </div>
+                    <div class="metric-label">Failed Tests</div>
+                    <div class="metric-value text-danger" id="failedTests">0</div>
+                    <div class="metric-trend trend-down">
+                        <i class="fas fa-arrow-down me-1"></i>
+                        <span id="failedTrend">-8.7%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-section">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <label class="form-label">Time Range</label>
+                    <select class="form-select" id="timeRange" onchange="updateDashboard()">
+                        <option value="1h">Last Hour</option>
+                        <option value="24h" selected>Last 24 Hours</option>
+                        <option value="7d">Last 7 Days</option>
+                        <option value="30d">Last 30 Days</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Proxy Type</label>
+                    <select class="form-select" id="proxyType" onchange="updateDashboard()">
+                        <option value="all">All Types</option>
+                        <option value="datacenter">Datacenter</option>
+                        <option value="residential">Residential</option>
+                        <option value="mobile">Mobile</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Country</label>
+                    <select class="form-select" id="countryFilter" onchange="updateDashboard()">
+                        <option value="all">All Countries</option>
+                        <option value="US">United States</option>
+                        <option value="UK">United Kingdom</option>
+                        <option value="DE">Germany</option>
+                        <option value="FR">France</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <button class="btn btn-primary w-100" onclick="refreshData()">
+                        <i class="fas fa-sync-alt me-2"></i>Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="row">
+            <div class="col-md-8">
+                <div class="chart-container">
+                    <h3 class="chart-title">Proxy Performance Over Time</h3>
+                    <div id="performanceChart"></div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="chart-container">
+                    <h3 class="chart-title">Proxy Distribution</h3>
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 2 -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h3 class="chart-title">Geographic Heatmap</h3>
+                    <div id="geoHeatmap"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h3 class="chart-title">Response Time Distribution</h3>
+                    <div id="responseHistogram"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 3 -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="chart-container">
+                    <h3 class="chart-title">Proxy Network Flow</h3>
+                    <div id="sankeyDiagram"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Proxies Table -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="chart-container">
+                    <h3 class="chart-title">Top Performing Proxies</h3>
+                    <table id="topProxiesTable" class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>IP Address</th>
+                                <th>Type</th>
+                                <th>Country</th>
+                                <th>Success Rate</th>
+                                <th>Avg Response</th>
+                                <th>Uptime</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- D3 Tooltip -->
+    <div class="d3-tooltip"></div>
+
+    <script>
+        // Configuration
+        const API_URL = 'http://localhost:8000/api/v1';
+        let updateInterval;
+        
+        // Color scales
+        const colorScale = d3.scaleOrdinal()
+            .domain(['datacenter', 'residential', 'mobile'])
+            .range(['#6C63FF', '#FF6584', '#10B981']);
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            loadDashboardData();
+            
+            // Set up auto-refresh
+            updateInterval = setInterval(loadDashboardData, 30000); // 30 seconds
+        });
+        
+        // Initialize all charts
+        function initializeCharts() {
+            // Performance line chart
+            createPerformanceChart();
+            
+            // Distribution pie chart
+            createDistributionChart();
+            
+            // Geographic heatmap
+            createGeoHeatmap();
+            
+            // Response time histogram
+            createResponseHistogram();
+            
+            // Sankey diagram
+            createSankeyDiagram();
+            
+            // Initialize DataTable
+            $('#topProxiesTable').DataTable({
+                pageLength: 10,
+                order: [[6, 'desc']], // Sort by score
+                responsive: true
+            });
+        }
+        
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                const timeRange = document.getElementById('timeRange').value;
+                const proxyType = document.getElementById('proxyType').value;
+                const country = document.getElementById('countryFilter').value;
+                
+                // Fetch analytics data
+                const response = await fetch(`${API_URL}/analytics?` + new URLSearchParams({
+                    time_range: timeRange,
+                    proxy_type: proxyType === 'all' ? '' : proxyType,
+                    country: country === 'all' ? '' : country
+                }));
+                
+                const data = await response.json();
+                
+                // Update metrics
+                updateMetrics(data.metrics);
+                
+                // Update charts
+                updatePerformanceChart(data.timeseries);
+                updateDistributionChart(data.distribution);
+                updateGeoHeatmap(data.geographic);
+                updateResponseHistogram(data.response_times);
+                updateSankeyDiagram(data.flow_data);
+                updateTopProxiesTable(data.top_proxies);
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+        
+        // Update key metrics
+        function updateMetrics(metrics) {
+            // Animate metric updates
+            animateValue('totalProxies', metrics.total_proxies);
+            animateValue('successRate', metrics.success_rate, '%');
+            animateValue('avgResponseTime', metrics.avg_response_time, 'ms');
+            animateValue('failedTests', metrics.failed_tests);
+            
+            // Update trends
+            updateTrend('proxiesTrend', metrics.proxies_trend);
+            updateTrend('successTrend', metrics.success_trend);
+            updateTrend('responseTrend', metrics.response_trend);
+            updateTrend('failedTrend', metrics.failed_trend);
+        }
+        
+        // Animate numeric values
+        function animateValue(id, value, suffix = '') {
+            const element = document.getElementById(id);
+            const start = parseInt(element.textContent) || 0;
+            const duration = 1000;
+            const step = (value - start) / (duration / 16);
+            
+            let current = start;
+            const timer = setInterval(() => {
+                current += step;
+                if ((step > 0 && current >= value) || (step < 0 && current <= value)) {
+                    element.textContent = value + suffix;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.round(current) + suffix;
+                }
+            }, 16);
+        }
+        
+        // Update trend indicators
+        function updateTrend(id, value) {
+            const element = document.getElementById(id);
+            const parent = element.parentElement;
+            
+            element.textContent = value > 0 ? `+${value}%` : `${value}%`;
+            
+            if (value > 0) {
+                parent.classList.remove('trend-down');
+                parent.classList.add('trend-up');
+                parent.querySelector('i').className = 'fas fa-arrow-up me-1';
+            } else {
+                parent.classList.remove('trend-up');
+                parent.classList.add('trend-down');
+                parent.querySelector('i').className = 'fas fa-arrow-down me-1';
+            }
+        }
+        
+        // Create performance line chart with D3
+        function createPerformanceChart() {
+            const margin = {top: 20, right: 80, bottom: 50, left: 70};
+            const width = document.getElementById('performanceChart').offsetWidth - margin.left - margin.right;
+            const height = 400 - margin.top - margin.bottom;
+            
+            const svg = d3.select('#performanceChart')
+                .append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+                .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+            
+            // Add axes
+            svg.append('g')
+                .attr('class', 'x-axis')
+                .attr('transform', `translate(0,${height})`);
+            
+            svg.append('g')
+                .attr('class', 'y-axis');
+            
+            // Add axis labels
+            svg.append('text')
+                .attr('class', 'axis-label')
+                .attr('transform', 'rotate(-90)')
+                .attr('y', 0 - margin.left)
+                .attr('x', 0 - (height / 2))
+                .attr('dy', '1em')
+                .style('text-anchor', 'middle')
+                .text('Success Rate (%)');
+            
+            svg.append('text')
+                .attr('class', 'axis-label')
+                .attr('transform', `translate(${width / 2}, ${height + margin.bottom})`)
+                .style('text-anchor', 'middle')
+                .text('Time');
+        }
+        
+        // Update performance chart
+        function updatePerformanceChart(data) {
+            const margin = {top: 20, right: 80, bottom: 50, left: 70};
+            const svg = d3.select('#performanceChart svg g');
+            const width = document.getElementById('performanceChart').offsetWidth - margin.left - margin.right;
+            const height = 400 - margin.top - margin.bottom;
+            
+            // Parse time values
+            const parseTime = d3.timeParse('%Y-%m-%d %H:%M:%S');
+            data.forEach(d => {
+                d.time = parseTime(d.time);
+                d.success_rate = +d.success_rate;
+                d.response_time = +d.response_time;
+            });
+            
+            // Set scales
+            const xScale = d3.scaleTime()
+                .domain(d3.extent(data, d => d.time))
+                .range([0, width]);
+            
+            const yScale = d3.scaleLinear()
+                .domain([0, 100])
+                .range([height, 0]);
+            
+            const yScale2 = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.response_time)])
+                .range([height, 0]);
+            
+            // Line generators
+            const successLine = d3.line()
+                .x(d => xScale(d.time))
+                .y(d => yScale(d.success_rate))
+                .curve(d3.curveMonotoneX);
+            
+            const responseLine = d3.line()
+                .x(d => xScale(d.time))
+                .y(d => yScale2(d.response_time))
+                .curve(d3.curveMonotoneX);
+            
+            // Update axes
+            svg.select('.x-axis')
+                .transition()
+                .duration(750)
+                .call(d3.axisBottom(xScale).tickFormat(d3.timeFormat('%H:%M')));
+            
+            svg.select('.y-axis')
+                .transition()
+                .duration(750)
+                .call(d3.axisLeft(yScale));
+            
+            // Add second y-axis
+            svg.select('.y-axis2').remove();
+            svg.append('g')
+                .attr('class', 'y-axis2')
+                .attr('transform', `translate(${width}, 0)`)
+                .call(d3.axisRight(yScale2));
+            
+            // Update lines
+            svg.selectAll('.line-success').remove();
+            svg.append('path')
+                .datum(data)
+                .attr('class', 'line-success')
+                .attr('fill', 'none')
+                .attr('stroke', '#10B981')
+                .attr('stroke-width', 2)
+                .attr('d', successLine);
+            
+            svg.selectAll('.line-response').remove();
+            svg.append('path')
+                .datum(data)
+                .attr('class', 'line-response')
+                .attr('fill', 'none')
+                .attr('stroke', '#F59E0B')
+                .attr('stroke-width', 2)
+                .attr('stroke-dasharray', '5,5')
+                .attr('d', responseLine);
+            
+            // Add dots with tooltips
+            const tooltip = d3.select('.d3-tooltip');
+            
+            svg.selectAll('.dot-success').remove();
+            svg.selectAll('.dot-success')
+                .data(data)
+                .enter().append('circle')
+                .attr('class', 'dot-success')
+                .attr('cx', d => xScale(d.time))
+                .attr('cy', d => yScale(d.success_rate))
+                .attr('r', 4)
+                .attr('fill', '#10B981')
+                .on('mouseover', function(event, d) {
+                    tooltip.transition().duration(200).style('opacity', .9);
+                    tooltip.html(`Success Rate: ${d.success_rate}%<br/>Time: ${d3.timeFormat('%H:%M')(d.time)}`)
+                        .style('left', (event.pageX + 10) + 'px')
+                        .style('top', (event.pageY - 28) + 'px');
+                })
+                .on('mouseout', function() {
+                    tooltip.transition().duration(500).style('opacity', 0);
+                });
+        }
+        
+        // Create distribution pie chart
+        function createDistributionChart() {
+            const ctx = document.getElementById('distributionChart').getContext('2d');
+            window.distributionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Datacenter', 'Residential', 'Mobile'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: ['#6C63FF', '#FF6584', '#10B981'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update distribution chart
+        function updateDistributionChart(data) {
+            window.distributionChart.data.datasets[0].data = [
+                data.datacenter || 0,
+                data.residential || 0,
+                data.mobile || 0
+            ];
+            window.distributionChart.update();
+        }
+        
+        // Create geographic heatmap
+        function createGeoHeatmap() {
+            const width = document.getElementById('geoHeatmap').offsetWidth;
+            const height = 400;
+            
+            const svg = d3.select('#geoHeatmap')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+            
+            // Create grid for heatmap
+            const gridSize = 30;
+            const countries = ['US', 'UK', 'DE', 'FR', 'CA', 'AU', 'JP', 'BR'];
+            const hours = d3.range(24);
+            
+            const xScale = d3.scaleBand()
+                .domain(hours)
+                .range([50, width - 20])
+                .padding(0.1);
+            
+            const yScale = d3.scaleBand()
+                .domain(countries)
+                .range([20, height - 20])
+                .padding(0.1);
+            
+            // Add axes
+            svg.append('g')
+                .attr('transform', 'translate(0, 20)')
+                .call(d3.axisTop(xScale).tickFormat(d => d + ':00'));
+            
+            svg.append('g')
+                .attr('transform', 'translate(50, 0)')
+                .call(d3.axisLeft(yScale));
+        }
+        
+                 // Update geographic heatmap
+         function updateGeoHeatmap(data) {
+             const width = document.getElementById('geoHeatmap').offsetWidth;
+             const svg = d3.select('#geoHeatmap svg');
+             
+             // Recreate scales
+             const countries = ['US', 'UK', 'DE', 'FR', 'CA', 'AU', 'JP', 'BR'];
+             const hours = d3.range(24);
+             
+             const xScale = d3.scaleBand()
+                 .domain(hours)
+                 .range([50, width - 20])
+                 .padding(0.1);
+             
+             const yScale = d3.scaleBand()
+                 .domain(countries)
+                 .range([20, 380])
+                 .padding(0.1);
+             
+             const colorScale = d3.scaleSequential(d3.interpolateYlOrRd)
+                 .domain([0, d3.max(data, d => d.value)]);
+             
+             const tooltip = d3.select('.d3-tooltip');
+             
+             // Update cells
+             const cells = svg.selectAll('.heatmap-cell')
+                 .data(data, d => `${d.country}-${d.hour}`);
+             
+             cells.enter()
+                 .append('rect')
+                 .attr('class', 'heatmap-cell')
+                 .merge(cells)
+                 .transition()
+                 .duration(750)
+                 .attr('x', d => xScale(d.hour))
+                 .attr('y', d => yScale(d.country))
+                 .attr('width', xScale.bandwidth())
+                 .attr('height', yScale.bandwidth())
+                 .attr('fill', d => colorScale(d.value));
+             
+             cells.exit().remove();
+             
+             // Add hover effect
+             svg.selectAll('.heatmap-cell')
+                 .on('mouseover', function(event, d) {
+                     tooltip.transition().duration(200).style('opacity', .9);
+                     tooltip.html(`${d.country} at ${d.hour}:00<br/>Proxies: ${d.value}`)
+                         .style('left', (event.pageX + 10) + 'px')
+                         .style('top', (event.pageY - 28) + 'px');
+                 })
+                 .on('mouseout', function() {
+                     tooltip.transition().duration(500).style('opacity', 0);
+                 });
+         }
+        
+        // Create response time histogram
+        function createResponseHistogram() {
+            const margin = {top: 20, right: 30, bottom: 40, left: 50};
+            const width = document.getElementById('responseHistogram').offsetWidth - margin.left - margin.right;
+            const height = 300 - margin.top - margin.bottom;
+            
+            const svg = d3.select('#responseHistogram')
+                .append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+                .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+            
+            // Add axes
+            svg.append('g')
+                .attr('class', 'x-axis')
+                .attr('transform', `translate(0,${height})`);
+            
+            svg.append('g')
+                .attr('class', 'y-axis');
+            
+            // Add axis labels
+            svg.append('text')
+                .attr('class', 'axis-label')
+                .attr('transform', `translate(${width / 2}, ${height + margin.bottom})`)
+                .style('text-anchor', 'middle')
+                .text('Response Time (ms)');
+            
+            svg.append('text')
+                .attr('class', 'axis-label')
+                .attr('transform', 'rotate(-90)')
+                .attr('y', 0 - margin.left)
+                .attr('x', 0 - (height / 2))
+                .attr('dy', '1em')
+                .style('text-anchor', 'middle')
+                .text('Frequency');
+        }
+        
+        // Update response time histogram
+        function updateResponseHistogram(data) {
+            const margin = {top: 20, right: 30, bottom: 40, left: 50};
+            const svg = d3.select('#responseHistogram svg g');
+            const width = document.getElementById('responseHistogram').offsetWidth - margin.left - margin.right;
+            const height = 300 - margin.top - margin.bottom;
+            
+            // Create bins
+            const histogram = d3.histogram()
+                .value(d => d)
+                .domain([0, d3.max(data)])
+                .thresholds(20);
+            
+            const bins = histogram(data);
+            
+            // Set scales
+            const xScale = d3.scaleLinear()
+                .domain([0, d3.max(data)])
+                .range([0, width]);
+            
+            const yScale = d3.scaleLinear()
+                .domain([0, d3.max(bins, d => d.length)])
+                .range([height, 0]);
+            
+            // Update axes
+            svg.select('.x-axis')
+                .transition()
+                .duration(750)
+                .call(d3.axisBottom(xScale));
+            
+            svg.select('.y-axis')
+                .transition()
+                .duration(750)
+                .call(d3.axisLeft(yScale));
+            
+            // Update bars
+            const bars = svg.selectAll('.bar')
+                .data(bins);
+            
+            bars.enter()
+                .append('rect')
+                .attr('class', 'bar')
+                .merge(bars)
+                .transition()
+                .duration(750)
+                .attr('x', d => xScale(d.x0))
+                .attr('y', d => yScale(d.length))
+                .attr('width', d => xScale(d.x1) - xScale(d.x0) - 1)
+                .attr('height', d => height - yScale(d.length))
+                .attr('fill', '#6C63FF');
+            
+            bars.exit().remove();
+        }
+        
+        // Create Sankey diagram for proxy flow
+        function createSankeyDiagram() {
+            const width = document.getElementById('sankeyDiagram').offsetWidth;
+            const height = 400;
+            
+            const svg = d3.select('#sankeyDiagram')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+        }
+        
+        // Update Sankey diagram
+        function updateSankeyDiagram(data) {
+            // Implementation would use d3-sankey plugin
+            // Showing proxy flow from sources -> types -> destinations
+        }
+        
+        // Update top proxies table
+        function updateTopProxiesTable(proxies) {
+            const table = $('#topProxiesTable').DataTable();
+            table.clear();
+            
+            proxies.forEach(proxy => {
+                const scoreClass = proxy.score >= 90 ? 'text-success' : 
+                                 proxy.score >= 70 ? 'text-warning' : 'text-danger';
+                
+                table.row.add([
+                    proxy.ip,
+                    `<span class="badge bg-primary">${proxy.type}</span>`,
+                    `<img src="https://flagcdn.com/16x12/${proxy.country.toLowerCase()}.png" alt="${proxy.country}" class="me-1"> ${proxy.country}`,
+                    `<div class="progress" style="height: 20px;">
+                        <div class="progress-bar bg-success" style="width: ${proxy.success_rate}%">${proxy.success_rate}%</div>
+                    </div>`,
+                    `${proxy.avg_response}ms`,
+                    `${proxy.uptime}%`,
+                    `<span class="${scoreClass} fw-bold">${proxy.score}</span>`
+                ]);
+            });
+            
+            table.draw();
+        }
+        
+        // Export dashboard
+        function exportDashboard() {
+            // Implementation would export to PDF/PNG
+            alert('Exporting dashboard...');
+        }
+        
+        // Refresh data
+        function refreshData() {
+            loadDashboardData();
+            
+            // Show refresh animation
+            const btn = event.target;
+            const icon = btn.querySelector('i');
+            icon.classList.add('fa-spin');
+            setTimeout(() => icon.classList.remove('fa-spin'), 1000);
+        }
+        
+        // Update dashboard based on filters
+        function updateDashboard() {
+            loadDashboardData();
+        }
+        
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+        });
+        
+        // Sample data for demonstration
+        // In production, this would come from the API
+        function generateSampleData() {
+            const now = new Date();
+            const timeseries = [];
+            
+            for (let i = 23; i >= 0; i--) {
+                const time = new Date(now - i * 3600000);
+                timeseries.push({
+                    time: d3.timeFormat('%Y-%m-%d %H:%M:%S')(time),
+                    success_rate: 85 + Math.random() * 10,
+                    response_time: 200 + Math.random() * 300
+                });
+            }
+            
+            const geographic = [];
+            const countries = ['US', 'UK', 'DE', 'FR', 'CA', 'AU', 'JP', 'BR'];
+            
+            countries.forEach(country => {
+                for (let hour = 0; hour < 24; hour++) {
+                    geographic.push({
+                        country: country,
+                        hour: hour,
+                        value: Math.floor(Math.random() * 100)
+                    });
+                }
+            });
+            
+            const response_times = [];
+            for (let i = 0; i < 1000; i++) {
+                response_times.push(Math.random() * 1000);
+            }
+            
+            const top_proxies = [];
+            for (let i = 0; i < 50; i++) {
+                top_proxies.push({
+                    ip: `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+                    type: ['datacenter', 'residential', 'mobile'][Math.floor(Math.random() * 3)],
+                    country: countries[Math.floor(Math.random() * countries.length)],
+                    success_rate: Math.floor(70 + Math.random() * 30),
+                    avg_response: Math.floor(100 + Math.random() * 400),
+                    uptime: Math.floor(90 + Math.random() * 10),
+                    score: Math.floor(60 + Math.random() * 40)
+                });
+            }
+            
+            return {
+                metrics: {
+                    total_proxies: 12543,
+                    success_rate: 94.7,
+                    avg_response_time: 287,
+                    failed_tests: 423,
+                    proxies_trend: 12.5,
+                    success_trend: 2.3,
+                    response_trend: -15,
+                    failed_trend: -8.7
+                },
+                timeseries: timeseries,
+                distribution: {
+                    datacenter: 7823,
+                    residential: 3421,
+                    mobile: 1299
+                },
+                geographic: geographic,
+                response_times: response_times,
+                top_proxies: top_proxies,
+                flow_data: {}
+            };
+        }
+        
+        // For demonstration, use sample data
+        // Remove this in production
+        window.loadDashboardData = async function() {
+            const data = generateSampleData();
+            
+            updateMetrics(data.metrics);
+            updatePerformanceChart(data.timeseries);
+            updateDistributionChart(data.distribution);
+            updateGeoHeatmap(data.geographic);
+            updateResponseHistogram(data.response_times);
+            updateTopProxiesTable(data.top_proxies);
+        };
+    </script>
+</body>
+</html>

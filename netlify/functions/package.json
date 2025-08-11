@@ -1,0 +1,8 @@
+{
+  "name": "proxy-assessment-functions",
+  "version": "1.0.0",
+  "description": "Netlify Functions for Proxy Assessment Tool",
+  "dependencies": {
+    "axios": "^1.6.2"
+  }
+}
