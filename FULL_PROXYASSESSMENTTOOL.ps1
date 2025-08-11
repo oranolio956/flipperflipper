@@ -43,7 +43,7 @@ namespace ProxyAssessmentTool
         private ProgressBar updateProgress;
         private TextBox updateLogBox;
         
-        private string currentVersion = "1.0.0";
+        private string currentVersion = "2.0.0";
         private string updateUrl = "https://github.com/oranolio956/flipperflipper/releases/latest/download/ProxyAssessmentTool.exe";
         
         public MainForm()
