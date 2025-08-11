@@ -1,73 +1,103 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import webExtension from 'vite-plugin-web-extension';
-import { resolve } from 'path';
-import fs from 'fs';
+import path from 'path';
 
 export default defineConfig({
   plugins: [
     react(),
     webExtension({
       manifest: () => ({
-        ...JSON.parse(fs.readFileSync('./manifest.json', 'utf-8')),
-        // Add development-specific overrides if needed
+        manifest_version: 3,
+        name: 'Gaming PC Arbitrage Assistant',
+        version: '2.0.0',
+        description: 'Find profitable gaming PC deals across marketplaces',
+        permissions: [
+          'storage',
+          'notifications',
+          'activeTab',
+          'scripting',
+          'alarms',
+          'tabs',
+          'idle'
+        ],
+        host_permissions: [
+          'https://*.facebook.com/*',
+          'https://*.craigslist.org/*',
+          'https://*.offerup.com/*'
+        ],
+        background: {
+          service_worker: 'src/background/index.ts',
+          type: 'module'
+        },
+        action: {
+          default_popup: 'popup.html',
+          default_icon: {
+            '16': 'icons/icon-16.png',
+            '32': 'icons/icon-32.png',
+            '48': 'icons/icon-48.png',
+            '128': 'icons/icon-128.png'
+          }
+        },
+        content_scripts: [
+          {
+            matches: ['https://*.facebook.com/*'],
+            js: ['src/content/facebook.ts'],
+            css: ['src/content/overlay.css'],
+            run_at: 'document_idle'
+          },
+          {
+            matches: ['https://*.craigslist.org/*'],
+            js: ['src/content/craigslist.ts'],
+            css: ['src/content/overlay.css'],
+            run_at: 'document_idle'
+          },
+          {
+            matches: ['https://*.offerup.com/*'],
+            js: ['src/content/offerup.ts'],
+            css: ['src/content/overlay.css'],
+            run_at: 'document_idle'
+          }
+        ],
+        web_accessible_resources: [
+          {
+            resources: ['dashboard.html', 'icons/*'],
+            matches: ['<all_urls>']
+          }
+        ],
+        icons: {
+          '16': 'icons/icon-16.png',
+          '32': 'icons/icon-32.png',
+          '48': 'icons/icon-48.png',
+          '128': 'icons/icon-128.png'
+        }
       }),
-      additionalInputs: [
-        'src/background/index.ts',
-        'src/content/fb/index.ts',
-        'src/content/craigslist/index.ts',
-        'src/content/offerup/index.ts',
-        'public/popup.html',
-        'public/options.html',
-        'public/overlay.html',
-      ],
-      webExtConfig: {
-        startUrl: 'https://www.facebook.com/marketplace',
-        chromiumBinary: process.env.CHROME_PATH,
+      additionalInputs: {
+        html: ['popup.html', 'dashboard.html', 'options.html'],
+        scripts: ['src/popup/index.tsx', 'src/dashboard/index.tsx', 'src/options/index.tsx'],
       },
     }),
   ],
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src'),
-      '@core': resolve(__dirname, '../packages/core/src'),
-      '@ui': resolve(__dirname, '../packages/ui/src'),
-      '@data': resolve(__dirname, '../packages/data/src'),
-      '@ml': resolve(__dirname, '../packages/ml/src'),
-      '@integrations': resolve(__dirname, '../packages/integrations/src'),
+      '@': path.resolve(__dirname, './src'),
+      '@arbitrage/core': path.resolve(__dirname, '../packages/core/src'),
     },
   },
   build: {
     outDir: 'dist',
-    sourcemap: process.env.NODE_ENV === 'development',
+    emptyOutDir: true,
     rollupOptions: {
-      input: {
-        popup: resolve(__dirname, 'src/ui/popup/index.html'),
-        options: resolve(__dirname, 'src/ui/options/index.html'),
-        dashboard: resolve(__dirname, 'src/ui/dashboard/index.html'),
-        background: resolve(__dirname, 'src/background/index.ts'),
-        'content/fb': resolve(__dirname, 'src/content/fb/index.ts'),
-        'content/craigslist': resolve(__dirname, 'src/content/craigslist/index.ts'),
-        'content/offerup': resolve(__dirname, 'src/content/offerup/index.ts'),
-        'workers/ocr': resolve(__dirname, 'src/workers/ocr.worker.ts'),
-      },
       output: {
-        entryFileNames: (chunkInfo) => {
-          // Workers need to be in their own directory
-          if (chunkInfo.name.includes('worker')) {
-            return 'workers/[name].js';
+        entryFileNames: 'js/[name].js',
+        chunkFileNames: 'js/[name].js',
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name?.endsWith('.css')) {
+            return 'css/[name][extname]';
           }
-          return '[name].js';
+          return 'assets/[name][extname]';
         },
-        chunkFileNames: 'chunks/[name].[hash].js',
-        assetFileNames: 'assets/[name].[ext]',
       },
-    },
-  },
-  server: {
-    port: 3000,
-    hmr: {
-      port: 3001,
     },
   },
 });

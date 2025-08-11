@@ -1,132 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gaming PC Arbitrage</title>
-  <link rel="stylesheet" href="css/popup.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PC Arbitrage Assistant</title>
+  <style>
+    body {
+      margin: 0;
+      width: 380px;
+      height: 600px;
+      overflow: hidden;
+    }
+    #root {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
 </head>
 <body>
-  <div class="popup-container">
-    <!-- Header -->
-    <header class="popup-header">
-      <img src="icons/icon-48.png" alt="Logo" class="logo">
-      <h1>PC Arbitrage</h1>
-      <div class="header-actions">
-        <button id="settings-btn" class="icon-btn" title="Settings">⚙️</button>
-      </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="popup-content">
-      <!-- Quick Stats -->
-      <section class="quick-stats">
-        <div class="stat-card">
-          <span class="stat-label">Active Deals</span>
-          <span class="stat-value" id="active-deals">0</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">Total Profit</span>
-          <span class="stat-value profit" id="total-profit">$0</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">Avg ROI</span>
-          <span class="stat-value" id="avg-roi">0%</span>
-        </div>
-      </section>
-
-      <!-- Quick Actions -->
-      <section class="quick-actions">
-        <button id="analyze-page" class="action-btn primary">
-          <span class="icon">🔍</span>
-          Analyze This Page
-        </button>
-        <button id="open-dashboard" class="action-btn">
-          <span class="icon">📊</span>
-          Open Dashboard
-        </button>
-        <button id="photo-capture" class="action-btn">
-          <span class="icon">📸</span>
-          Quick Add Photo
-        </button>
-        <button id="bulk-scan" class="action-btn">
-          <span class="icon">🔄</span>
-          Bulk Scanner
-        </button>
-      </section>
-
-      <!-- Recent Deals -->
-      <section class="recent-deals">
-        <h2>Recent Deals</h2>
-        <div id="deals-list" class="deals-list">
-          <div class="empty-state">
-            <p>No deals yet. Start by analyzing a listing!</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Notifications -->
-      <section class="notifications" id="notifications-section" style="display: none;">
-        <h2>Notifications</h2>
-        <div id="notifications-list" class="notifications-list"></div>
-      </section>
-    </main>
-
-    <!-- Settings Panel (Hidden by default) -->
-    <div id="settings-panel" class="settings-panel" style="display: none;">
-      <div class="settings-header">
-        <h2>Settings</h2>
-        <button id="close-settings" class="icon-btn">✕</button>
-      </div>
-      
-      <div class="settings-content">
-        <!-- Location Settings -->
-        <div class="setting-group">
-          <h3>Location</h3>
-          <label>
-            <span>ZIP Code</span>
-            <input type="text" id="zip-code" placeholder="12345" maxlength="5">
-          </label>
-          <label>
-            <span>Search Radius (miles)</span>
-            <input type="number" id="search-radius" min="5" max="100" value="25">
-          </label>
-        </div>
-
-        <!-- Financial Settings -->
-        <div class="setting-group">
-          <h3>Financial</h3>
-          <label>
-            <span>Min ROI (%)</span>
-            <input type="number" id="min-roi" min="0" max="100" value="25">
-          </label>
-          <label>
-            <span>Max Budget ($)</span>
-            <input type="number" id="max-budget" min="0" value="2000">
-          </label>
-        </div>
-
-        <!-- Notification Settings -->
-        <div class="setting-group">
-          <h3>Notifications</h3>
-          <label class="checkbox-label">
-            <input type="checkbox" id="notify-deals" checked>
-            <span>Notify on good deals</span>
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" id="notify-price-drops">
-            <span>Price drop alerts</span>
-          </label>
-        </div>
-
-        <!-- Save Button -->
-        <button id="save-settings" class="action-btn primary">
-          Save Settings
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <script src="js/popup.js"></script>
+  <div id="root"></div>
+  <script type="module" src="/src/popup/index.tsx"></script>
 </body>
 </html>
