@@ -1,0 +1,862 @@
+# ProxyAssessmentTool - FULLY C# 5.0 Compatible
+param([string]$OutputPath = "ProxyAssessmentTool.exe")
+
+$ErrorActionPreference = "Stop"
+Write-Host "ProxyAssessmentTool Builder (100% C# 5.0 Compatible)" -ForegroundColor Cyan
+Write-Host "====================================================" -ForegroundColor Cyan
+
+$buildDir = Join-Path $env:TEMP "PAT_Build_$(Get-Random)"
+New-Item -ItemType Directory -Path $buildDir -Force | Out-Null
+
+try {
+    # Create a valid icon file (32x32 ICO format)
+    $iconPath = Join-Path $buildDir "icon.ico"
+    
+    # This is a valid 32x32 icon file in binary format
+    $iconBytes = [byte[]](
+        0x00,0x00,0x01,0x00,0x01,0x00,0x20,0x20,0x00,0x00,0x01,0x00,0x20,0x00,
+        0xA8,0x08,0x00,0x00,0x16,0x00,0x00,0x00,0x89,0x50,0x4E,0x47,0x0D,0x0A,
+        0x1A,0x0A,0x00,0x00,0x00,0x0D,0x49,0x48,0x44,0x52,0x00,0x00,0x00,0x20,
+        0x00,0x00,0x00,0x20,0x08,0x06,0x00,0x00,0x00,0x73,0x7A,0x7A,0xF4,0x00,
+        0x00,0x00,0x06,0x62,0x4B,0x47,0x44,0x00,0xFF,0x00,0xFF,0x00,0xFF,0xA0,
+        0xBD,0xA7,0x93,0x00,0x00,0x00,0x09,0x70,0x48,0x59,0x73,0x00,0x00,0x0B,
+        0x13,0x00,0x00,0x0B,0x13,0x01,0x00,0x9A,0x9C,0x18,0x00,0x00,0x00,0x07,
+        0x74,0x49,0x4D,0x45,0x07,0xE8,0x01,0x0A,0x00,0x00,0x00,0x1D,0x0A,0x47,
+        0x5C,0x00,0x00,0x08,0x35,0x49,0x44,0x41,0x54,0x58,0xC3,0xB5,0x57,0x5B,
+        0x6C,0x54,0xD7,0x15,0x3E,0x73,0xCE,0x9C,0x99,0x33,0x33,0x1E,0x8F,0xC7,
+        0x1E,0x7B,0xEC,0xB1,0xC7,0x36,0x36,0x76,0x1C,0xDB,0x0E,0x36,0x0D,0x09,
+        0x09,0x95,0x2A,0x52,0x55,0x52,0xA9,0x52,0x25,0x15,0x42,0x15,0x54,0x95,
+        0x54,0x51,0x21,0x21,0x15,0xF5,0xA1,0x52,0x25,0x55,0x89,0xAA,0x54,0x2A,
+        0x4A,0x93,0x54,0xA9,0x0F,0x6D,0x2A,0x12,0x52,0x40,0x80,0xB4,0x21,0x0D,
+        0x09,0x76,0xEC,0xD8,0xF1,0xD8,0x9E,0x39,0x67,0xCE,0x9C,0x73,0xE6,0xFE,
+        0xC6,0x33,0x67,0xCE,0x99,0x73,0xED,0xB1,0xD7,0x0B,0x82,0x20,0x25,0xCA,
+        0x74,0x7C,0xE6,0xDE,0x6F,0xAD,0xF5,0xBF,0xF7,0xFF,0xAD,0xBD,0x6A,0x00,
+        0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+        0x80,0xFF,0x1F,0x00,0xFE,0x3F,0x51,0x14,0x45,0x51,0x14,0x45,0x51,0x14,
+        0x45,0x51,0x14,0x45,0x51,0x14,0x45,0x51,0x14,0x45,0x51,0x94,0x03,0x70,
+        0x02,0x86,0x00,0x50,0x01,0xC8,0x00,0x2C,0x01,0x08,0x00,0x6C,0x01,0x88,
+        0x00,0x44,0x02,0x42,0x00,0x91,0x01,0x48,0x00,0x64,0x01,0x90,0x00,0x08,
+        0x01,0xE4,0x01,0x10,0x00,0x48,0x01,0x41,0x30,0x0C,0x83,0x28,0x8A,0x20,
+        0x08,0x02,0xDD,0xDD,0xDD,0x89,0x44,0x22,0x68,0x6A,0x6A,0x42,0x22,0x91,
+        0xF8,0x1E,0x00,0x00,0x3C,0x1E,0x0F,0x8A,0x8B,0x8B,0xD1,0xDC,0xDC,0x8C,
+        0x86,0x86,0x06,0x9C,0x39,0x73,0x06,0x5D,0x5D,0x5D,0xD8,0xB1,0x63,0x07,
+        0x5A,0x5B,0x5B,0xD1,0xD8,0xD8,0x88,0xDE,0xDE,0x5E,0x00,0x00,0xCC,0xCD,
+        0xCD,0xA1,0xAB,0xAB,0x0B,0x43,0x43,0x43,0x18,0x1E,0x1E,0x66,0x45,0x45,
+        0x85,0x55,0x89,0x44,0x62,0x77,0x00,0xDE,0x00,0xB0,0x2F,0x10,0x08,0x60,
+        0x66,0x66,0x06,0x5B,0xB7,0x6E,0xC5,0xB2,0x65,0xCB,0x56,0x25,0x12,0x89,
+        0x6F,0x02,0xA8,0x03,0x14,0x9F,0x6C,0x01,0x60,0x01,0x2C,0x16,0x0B,0x5E,
+        0x78,0xE1,0x05,0x6C,0xD8,0xB0,0x61,0x55,0x2A,0x95,0xFA,0x36,0x80,0x5A,
+        0x40,0xF9,0xA9,0x08,0x10,0x01,0xD8,0xB3,0x67,0x0F,0x36,0x6F,0xDE,0x8C,
+        0xDD,0xBB,0x77,0xAF,0x4A,0xA7,0xD3,0xF7,0x01,0xFC,0x02,0xCA,0x83,0x20,
+        0x40,0x9E,0x04,0x01,0x78,0xE0,0x81,0x07,0xB0,0x7C,0xF9,0x72,0x7C,0xF8,
+        0xE1,0x87,0x8B,0xD2,0xE9,0xF4,0x43,0x00,0x35,0x80,0xB2,0x10,0x08,0x82,
+        0x00,0xF9,0xF9,0xF9,0x78,0xEB,0xAD,0xB7,0xB0,0x68,0xD1,0xA2,0x22,0x91,
+        0x48,0x1C,0x00,0xA8,0x06,0x94,0xEB,0x42,0x80,0x2C,0x02,0x04,0x80,0x8C,
+        0x8C,0x0C,0xDC,0x7F,0xFF,0xFD,0x55,0x9D,0x4E,0xE7,0x2E,0x00,0xAD,0x80,
+        0xF2,0x5B,0x44,0x00,0xF2,0x48,0x10,0x40,0x6F,0x6F,0x2F,0x2E,0x5D,0xBA,
+        0xB4,0x2A,0x99,0x4C,0x1E,0x07,0x50,0x05,0x28,0xD7,0x84,0x20,0x91,0x28,
+        0x51,0x00,0x0F,0x3C,0xF0,0x00,0x76,0xEE,0xDC,0x59,0x14,0x0A,0x85,0x9E,
+        0x0E,0xA0,0x1C,0x50,0xBE,0x09,0x01,0x02,0xAC,0x10,0x04,0x70,0xF4,0xE8,
+        0x51,0x5C,0xB9,0x72,0x65,0x91,0x4C,0x26,0x7B,0x03,0x68,0x00,0x94,0x9F,
+        0x8A,0x00,0x69,0x01,0x18,0x1D,0x1D,0xC5,0xB5,0x6B,0xD7,0x8A,0xE3,0xE3,
+        0xE3,0x87,0x00,0xEA,0x01,0xE5,0xBB,0x10,0x04,0x8B,0x1C,0x01,0x58,0xB5,
+        0x6A,0x15,0xAE,0x5F,0xBF,0x2E,0x8E,0x8E,0x8E,0x5E,0x0C,0xA0,0x06,0x50,
+        0x0C,0x82,0x60,0x31,0x50,0x00,0x7E,0x7E,0x7E,0xD8,0xBE,0x7D,0xBB,0x38,
+        0x3C,0x3C,0x7C,0x20,0x80,0x36,0x40,0x39,0x52,0x00,0x48,0x10,0x00,0x2A,
+        0x2B,0x2B,0xB1,0x66,0xCD,0x1A,0x71,0x70,0x70,0xF0,0x58,0x00,0x1D,0x80,
+        0x72,0x10,0x04,0xCB,0x82,0x01,0x78,0xFE,0xF9,0xE7,0xB1,0x65,0xCB,0x96,
+        0x38,0x3E,0x3E,0x9E,0x07,0xD0,0x0C,0x28,0x07,0x82,0x00,0x31,0x52,0x00,
+        0xD6,0xAD,0x5B,0x87,0xF5,0xEB,0xD7,0x8B,0xC3,0xC3,0xC3,0x59,0x00,0xCD,
+        0x80,0x72,0x20,0x08,0x16,0x01,0x19,0x80,0xF7,0xDF,0x7F,0x1F,0x9B,0x37,
+        0x6F,0x16,0x07,0x07,0x07,0x67,0x00,0xB4,0x00,0xCA,0x81,0x10,0x04,0x09,
+        0x0A,0xC0,0xAB,0xAF,0xBE,0x8A,0x4D,0x9B,0x36,0x89,0xFD,0xFD,0xFD,0x59,
+        0x00,0x2D,0x80,0x72,0xA4,0x00,0x10,0x21,0x00,0xCC,0xCF,0xCF,0x63,0xD3,
+        0xA6,0x4D,0xE2,0xF0,0xF0,0xF0,0x11,0x00,0x5B,0x00,0xE5,0x48,0x08,0x90,
+        0x1F,0x78,0x00,0xFE,0xF6,0xDB,0x6F,0x58,0xBF,0x7E,0xBD,0x38,0x38,0x38,
+        0x78,0x14,0xC0,0x36,0x40,0x79,0x12,0x02,0xC4,0x22,0x00,0x91,0x48,0x84,
+        0xCD,0x9B,0x37,0x8B,0xA3,0xA3,0xA3,0x17,0x00,0x6C,0x07,0x94,0x23,0x09,
+        0x01,0x02,0x51,0x00,0x21,0x21,0x21,0xB8,0x74,0xE9,0x52,0x71,0x78,0x78,
+        0xF8,0x48,0x00,0x5B,0x00,0xC5,0x20,0x08,0x52,0x03,0x04,0x88,0x44,0x22,
+        0x6C,0xDB,0xB6,0x4D,0x1C,0x1C,0x1C,0x3C,0x06,0x60,0x1B,0xA0,0x3C,0x09,
+        0x81,0x84,0x01,0x5C,0xB8,0x70,0x01,0x6D,0x6D,0x6D,0xE2,0xE8,0xE8,0xE8,
+        0x7B,0x01,0xB6,0x02,0xCA,0x97,0x22,0x80,0x38,0x62,0x00,0x1C,0x1C,0x1C,
+        0xD0,0xD1,0xD1,0x21,0x0E,0x0F,0x0F,0x3F,0x00,0xB0,0x05,0x50,0x5E,0x08,
+        0x01,0x42,0xA4,0x01,0x74,0x74,0x74,0x88,0xC3,0xC3,0xC3,0x8F,0x02,0xD8,
+        0x02,0x28,0x47,0x84,0x00,0x61,0x4A,0x00,0xDE,0x79,0xE7,0x1D,0xB4,0xB4,
+        0xB4,0x88,0x83,0x83,0x83,0x0F,0x00,0x6C,0x05,0x94,0x87,0x41,0x80,0x28,
+        0x09,0x02,0x88,0x22,0x29,0x91,0x48,0x88,0xC3,0xC3,0xC3,0x4F,0x00,0xEC,
+        0x00,0x94,0x3F,0x45,0x00,0x39,0x04,0x00,0x14,0x14,0x14,0x88,0x83,0x83,
+        0x83,0x0F,0x02,0xD8,0x06,0x28,0x87,0x82,0x60,0x51,0x24,0x01,0x1C,0x38,
+        0x70,0x00,0x1D,0x1D,0x1D,0xE2,0xF0,0xF0,0xF0,0x43,0x00,0x5B,0x01,0xE5,
+        0x50,0x08,0x90,0x4B,0x00,0x58,0xB4,0x68,0x11,0x3A,0x3B,0x3B,0xC5,0xC1,
+        0xC1,0xC1,0xC7,0x00,0x6C,0x03,0x94,0x43,0x45,0x00,0x71,0x94,0x00,0x0C,
+        0x0C,0x0C,0x88,0xE3,0xE3,0xE3,0x4F,0x00,0xEC,0x04,0x94,0x07,0x49,0x00,
+        0x29,0x00,0x0C,0x0C,0x0C,0x48,0x00,0x8F,0x03,0xD8,0x05,0x28,0x5F,0x8A,
+        0x00,0x91,0x86,0x00,0x84,0x10,0x1B,0x40,0x60,0x01,0x20,0x99,0x4C,0x86,
+        0xCC,0xCC,0x4C,0xB1,0x73,0xE7,0x4E,0x00,0x00,0x76,0xEE,0xDC,0x89,0x1D,
+        0x3B,0x76,0x60,0xFB,0xF6,0xED,0x45,0x32,0x99,0x7C,0x09,0xA0,0x16,0xB0,
+        0x5A,0xAD,0x62,0xE7,0xCE,0x9D,0xD8,0xBE,0x7D,0x3B,0x91,0x48,0x64,0x46,
+        0x51,0x94,0x03,0x80,0xFC,0xFC,0x7C,0xEC,0xDE,0xBD,0x1B,0xBB,0x77,0xEF,
+        0x26,0x10,0x08,0xCC,0x28,0x8A,0x72,0x44,0x00,0x2E,0x5F,0xBE,0x8C,0x9D,
+        0x3B,0x77,0x12,0x08,0x04,0x66,0x45,0x51,0x1C,0x3B,0x80,0x65,0xCB,0x96,
+        0x61,0xCF,0x9E,0x3D,0x04,0x02,0x81,0x19,0x00,0x3B,0x00,0x8F,0x3E,0xFA,
+        0x28,0xF6,0xEC,0xD9,0x43,0x30,0x18,0x6C,0x52,0x14,0xE5,0x44,0x80,0xFC,
+        0xFC,0x7C,0xEC,0xDB,0xB7,0x0F,0xA1,0x50,0x68,0x06,0xC0,0x3E,0xC0,0xF3,
+        0xCF,0x3F,0x8F,0xBD,0x7B,0xF7,0x12,0x0C,0x06,0x9B,0x00,0x70,0x10,0xF0,
+        0xF8,0xE3,0x8F,0x63,0xDF,0xBE,0x7D,0x04,0x83,0xC1,0x56,0x45,0x51,0xCE,
+        0x00,0x58,0xBC,0x78,0x31,0xF6,0xED,0xDB,0x47,0x28,0x14,0x5A,0x05,0xB0,
+        0x03,0xF0,0xFA,0xEB,0xAF,0x63,0xFF,0xFE,0xFD,0x84,0x42,0xA1,0x15,0x00,
+        0x7B,0x01,0x6F,0xBF,0xFD,0x36,0x0E,0x1C,0x38,0x40,0x38,0x1C,0x3A,0x15,
+        0x45,0x39,0x0B,0x78,0xFD,0xF5,0xD7,0x31,0x3C,0x3C,0x8C,0xA0,0xBF,0xBF,
+        0xD5,0x12,0xF5,0x10,0xC0,0xC1,0x83,0x07,0x71,0xE8,0xD0,0x21,0x82,0xFE,
+        0xFE,0xD6,0x12,0xF5,0x08,0xE0,0xC8,0x91,0x23,0x38,0x7C,0xF8,0x30,0xC1,
+        0x60,0x70,0x4B,0x51,0x94,0x8B,0x80,0xAE,0xAE,0x2E,0x1C,0x39,0x72,0x84,
+        0x70,0x38,0x7C,0x0A,0xC0,0x01,0xC0,0x99,0x33,0x67,0x70,0xF4,0xE8,0x51,
+        0xC2,0xE1,0xF0,0x69,0x89,0x7A,0x18,0xE0,0xD8,0xB1,0x63,0x38,0x76,0xEC,
+        0x58,0x82,0xC1,0xE0,0x33,0x00,0x76,0x03,0x1E,0x7B,0xEC,0x31,0x8E,0x1F,
+        0x3F,0x4E,0x20,0x10,0x78,0x06,0xC0,0x31,0xC0,0xEA,0xD5,0xAB,0x39,0x71,
+        0xE2,0x04,0x61,0x9A,0xA6,0xAD,0x12,0xF5,0x28,0xE0,0xCD,0x37,0xDF,0xC4,
+        0x89,0x13,0x27,0x08,0xD3,0x34,0x6D,0x89,0x7A,0x0C,0x70,0xEE,0xDC,0x39,
+        0x9C,0x3C,0x79,0x92,0x30,0x4D,0xD3,0x32,0x00,0x0E,0x02,0xDE,0x7D,0xF7,
+        0x5D,0x4E,0x9E,0x3C,0x49,0x24,0x93,0xC9,0x2D,0x89,0x7A,0x02,0x70,0xF9,
+        0xF2,0x65,0x4E,0x9C,0x38,0x41,0xE4,0x72,0xB9,0x2D,0x51,0x4F,0x01,0x5C,
+        0xB8,0x70,0x01,0xA7,0x4E,0x9D,0x22,0x72,0xB9,0xDC,0x32,0x00,0x0E,0x01,
+        0x3E,0xFC,0xF0,0x43,0x4E,0x9F,0x3E,0x4D,0xE4,0x72,0xB9,0x15,0x00,0x87,
+        0x01,0xBF,0xFD,0xF6,0x1B,0xCE,0x9C,0x39,0x43,0xFC,0xFE,0xFE,0x97,0x24,
+        0xEA,0x29,0xC0,0xAF,0xBF,0xFE,0x8A,0xB3,0x67,0xCF,0x12,0xBF,0xBF,0xFF,
+        0x65,0x00,0xF7,0x01,0xBF,0xFE,0xFA,0x2B,0xCE,0x9F,0x3F,0x4F,0xFC,0xFD,
+        0xFD,0xAF,0x04,0x30,0x0B,0xF8,0xED,0xB7,0xDF,0xE2,0xDC,0xB9,0x73,0x24,
+        0x10,0x08,0xFC,0x4A,0xA2,0x9E,0x05,0x7C,0xFB,0xED,0xB7,0x9C,0x3F,0x7F,
+        0x9E,0x04,0x02,0x81,0xDF,0x00,0x18,0x02,0xFC,0xFE,0xFB,0xEF,0x9C,0x3D,
+        0x7B,0x96,0x78,0x3C,0x3E,0x0B,0x60,0x2F,0xE0,0xF9,0xE7,0x9F,0xE7,0xEC,
+        0xD9,0xB3,0xC4,0xE3,0xF1,0xD9,0x12,0xF5,0x3C,0xE0,0xF9,0xE7,0x9F,0xE7,
+        0xFC,0xF9,0xF3,0xC4,0xE1,0xE1,0xE1,0xB7,0x24,0xEA,0x45,0xC0,0xAF,0xBF,
+        0xFE,0x3A,0x17,0x2E,0x5C,0x20,0x8E,0x8E,0x8E,0x7E,0x10,0xC0,0x61,0xC0,
+        0x9F,0x7F,0xFE,0x39,0x67,0xCF,0x9E,0x25,0x0E,0x0F,0x0F,0x7F,0x20,0x80,
+        0x23,0x80,0x5F,0x7F,0xFD,0x75,0xAE,0x5C,0xB9,0x42,0x9C,0x9C,0x9C,0xFC,
+        0x50,0x00,0x47,0x01,0xFF,0xFD,0xF7,0xDF,0xB9,0x7A,0xF5,0x2A,0x71,0x74,
+        0x74,0xF4,0x23,0x00,0x06,0x00,0x7F,0xFD,0xF5,0x57,0xEE,0xDD,0xBB,0x47,
+        0x1C,0x1E,0x1E,0x3E,0x23,0x51,0xE7,0x02,0x7F,0xFF,0xFD,0x77,0x6E,0xDE,
+        0xBC,0x49,0x1C,0x1D,0x1D,0xFD,0x48,0x00,0x83,0x80,0x7F,0xFE,0xF9,0x67,
+        0xEE,0xDD,0xBB,0x47,0x9C,0x9C,0x9C,0xFC,0x58,0x00,0x83,0x80,0xFF,0xFE,
+        0xFB,0xEF,0xDC,0xBB,0x77,0x8F,0x38,0x3E,0x3E,0xFE,0x89,0x00,0x8E,0x00,
+        0xFE,0xF7,0xDF,0x7F,0xB9,0x7F,0xFF,0x3E,0x71,0x72,0x72,0xF2,0xF7,0x80,
+        0xE7,0x9F,0x7F,0x9E,0x87,0x1E,0x7A,0x88,0x10,0x42,0xDF,0x05,0xB8,0x1D,
+        0xB8,0x5D,0x00,0xE7,0xCE,0x9D,0xC3,0xC3,0x0F,0x3F,0x6C,0x31,0x1E,0x8F,
+        0x3F,0xD7,0x00,0xCE,0x9E,0x3D,0x8B,0x47,0x1F,0x7D,0xD4,0x62,0x30,0x18,
+        0x7C,0x1E,0xC0,0x99,0x33,0x67,0xF0,0xE8,0xA3,0x8F,0x5A,0x8C,0xC7,0xE3,
+        0x2F,0x00,0x38,0x7B,0xF6,0x2C,0x1E,0x7F,0xFC,0x71,0x8B,0xD1,0x68,0xF4,
+        0x45,0x00,0x67,0xCE,0x9C,0xC1,0x93,0x4F,0x3E,0x69,0x31,0x1A,0x8D,0xBE,
+        0x0C,0xE0,0xCC,0x99,0x33,0x78,0xFA,0xE9,0xA7,0x0B,0x5B,0x2D,0x06,0x83,
+        0xC1,0x1A,0x40,0x10,0x04,0xDF,0x01,0x70,0xE6,0xCC,0x19,0x3C,0xFB,0xEC,
+        0xB3,0x45,0x14,0x45,0xBF,0x02,0x70,0xEE,0xDC,0x39,0x3C,0xFD,0xF4,0xD3,
+        0x16,0x51,0x14,0xFD,0x1A,0xC0,0xD9,0xB3,0x67,0xF1,0xEC,0xB3,0xCF,0x5A,
+        0x51,0x14,0xFD,0x06,0xC0,0xB9,0x73,0xE7,0xF0,0xFC,0xF3,0xCF,0x17,0xB6,
+        0x5A,0x45,0x51,0xF4,0xBB,0x65,0xDA,0xFD,0xDF,0x00,0x00,0x00,0x00,0x00,
+        0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x18,0xFE,0x0F,
+        0xA7,0x15,0x3F,0x24,0x4E,0x42,0xE2,0x0A,0x00,0x00,0x00,0x00,0x49,0x45,
+        0x4E,0x44,0xAE,0x42,0x60,0x82
+    )
+    
+    [System.IO.File]::WriteAllBytes($iconPath, $iconBytes)
+
+    # C# Source Code (100% C# 5.0 Compatible - NO modern features)
+    $sourceCode = @'
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
+using System.Net;
+using System.Net.Sockets;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
+using System.ComponentModel;
+using System.Linq;
+
+namespace ProxyAssessmentTool
+{
+    public static class DiscordColors
+    {
+        public static readonly Color Background = Color.FromArgb(54, 57, 63);
+        public static readonly Color DarkerBackground = Color.FromArgb(47, 49, 54);
+        public static readonly Color DarkestBackground = Color.FromArgb(32, 34, 37);
+        public static readonly Color TextNormal = Color.FromArgb(220, 221, 222);
+        public static readonly Color TextMuted = Color.FromArgb(142, 146, 151);
+        public static readonly Color Blurple = Color.FromArgb(88, 101, 242);
+        public static readonly Color Green = Color.FromArgb(87, 242, 135);
+        public static readonly Color Yellow = Color.FromArgb(254, 231, 92);
+        public static readonly Color Red = Color.FromArgb(237, 66, 69);
+    }
+
+    public class ProxyInfo
+    {
+        public string IP { get; set; }
+        public int Port { get; set; }
+        public string Country { get; set; }
+        public string City { get; set; }
+        public string Carrier { get; set; }
+        public bool IsEligible { get; set; }
+        public int ResponseTimeMs { get; set; }
+    }
+
+    public class MainForm : Form
+    {
+        public const string VERSION = "2.2.0";
+        
+        private Label statusLabel;
+        private FlowLayoutPanel proxyContainer;
+        private Label scanningLabel;
+        private ProgressBar scanProgress;
+        private System.Windows.Forms.Timer updateTimer;
+        private System.Windows.Forms.Timer scanTimer;
+        private BackgroundWorker updateWorker;
+        private BackgroundWorker scanWorker;
+        private Dictionary<string, ProxyInfo> foundProxies = new Dictionary<string, ProxyInfo>();
+        private int eligibleCount = 0;
+        private int totalFound = 0;
+        private NotifyIcon trayIcon;
+        private Label foundLabel;
+        private Label eligibleLabel;
+        private Button exportButton;
+        
+        // Proxy sources
+        private readonly string[] proxySources = new string[] {
+            "https://www.proxy-list.download/api/v1/get?type=socks5",
+            "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=socks5&timeout=10000&country=US",
+            "https://raw.githubusercontent.com/TheSpeedX/SOCKS-List/master/socks5.txt",
+            "https://raw.githubusercontent.com/hookzof/socks5_list/master/proxy.txt"
+        };
+        
+        [DllImport("user32.dll")]
+        private static extern bool SetProcessDPIAware();
+        
+        public MainForm()
+        {
+            SetProcessDPIAware();
+            InitializeUI();
+            InitializeWorkers();
+            StartScanning();
+            StartUpdateChecking();
+        }
+        
+        private void InitializeUI()
+        {
+            Text = "ProxyAssessmentTool v" + VERSION;
+            Size = new Size(1200, 700);
+            StartPosition = FormStartPosition.CenterScreen;
+            BackColor = DiscordColors.Background;
+            
+            // Header panel
+            Panel headerPanel = new Panel();
+            headerPanel.Height = 120;
+            headerPanel.Dock = DockStyle.Top;
+            headerPanel.BackColor = DiscordColors.DarkestBackground;
+            Controls.Add(headerPanel);
+            
+            // Title
+            Label headerLabel = new Label();
+            headerLabel.Text = "PROXY SCANNER PRO";
+            headerLabel.Font = new Font("Segoe UI", 20F, FontStyle.Bold);
+            headerLabel.ForeColor = DiscordColors.TextNormal;
+            headerLabel.Location = new Point(30, 20);
+            headerLabel.AutoSize = true;
+            headerPanel.Controls.Add(headerLabel);
+            
+            // Stats
+            foundLabel = new Label();
+            foundLabel.Text = "Found: 0";
+            foundLabel.Font = new Font("Segoe UI", 12F);
+            foundLabel.ForeColor = DiscordColors.Yellow;
+            foundLabel.Location = new Point(30, 60);
+            foundLabel.AutoSize = true;
+            headerPanel.Controls.Add(foundLabel);
+            
+            eligibleLabel = new Label();
+            eligibleLabel.Text = "Eligible: 0";
+            eligibleLabel.Font = new Font("Segoe UI", 12F);
+            eligibleLabel.ForeColor = DiscordColors.Green;
+            eligibleLabel.Location = new Point(150, 60);
+            eligibleLabel.AutoSize = true;
+            headerPanel.Controls.Add(eligibleLabel);
+            
+            // Export button
+            exportButton = new Button();
+            exportButton.Text = "Export Eligible";
+            exportButton.BackColor = DiscordColors.Blurple;
+            exportButton.ForeColor = Color.White;
+            exportButton.FlatStyle = FlatStyle.Flat;
+            exportButton.Font = new Font("Segoe UI", 10F);
+            exportButton.Location = new Point(1050, 55);
+            exportButton.Size = new Size(120, 30);
+            exportButton.Click += new EventHandler(OnExportClick);
+            headerPanel.Controls.Add(exportButton);
+            
+            // Scanning status
+            scanningLabel = new Label();
+            scanningLabel.Text = "Initializing scanner...";
+            scanningLabel.Font = new Font("Segoe UI", 10F);
+            scanningLabel.ForeColor = DiscordColors.TextMuted;
+            scanningLabel.Location = new Point(30, 90);
+            scanningLabel.AutoSize = true;
+            headerPanel.Controls.Add(scanningLabel);
+            
+            scanProgress = new ProgressBar();
+            scanProgress.Location = new Point(30, 100);
+            scanProgress.Size = new Size(1140, 6);
+            scanProgress.Style = ProgressBarStyle.Marquee;
+            headerPanel.Controls.Add(scanProgress);
+            
+            // Proxy container
+            proxyContainer = new FlowLayoutPanel();
+            proxyContainer.Dock = DockStyle.Fill;
+            proxyContainer.AutoScroll = true;
+            proxyContainer.BackColor = DiscordColors.DarkerBackground;
+            proxyContainer.Padding = new Padding(20);
+            Controls.Add(proxyContainer);
+            
+            // Status bar
+            Panel statusBar = new Panel();
+            statusBar.Height = 25;
+            statusBar.BackColor = DiscordColors.DarkestBackground;
+            statusBar.Dock = DockStyle.Bottom;
+            Controls.Add(statusBar);
+            
+            statusLabel = new Label();
+            statusLabel.Text = "Ready - Auto-Update Enabled";
+            statusLabel.ForeColor = DiscordColors.TextMuted;
+            statusLabel.Location = new Point(10, 4);
+            statusLabel.AutoSize = true;
+            statusBar.Controls.Add(statusLabel);
+            
+            // System tray
+            trayIcon = new NotifyIcon();
+            trayIcon.Icon = SystemIcons.Application;
+            trayIcon.Text = "ProxyAssessmentTool";
+            trayIcon.Visible = true;
+            
+            ContextMenuStrip trayMenu = new ContextMenuStrip();
+            trayMenu.Items.Add("Show", null, new EventHandler(OnTrayShow));
+            trayMenu.Items.Add("Exit", null, new EventHandler(OnTrayExit));
+            trayIcon.ContextMenuStrip = trayMenu;
+            trayIcon.DoubleClick += new EventHandler(OnTrayShow);
+        }
+        
+        private void OnTrayShow(object sender, EventArgs e)
+        {
+            WindowState = FormWindowState.Normal;
+            Show();
+        }
+        
+        private void OnTrayExit(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+        
+        private void OnExportClick(object sender, EventArgs e)
+        {
+            try
+            {
+                string filename = string.Format("eligible_proxies_{0}.txt", DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+                StringBuilder content = new StringBuilder();
+                content.AppendLine("# ProxyAssessmentTool Export");
+                content.AppendLine("# Generated: " + DateTime.Now.ToString());
+                content.AppendLine("# Eligible SOCKS5 Proxies (US Mobile)");
+                content.AppendLine();
+                
+                foreach (ProxyInfo proxy in foundProxies.Values)
+                {
+                    if (proxy.IsEligible)
+                    {
+                        content.AppendLine(proxy.IP + ":" + proxy.Port);
+                    }
+                }
+                
+                File.WriteAllText(filename, content.ToString());
+                MessageBox.Show(string.Format("Exported {0} proxies to:\n{1}", eligibleCount, filename), 
+                    "Export Successful", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Export failed: " + ex.Message, "Error", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        
+        private void InitializeWorkers()
+        {
+            updateWorker = new BackgroundWorker();
+            updateWorker.DoWork += new DoWorkEventHandler(CheckForUpdates);
+            updateWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(OnUpdateCheckComplete);
+            
+            scanWorker = new BackgroundWorker();
+            scanWorker.WorkerReportsProgress = true;
+            scanWorker.DoWork += new DoWorkEventHandler(ScanProxies);
+            scanWorker.ProgressChanged += new ProgressChangedEventHandler(OnScanProgress);
+            scanWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(OnScanComplete);
+        }
+        
+        private void StartUpdateChecking()
+        {
+            updateTimer = new System.Windows.Forms.Timer();
+            updateTimer.Interval = 60000; // 1 minute
+            updateTimer.Tick += new EventHandler(delegate(object s, EventArgs e) { 
+                if (!updateWorker.IsBusy) updateWorker.RunWorkerAsync(); 
+            });
+            updateTimer.Start();
+            
+            // Check immediately
+            if (!updateWorker.IsBusy)
+                updateWorker.RunWorkerAsync();
+        }
+        
+        private void CheckForUpdates(object sender, DoWorkEventArgs e)
+        {
+            try
+            {
+                using (WebClient client = new WebClient())
+                {
+                    client.Headers.Add("User-Agent", "ProxyAssessmentTool/" + VERSION);
+                    string json = client.DownloadString("https://api.github.com/repos/oranolio956/flipperflipper/releases/latest");
+                    
+                    // Simple JSON parsing
+                    Match tagMatch = Regex.Match(json, @"""tag_name""\s*:\s*""([^""]+)""");
+                    if (tagMatch.Success)
+                    {
+                        string latestVersion = tagMatch.Groups[1].Value.TrimStart('v');
+                        if (CompareVersions(latestVersion, VERSION) > 0)
+                        {
+                            e.Result = latestVersion;
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Silent fail
+            }
+        }
+        
+        private void OnUpdateCheckComplete(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Result != null)
+            {
+                string newVersion = (string)e.Result;
+                BeginInvoke(new Action(delegate()
+                {
+                    ShowUpdateNotification(newVersion);
+                    DownloadAndInstallUpdate("v" + newVersion);
+                }));
+            }
+        }
+        
+        private void ShowUpdateNotification(string version)
+        {
+            Panel updatePanel = new Panel();
+            updatePanel.BackColor = DiscordColors.Green;
+            updatePanel.Height = 40;
+            updatePanel.Dock = DockStyle.Top;
+            
+            Label updateLabel = new Label();
+            updateLabel.Text = "Update v" + version + " is being installed...";
+            updateLabel.ForeColor = Color.Black;
+            updateLabel.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            updateLabel.Location = new Point(20, 10);
+            updateLabel.AutoSize = true;
+            updatePanel.Controls.Add(updateLabel);
+            
+            Controls.Add(updatePanel);
+            updatePanel.BringToFront();
+            
+            trayIcon.ShowBalloonTip(5000, "Update Available", 
+                "Version " + version + " is being installed.", ToolTipIcon.Info);
+        }
+        
+        private void DownloadAndInstallUpdate(string tag)
+        {
+            try
+            {
+                string url = string.Format("https://github.com/oranolio956/flipperflipper/releases/download/{0}/ProxyAssessmentTool.exe", tag);
+                string tempFile = Path.Combine(Path.GetTempPath(), "ProxyAssessmentTool_Update.exe");
+                
+                using (WebClient client = new WebClient())
+                {
+                    client.DownloadFile(url, tempFile);
+                }
+                
+                // Create updater script
+                string script = string.Format(@"@echo off
+timeout /t 2 /nobreak > nul
+move /y ""{0}"" ""{1}""
+start """" ""{1}""
+del ""%~f0""", tempFile, Application.ExecutablePath);
+                
+                string scriptPath = Path.Combine(Path.GetTempPath(), "updater.bat");
+                File.WriteAllText(scriptPath, script);
+                
+                ProcessStartInfo psi = new ProcessStartInfo();
+                psi.FileName = scriptPath;
+                psi.CreateNoWindow = true;
+                psi.UseShellExecute = false;
+                Process.Start(psi);
+                
+                Application.Exit();
+            }
+            catch
+            {
+                // Silent fail
+            }
+        }
+        
+        private int CompareVersions(string v1, string v2)
+        {
+            int[] parts1 = Array.ConvertAll(v1.Split('.'), int.Parse);
+            int[] parts2 = Array.ConvertAll(v2.Split('.'), int.Parse);
+            
+            for (int i = 0; i < Math.Max(parts1.Length, parts2.Length); i++)
+            {
+                int p1 = i < parts1.Length ? parts1[i] : 0;
+                int p2 = i < parts2.Length ? parts2[i] : 0;
+                if (p1 != p2) return p1.CompareTo(p2);
+            }
+            
+            return 0;
+        }
+        
+        private void StartScanning()
+        {
+            scanTimer = new System.Windows.Forms.Timer();
+            scanTimer.Interval = 30000; // 30 seconds
+            scanTimer.Tick += new EventHandler(delegate(object s, EventArgs e) { 
+                if (!scanWorker.IsBusy) scanWorker.RunWorkerAsync(); 
+            });
+            scanTimer.Start();
+            
+            // Start immediately
+            if (!scanWorker.IsBusy)
+                scanWorker.RunWorkerAsync();
+        }
+        
+        private void ScanProxies(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker worker = sender as BackgroundWorker;
+            List<string> allProxies = new List<string>();
+            
+            // Fetch proxies from sources
+            foreach (string source in proxySources)
+            {
+                try
+                {
+                    using (WebClient client = new WebClient())
+                    {
+                        client.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+                        string data = client.DownloadString(source);
+                        
+                        MatchCollection matches = Regex.Matches(data, @"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}:[0-9]{1,5}\b");
+                        foreach (Match match in matches)
+                        {
+                            if (!allProxies.Contains(match.Value))
+                                allProxies.Add(match.Value);
+                        }
+                    }
+                }
+                catch
+                {
+                    // Continue with next source
+                }
+            }
+            
+            // Test each proxy
+            int tested = 0;
+            List<Task> tasks = new List<Task>();
+            
+            // Process only first 100 to prevent overload
+            List<string> proxiesToTest = allProxies.Take(100).ToList();
+            
+            foreach (string proxy in proxiesToTest)
+            {
+                if (!foundProxies.ContainsKey(proxy))
+                {
+                    string[] parts = proxy.Split(':');
+                    int port;
+                    if (parts.Length == 2 && int.TryParse(parts[1], out port))
+                    {
+                        string ip = parts[0];
+                        int localTested = tested;
+                        
+                        Task task = Task.Run(delegate()
+                        {
+                            ProxyInfo info = TestProxy(ip, port);
+                            if (info != null)
+                            {
+                                lock (foundProxies)
+                                {
+                                    foundProxies[proxy] = info;
+                                }
+                                worker.ReportProgress(localTested, info);
+                            }
+                        });
+                        tasks.Add(task);
+                    }
+                }
+                tested++;
+            }
+            
+            Task.WaitAll(tasks.ToArray());
+        }
+        
+        private ProxyInfo TestProxy(string ip, int port)
+        {
+            try
+            {
+                using (TcpClient client = new TcpClient())
+                {
+                    client.ReceiveTimeout = 5000;
+                    client.SendTimeout = 5000;
+                    
+                    IAsyncResult ar = client.BeginConnect(ip, port, null, null);
+                    System.Threading.WaitHandle wh = ar.AsyncWaitHandle;
+                    
+                    try
+                    {
+                        if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(5000), false))
+                        {
+                            client.Close();
+                            return null;
+                        }
+                        
+                        client.EndConnect(ar);
+                    }
+                    finally
+                    {
+                        wh.Close();
+                    }
+                    
+                    if (!client.Connected)
+                        return null;
+                    
+                    // SOCKS5 handshake
+                    NetworkStream stream = client.GetStream();
+                    byte[] greeting = new byte[] { 0x05, 0x01, 0x00 };
+                    stream.Write(greeting, 0, greeting.Length);
+                    
+                    byte[] response = new byte[2];
+                    int read = stream.Read(response, 0, 2);
+                    
+                    if (read == 2 && response[0] == 0x05 && response[1] == 0x00)
+                    {
+                        // Get location
+                        string location = GetLocation(ip);
+                        bool isUS = location.Contains("United States") || location.Contains("US");
+                        bool isMobile = location.Contains("mobile") || location.Contains("wireless") || 
+                                      location.Contains("cellular") || location.Contains("Verizon") || 
+                                      location.Contains("AT&T") || location.Contains("T-Mobile");
+                        
+                        ProxyInfo info = new ProxyInfo();
+                        info.IP = ip;
+                        info.Port = port;
+                        info.Country = isUS ? "US" : "Other";
+                        info.City = "Unknown";
+                        info.Carrier = isMobile ? "Mobile Network" : "Fixed";
+                        info.IsEligible = isUS && isMobile;
+                        info.ResponseTimeMs = 100;
+                        
+                        return info;
+                    }
+                }
+            }
+            catch
+            {
+                // Failed
+            }
+            
+            return null;
+        }
+        
+        private string GetLocation(string ip)
+        {
+            try
+            {
+                using (WebClient client = new WebClient())
+                {
+                    return client.DownloadString("http://ip-api.com/line/" + ip);
+                }
+            }
+            catch
+            {
+                return "Unknown";
+            }
+        }
+        
+        private void OnScanProgress(object sender, ProgressChangedEventArgs e)
+        {
+            ProxyInfo info = e.UserState as ProxyInfo;
+            if (info != null)
+            {
+                totalFound++;
+                if (info.IsEligible)
+                    eligibleCount++;
+                
+                AddProxyCard(info);
+                UpdateStatus();
+            }
+        }
+        
+        private void OnScanComplete(object sender, RunWorkerCompletedEventArgs e)
+        {
+            scanningLabel.Text = "Scan complete. Next scan in 30 seconds...";
+        }
+        
+        private void AddProxyCard(ProxyInfo info)
+        {
+            Panel card = new Panel();
+            card.Size = new Size(240, 130);
+            card.BackColor = DiscordColors.DarkestBackground;
+            card.Margin = new Padding(5);
+            card.Cursor = Cursors.Hand;
+            card.Tag = info;
+            
+            // Border effect
+            card.Paint += new PaintEventHandler(delegate(object sender, PaintEventArgs e)
+            {
+                ControlPaint.DrawBorder(e.Graphics, card.ClientRectangle,
+                    info.IsEligible ? DiscordColors.Green : DiscordColors.Red, ButtonBorderStyle.Solid);
+            });
+            
+            Label ipLabel = new Label();
+            ipLabel.Text = info.IP + ":" + info.Port;
+            ipLabel.Font = new Font("Consolas", 11F, FontStyle.Bold);
+            ipLabel.ForeColor = DiscordColors.TextNormal;
+            ipLabel.Location = new Point(10, 10);
+            ipLabel.AutoSize = true;
+            card.Controls.Add(ipLabel);
+            
+            Label statusLabel = new Label();
+            statusLabel.Text = info.IsEligible ? "ELIGIBLE" : "INELIGIBLE";
+            statusLabel.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            statusLabel.ForeColor = info.IsEligible ? DiscordColors.Green : DiscordColors.Red;
+            statusLabel.Location = new Point(10, 35);
+            statusLabel.AutoSize = true;
+            card.Controls.Add(statusLabel);
+            
+            Label locationLabel = new Label();
+            locationLabel.Text = info.Country + " - " + info.Carrier;
+            locationLabel.Font = new Font("Segoe UI", 9F);
+            locationLabel.ForeColor = DiscordColors.TextMuted;
+            locationLabel.Location = new Point(10, 60);
+            locationLabel.AutoSize = true;
+            card.Controls.Add(locationLabel);
+            
+            Label timeLabel = new Label();
+            timeLabel.Text = "Tested: " + DateTime.Now.ToString("HH:mm:ss");
+            timeLabel.Font = new Font("Segoe UI", 8F);
+            timeLabel.ForeColor = DiscordColors.TextMuted;
+            timeLabel.Location = new Point(10, 85);
+            timeLabel.AutoSize = true;
+            card.Controls.Add(timeLabel);
+            
+            // Click to copy
+            EventHandler clickHandler = new EventHandler(delegate(object s, EventArgs ev)
+            {
+                Clipboard.SetText(info.IP + ":" + info.Port);
+                MessageBox.Show("Proxy copied to clipboard!", "Success", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            });
+            
+            card.Click += clickHandler;
+            foreach (Control c in card.Controls)
+                c.Click += clickHandler;
+            
+            proxyContainer.Controls.Add(card);
+            
+            // Keep only last 50
+            if (proxyContainer.Controls.Count > 50)
+            {
+                proxyContainer.Controls.RemoveAt(0);
+            }
+        }
+        
+        private void UpdateStatus()
+        {
+            statusLabel.Text = string.Format("Found: {0} | Eligible: {1} | Auto-Update: ON", totalFound, eligibleCount);
+            scanningLabel.Text = string.Format("Scanning internet for proxies... ({0} found)", totalFound);
+            foundLabel.Text = "Found: " + totalFound;
+            eligibleLabel.Text = "Eligible: " + eligibleCount;
+        }
+        
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            if (updateTimer != null) updateTimer.Stop();
+            if (scanTimer != null) scanTimer.Stop();
+            if (trayIcon != null) trayIcon.Dispose();
+            base.OnFormClosed(e);
+        }
+    }
+    
+    public class Program
+    {
+        [STAThread]
+        public static void Main()
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new MainForm());
+        }
+    }
+}
+'@
+
+    $sourceFile = Join-Path $buildDir "ProxyAssessmentTool.cs"
+    Set-Content -Path $sourceFile -Value $sourceCode -Encoding UTF8
+
+    $cscPath = "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
+    if (-not (Test-Path $cscPath)) {
+        $cscPath = "$env:WINDIR\Microsoft.NET\Framework\v4.0.30319\csc.exe"
+    }
+
+    Write-Host "`nCompiling with: $cscPath" -ForegroundColor Gray
+    
+    # Compile with proper references
+    $references = @(
+        "/reference:System.dll",
+        "/reference:System.Core.dll",
+        "/reference:System.Drawing.dll",
+        "/reference:System.Windows.Forms.dll",
+        "/reference:System.Net.dll",
+        "/reference:System.Net.Http.dll",
+        "/reference:System.Linq.dll"
+    )
+    
+    & $cscPath /target:winexe /optimize+ /win32icon:"$iconPath" $references "/out:$OutputPath" "$sourceFile" 2>&1
+
+    if ($LASTEXITCODE -eq 0 -and (Test-Path $OutputPath)) {
+        Write-Host "`nSUCCESS!" -ForegroundColor Green
+        Write-Host "Built: $OutputPath" -ForegroundColor White
+        Write-Host ""
+        Write-Host "FEATURES:" -ForegroundColor Cyan
+        Write-Host "  * Automatic updates every 60 seconds" -ForegroundColor Gray
+        Write-Host "  * Internet proxy scanning (4 sources)" -ForegroundColor Gray
+        Write-Host "  * Discord-inspired dark theme" -ForegroundColor Gray
+        Write-Host "  * Click any proxy to copy" -ForegroundColor Gray
+        Write-Host "  * Export eligible proxies" -ForegroundColor Gray
+        Write-Host "  * System tray support" -ForegroundColor Gray
+        Write-Host "  * US mobile carrier detection" -ForegroundColor Gray
+        Write-Host "  * 100% C# 5.0 compatible" -ForegroundColor Gray
+        Write-Host ""
+        
+        # Try to run it
+        Write-Host "Starting ProxyAssessmentTool..." -ForegroundColor Yellow
+        Start-Process $OutputPath
+    }
+    else {
+        Write-Host "`nCompilation failed!" -ForegroundColor Red
+        Write-Host "Exit code: $LASTEXITCODE" -ForegroundColor Red
+    }
+}
+finally {
+    Remove-Item -Path $buildDir -Recurse -Force -ErrorAction SilentlyContinue
+}
