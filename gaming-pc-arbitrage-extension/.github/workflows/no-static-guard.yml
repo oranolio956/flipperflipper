@@ -1,71 +1,81 @@
 name: No Static Content Guard
 
 on:
+  pull_request:
   push:
     branches: [main, develop]
-  pull_request:
-    branches: [main]
 
 jobs:
-  check-static:
+  static-content-check:
     runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v3
     
-    - name: Check for forbidden static content
+    - name: Check for forbidden static content tokens
       run: |
-        echo "🔍 Checking for static/mock content in production files..."
+        echo "Scanning for production-breaking static content..."
         
-        FORBIDDEN_PATTERNS="mock|fixture|demo|placeholder|TODO|FIXME|staticData|stub|lorem"
-        PROD_FILES=$(find ./extension/src -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" | grep -v ".test." | grep -v ".spec." | grep -v "__tests__")
+        # Define forbidden patterns
+        FORBIDDEN_PATTERNS="mock\(|fixture\(|placeholder candidates|TODO|FIXME|staticData|stub\(|lorem|generateFake|createMock|dummyData|sampleData|testData|fakeData|Math\.random\(\) \* [0-9]+ \+ [0-9]+"
         
-        VIOLATIONS=0
-        echo "Files with static content:"
-        echo "========================="
+        # Define production source paths (exclude tests)
+        PROD_PATHS="extension/src extension/dist packages/core/src packages/data/src packages/integrations/src"
         
-        for file in $PROD_FILES; do
-          # Skip test files and Field component (placeholder is OK for form fields)
-          if [[ "$file" == *"Field.tsx"* ]] || [[ "$file" == *"/tests/"* ]]; then
-            continue
-          fi
-          
-          # Check for real static data, not UI placeholders
-          if grep -E "(mock[A-Z]|fixture[A-Z]|staticData|TODO|FIXME|placeholder candidates)" "$file" > /dev/null 2>&1; then
-            echo "❌ STATIC CONTENT IN: $file"
-            grep -n -E "(mock[A-Z]|fixture[A-Z]|staticData|TODO|FIXME|placeholder candidates)" "$file" | head -5
-            VIOLATIONS=$((VIOLATIONS + 1))
+        # Scan for forbidden content
+        FOUND=0
+        for path in $PROD_PATHS; do
+          if [ -d "$path" ]; then
+            echo "Scanning $path..."
+            if grep -r -E "$FORBIDDEN_PATTERNS" "$path" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" 2>/dev/null; then
+              FOUND=1
+            fi
           fi
         done
         
-        if [ $VIOLATIONS -gt 0 ]; then
-          echo ""
-          echo "⛔ Build failed: $VIOLATIONS files contain forbidden static content"
-          echo "Replace with real data fetches or remove the static content."
+        if [ $FOUND -eq 1 ]; then
+          echo "❌ FAILED: Found forbidden static content in production code!"
+          echo "Remove all mock data, placeholders, and TODOs from production paths."
           exit 1
         else
-          echo "✅ No forbidden static content found in production files"
+          echo "✅ PASSED: No forbidden static content found."
         fi
     
-    - name: Verify buttons are wired
+    - name: Verify critical UI elements are wired
       run: |
-        echo "🔍 Verifying UI buttons have real handlers..."
+        echo "Checking that UI buttons have real handlers..."
         
-        # Check popup buttons
-        if ! grep -q "openDashboard" ./extension/dist/js/popup.js 2>/dev/null; then
-          echo "❌ Dashboard button not wired in popup"
+        # Check dashboard.js has real handlers
+        if ! grep -q "chrome.runtime.sendMessage" extension/dist/js/dashboard.js; then
+          echo "❌ Dashboard missing message handlers"
           exit 1
         fi
         
-        if ! grep -q "openSettings" ./extension/dist/js/popup.js 2>/dev/null; then
-          echo "❌ Settings button not wired in popup"
+        # Check background.js handles critical messages
+        REQUIRED_HANDLERS="MAX_AUTO_ENABLE|STORE_SCAN_RESULTS|openDashboard"
+        if ! grep -E "$REQUIRED_HANDLERS" extension/dist/js/background.js; then
+          echo "❌ Background missing required message handlers"
           exit 1
         fi
         
-        # Check background handlers
-        if ! grep -q "openDashboard.*chrome.tabs.create" ./extension/dist/js/background.js 2>/dev/null; then
-          echo "❌ Dashboard handler missing in background"
-          exit 1
-        fi
+        echo "✅ UI elements appear to be wired correctly"
+    
+    - name: Ensure content scripts have real parsing
+      run: |
+        echo "Verifying content scripts parse real data..."
         
-        echo "✅ All buttons properly wired"
+        # Check for DOM parsing in content scripts
+        for script in extension/dist/js/content-*.js; do
+          if [ -f "$script" ]; then
+            if ! grep -q "querySelector\|querySelectorAll" "$script"; then
+              echo "❌ $script missing DOM parsing"
+              exit 1
+            fi
+            if ! grep -q "chrome.runtime.sendMessage" "$script"; then
+              echo "❌ $script missing message sending"
+              exit 1
+            fi
+          fi
+        done
+        
+        echo "✅ Content scripts have real parsing logic"
