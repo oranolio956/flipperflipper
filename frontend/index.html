@@ -563,7 +563,16 @@
         <aside class="sidebar" id="sidebar">
             <h3>Proxy Sources</h3>
             <div class="control-group">
-                <label>Proxy List (IP:Port)</label>
+                <button class="btn btn-success" onclick="discoverProxies()">
+                    🔍 Auto-Discover Proxies
+                </button>
+                <small style="display: block; margin-top: 0.5rem; color: var(--light)">
+                    Automatically discovers proxies from multiple sources
+                </small>
+            </div>
+            
+            <div class="control-group">
+                <label>Manual Proxy List (IP:Port)</label>
                 <textarea id="proxyList" placeholder="Enter proxies, one per line&#10;Example:&#10;192.168.1.1:1080&#10;10.0.0.1:8080"></textarea>
             </div>
             
@@ -789,6 +798,8 @@
                 
                 // Update table
                 updateResultsTable(proxy);
+            } else if (data.type === 'discovery_complete') {
+                showNotification(`Discovered ${data.data.count} proxies! Starting tests...`, 'success');
             }
         }
         
@@ -856,6 +867,42 @@
             document.getElementById('startBtn').disabled = false;
             document.getElementById('stopBtn').disabled = true;
             showNotification('Testing stopped', 'warning');
+        }
+        
+        // Discover proxies automatically
+        async function discoverProxies() {
+            try {
+                showNotification('🔍 Discovering proxies from multiple sources...', 'success');
+                
+                const response = await fetch(`${API_URL}/discover`);
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    // Convert discovered proxies to text format
+                    const proxyText = data.proxies
+                        .map(p => `${p.ip}:${p.port}`)
+                        .join('\n');
+                    
+                    document.getElementById('proxyList').value = proxyText;
+                    
+                    // Show source statistics
+                    let sourceInfo = 'Discovery complete!\n';
+                    for (const [source, stats] of Object.entries(data.sources)) {
+                        sourceInfo += `\n${source}: ${stats.success_count} successful fetches`;
+                    }
+                    
+                    showNotification(`Found ${data.count} proxies! ${sourceInfo}`, 'success');
+                    
+                    // Optionally auto-start testing
+                    if (confirm(`Found ${data.count} proxies. Start testing now?`)) {
+                        startTesting();
+                    }
+                } else {
+                    showNotification('Discovery failed: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showNotification('Discovery error: ' + error.message, 'error');
+            }
         }
         
         // Import from URL

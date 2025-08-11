@@ -27,6 +27,9 @@ from concurrent.futures import ThreadPoolExecutor
 import psutil
 import hashlib
 
+# Import our proxy discovery module
+from proxy_sources import ProxySourceManager, ProxyEntry as DiscoveredProxy
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -81,6 +84,9 @@ class ProxyTester:
         
         # Redis for caching and pub/sub
         self.redis = None
+        
+        # Proxy discovery manager
+        self.proxy_source_manager = ProxySourceManager()
         
         # GeoIP database (you'll need to download this)
         try:
@@ -184,6 +190,107 @@ class ProxyTester:
                     # Handle incoming messages if needed
             except WebSocketDisconnect:
                 self.active_connections.remove(websocket)
+        
+        @self.app.get("/discover")
+        async def discover_proxies(force_refresh: bool = False):
+            """Discover proxies from multiple sources"""
+            try:
+                discovered = await self.proxy_source_manager.get_proxies(force_refresh)
+                
+                # Convert to list and add discovery metadata
+                proxy_list = []
+                for proxy in discovered:
+                    proxy_dict = {
+                        'ip': proxy.ip,
+                        'port': proxy.port,
+                        'protocol': proxy.protocol,
+                        'country': proxy.country,
+                        'source': proxy.source,
+                        'last_seen': proxy.last_seen.isoformat()
+                    }
+                    proxy_list.append(proxy_dict)
+                
+                # Sort by protocol and source
+                proxy_list.sort(key=lambda x: (x['protocol'], x['source']))
+                
+                return {
+                    'status': 'success',
+                    'count': len(proxy_list),
+                    'proxies': proxy_list,
+                    'sources': self.proxy_source_manager.get_source_statistics()
+                }
+            except Exception as e:
+                logger.error(f"Discovery error: {str(e)}")
+                return {
+                    'status': 'error',
+                    'message': str(e)
+                }
+        
+        @self.app.post("/discover/test-all")
+        async def discover_and_test():
+            """Discover proxies and test them all"""
+            try:
+                # First discover
+                discovered = await self.proxy_source_manager.get_proxies()
+                
+                # Convert to test format
+                proxies_to_test = []
+                for proxy in discovered:
+                    proxies_to_test.append({
+                        'ip': proxy.ip,
+                        'port': proxy.port,
+                        'protocol': proxy.protocol or 'unknown'
+                    })
+                
+                # Broadcast discovery complete
+                await self._broadcast_discovery_status(len(proxies_to_test))
+                
+                # Test in batches
+                batch_size = 50
+                all_results = []
+                
+                for i in range(0, len(proxies_to_test), batch_size):
+                    batch = proxies_to_test[i:i + batch_size]
+                    
+                    # Test batch
+                    tasks = []
+                    for proxy in batch:
+                        task = self.test_proxy(
+                            proxy['ip'],
+                            proxy['port'],
+                            proxy['protocol']
+                        )
+                        tasks.append(task)
+                    
+                    results = await asyncio.gather(*tasks, return_exceptions=True)
+                    
+                    # Process results
+                    for result in results:
+                        if isinstance(result, ProxyResult):
+                            all_results.append(asdict(result))
+                        else:
+                            logger.error(f"Test error: {str(result)}")
+                    
+                    # Small delay between batches
+                    await asyncio.sleep(0.5)
+                
+                # Filter working proxies
+                working = [r for r in all_results if r['working']]
+                
+                return {
+                    'status': 'success',
+                    'discovered': len(proxies_to_test),
+                    'tested': len(all_results),
+                    'working': len(working),
+                    'results': all_results
+                }
+                
+            except Exception as e:
+                logger.error(f"Discover and test error: {str(e)}")
+                return {
+                    'status': 'error',
+                    'message': str(e)
+                }
     
     async def test_proxy(self, ip: str, port: int, protocol: str) -> ProxyResult:
         """Comprehensively test a proxy"""
@@ -672,6 +779,25 @@ class ProxyTester:
         # Remove disconnected clients
         for conn in disconnected:
             self.active_connections.remove(conn)
+    
+    async def _broadcast_discovery_status(self, count: int):
+        """Broadcast discovery status"""
+        if not self.active_connections:
+            return
+        
+        message = json.dumps({
+            'type': 'discovery_complete',
+            'data': {
+                'count': count,
+                'timestamp': datetime.utcnow().isoformat()
+            }
+        })
+        
+        for connection in self.active_connections:
+            try:
+                await connection.send_text(message)
+            except:
+                pass
 
 # Additional features to implement:
 
