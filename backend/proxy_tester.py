@@ -156,13 +156,27 @@ class ProxyTester:
         
         @self.app.on_event("startup")
         async def startup():
-            self.redis = await redis.create_redis_pool('redis://localhost')
+            try:
+                # Prefer REDIS_URL from env; fall back to localhost
+                redis_url = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+                # Use redis.asyncio client (no pool required)
+                self.redis = await redis.from_url(redis_url, decode_responses=False)
+                # Ping to verify
+                try:
+                    await self.redis.ping()
+                except Exception:
+                    self.redis = None
+            except Exception:
+                # Proceed without Redis
+                self.redis = None
         
         @self.app.on_event("shutdown")
         async def shutdown():
             if self.redis:
-                self.redis.close()
-                await self.redis.wait_closed()
+                try:
+                    await self.redis.close()
+                except Exception:
+                    pass
         
         @self.app.get("/")
         async def root():
@@ -175,7 +189,7 @@ class ProxyTester:
             return asdict(result)
         
         @self.app.post("/test/batch")
-        async def test_batch_proxies(proxies: List[Dict[str, any]]):
+        async def test_batch_proxies(proxies: List[Dict[str, object]]):
             """Test multiple proxies concurrently"""
             tasks = []
             for proxy in proxies:
