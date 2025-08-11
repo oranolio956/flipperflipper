@@ -24,6 +24,10 @@ except ImportError:
     # Handle case where module isn't in path yet
     WebhookManager = None
     WebhookEvent = None
+    
+    # Mock for testing
+    class WebhookEvent:
+        SYSTEM_ERROR = "system.error"
 
 logger = logging.getLogger(__name__)
 
