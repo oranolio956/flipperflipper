@@ -70,13 +70,18 @@ export function App() {
     }
   };
 
-  const calculateROI = () => {
+  const calculateROI = async () => {
     if (!settings) return;
     
-    // Create a mock listing for calculation
-    const mockListing: Partial<Listing> = {
+    // Create a real listing structure from user inputs
+    const listing: Partial<Listing> = {
+      id: `calc-${Date.now()}`,
       price: calcInputs.askingPrice,
-      title: 'Quick Calc PC',
+      title: 'ROI Calculation',
+      platform: 'manual',
+      url: '',
+      createdAt: new Date(),
+      updatedAt: new Date(),
       location: {
         city: 'Local',
         state: 'CO',
@@ -87,40 +92,64 @@ export function App() {
       },
       components: {
         cpu: {
-          brand: calcInputs.cpu.includes('i5') || calcInputs.cpu.includes('i7') ? 'Intel' : 'AMD',
+          brand: calcInputs.cpu.includes('Intel') || calcInputs.cpu.includes('i3') || calcInputs.cpu.includes('i5') || calcInputs.cpu.includes('i7') || calcInputs.cpu.includes('i9') ? 'Intel' : 'AMD',
           model: calcInputs.cpu,
-          generation: 10,
-          cores: 6,
-          threads: 12,
+          generation: parseInt(calcInputs.cpu.match(/\d+/)?.[0] || '10'),
+          cores: calcInputs.cpu.includes('i9') || calcInputs.cpu.includes('7950') ? 16 : 
+                 calcInputs.cpu.includes('i7') || calcInputs.cpu.includes('5800') ? 8 : 6,
+          threads: calcInputs.cpu.includes('i9') || calcInputs.cpu.includes('7950') ? 32 : 
+                   calcInputs.cpu.includes('i7') || calcInputs.cpu.includes('5800') ? 16 : 12,
           speed: 3.0,
         },
         gpu: {
-          brand: 'NVIDIA',
+          brand: calcInputs.gpu.includes('RTX') || calcInputs.gpu.includes('GTX') ? 'NVIDIA' : 'AMD',
           model: calcInputs.gpu,
-          vram: 12,
+          vram: calcInputs.gpu.includes('4090') ? 24 :
+                calcInputs.gpu.includes('4080') || calcInputs.gpu.includes('3090') ? 24 :
+                calcInputs.gpu.includes('4070') || calcInputs.gpu.includes('3080') ? 12 :
+                calcInputs.gpu.includes('3070') || calcInputs.gpu.includes('4060') ? 8 : 6,
         },
         ram: [{
           size: calcInputs.ram,
           type: 'DDR4',
           speed: 3200,
-          modules: 2,
+          modules: calcInputs.ram >= 32 ? 4 : 2,
         }],
         storage: [{
           type: 'SSD',
           capacity: calcInputs.storage,
-          brand: 'Unknown',
-          model: 'Unknown',
+          brand: 'Generic',
+          model: 'NVMe',
         }],
       },
     };
     
-    // Calculate FMV
+    // Store calculation in history
+    const calcHistory = await chrome.storage.local.get(['calcHistory']) || {};
+    const history = calcHistory.calcHistory || [];
+    
+    // Calculate FMV using real pricing engine
     const fmvCalc = new FMVCalculator(settings);
-    const fmvResult = fmvCalc.calculate(mockListing as Listing);
+    const fmvResult = fmvCalc.calculate(listing as Listing);
     
     // Calculate ROI
     const roiCalc = new ROICalculator(settings);
-    const roiResult = roiCalc.calculate(mockListing as Listing, fmvResult);
+    const roiResult = roiCalc.calculate(listing as Listing, fmvResult);
+    
+    // Save to history
+    history.unshift({
+      timestamp: new Date(),
+      inputs: calcInputs,
+      results: {
+        fmv: fmvResult.total,
+        profit: roiResult.netProfit,
+        roi: roiResult.roi,
+        margin: roiResult.profitMargin,
+      }
+    });
+    
+    // Keep only last 50 calculations
+    await chrome.storage.local.set({ calcHistory: history.slice(0, 50) });
     
     // Update results
     setCalcResults({

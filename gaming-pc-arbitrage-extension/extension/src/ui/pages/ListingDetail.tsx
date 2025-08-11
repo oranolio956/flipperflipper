@@ -71,51 +71,64 @@ export function ListingDetail() {
   const loadListingDetails = async () => {
     setLoading(true);
     try {
-      // In real implementation, fetch from storage or API
-      const mockListing: ListingData = {
-        id: id!,
-        title: 'Gaming PC - RTX 3080, i7-10700K, 32GB RAM',
-        description: 'Selling my custom gaming PC. Runs all games at max settings. Includes RGB lighting and tempered glass case.',
-        url: 'https://facebook.com/marketplace/item/123456',
-        platform: 'facebook',
-        price: 1200,
-        estimatedValue: 1800,
-        roi: 0.5,
-        riskScore: 0.2,
-        components: [
-          { type: 'GPU', model: 'RTX 3080', value: 700 },
-          { type: 'CPU', model: 'i7-10700K', value: 300 },
-          { type: 'RAM', model: '32GB DDR4', value: 150 },
-          { type: 'Storage', model: '1TB NVMe', value: 100 },
-          { type: 'PSU', model: '750W Gold', value: 100 },
-          { type: 'Case', model: 'Lian Li O11', value: 150 },
-          { type: 'Motherboard', model: 'Z490', value: 200 },
-          { type: 'Cooling', model: 'AIO 240mm', value: 100 }
-        ],
-        images: ['image1.jpg', 'image2.jpg'],
-        location: '5 miles away',
-        postedDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-        sellerInfo: {
-          name: 'John D.',
-          responseTime: 'within an hour',
-          listingsCount: 3
-        },
-        analysis: {
-          fmv: 1800,
-          targetPrice: 1000,
-          walkAwayPrice: 1100,
-          profitMargin: 0.44,
-          confidence: 0.85
-        },
-        risks: [
-          'No original receipts mentioned',
-          'Limited seller history',
-          'Price recently reduced'
-        ]
+      // Fetch from chrome storage - real data from scanner
+      const result = await chrome.storage.local.get(['scannedListings', 'listingAnalysis']);
+      const listings = result.scannedListings || [];
+      const analyses = result.listingAnalysis || {};
+      
+      const foundListing = listings.find((l: any) => l.id === id);
+      if (!foundListing) {
+        setListing(null);
+        return;
+      }
+      
+      // Get or compute analysis
+      let analysis = analyses[id];
+      if (!analysis) {
+        // Compute real-time analysis
+        const componentsTotal = foundListing.components?.reduce((sum: number, c: any) => sum + (c.value || 0), 0) || 0;
+        const estimatedValue = componentsTotal * 1.1; // 10% markup for assembled system
+        const roi = (estimatedValue - foundListing.price) / foundListing.price;
+        
+        analysis = {
+          fmv: estimatedValue,
+          targetPrice: foundListing.price * 0.85, // Target 15% below asking
+          walkAwayPrice: foundListing.price * 0.95, // Walk away at 5% below asking
+          profitMargin: roi,
+          confidence: roi > 0.3 ? 0.85 : 0.6
+        };
+        
+        // Save analysis
+        await chrome.storage.local.set({
+          listingAnalysis: { ...analyses, [id]: analysis }
+        });
+      }
+      
+      // Compute risk factors
+      const risks = [];
+      if (!foundListing.images || foundListing.images.length < 3) {
+        risks.push('Limited photos provided');
+      }
+      if (foundListing.description && foundListing.description.length < 100) {
+        risks.push('Minimal description');
+      }
+      if (foundListing.price < estimatedValue * 0.5) {
+        risks.push('Price significantly below market');
+      }
+      if (!foundListing.sellerInfo?.responseTime) {
+        risks.push('Unknown seller response time');
+      }
+      
+      const listingData: ListingData = {
+        ...foundListing,
+        estimatedValue,
+        roi,
+        analysis,
+        risks
       };
       
-      setListing(mockListing);
-      generateOfferDraft(mockListing);
+      setListing(listingData);
+      generateOfferDraft(listingData);
     } catch (error) {
       console.error('Failed to load listing:', error);
     } finally {

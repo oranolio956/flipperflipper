@@ -4,6 +4,8 @@
  */
 
 import { automationHandler } from './automation';
+import { maxAutoEngine } from './maxAutoEngine';
+import { updateChecker } from './updateChecker';
 
 // Initialize automation on install/startup
 chrome.runtime.onInstalled.addListener(async () => {
@@ -43,6 +45,64 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       sendResponse({ success: true });
     }).catch((error) => {
       sendResponse({ success: false, error: error.message });
+    });
+    return true;
+  }
+
+  // Max Auto Engine controls
+  if (request.action === 'MAX_AUTO_ENABLE') {
+    maxAutoEngine.enable().then(() => {
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+
+  if (request.action === 'MAX_AUTO_DISABLE') {
+    maxAutoEngine.disable().then(() => {
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+
+  if (request.action === 'MAX_AUTO_GET_STATUS') {
+    maxAutoEngine.getStatus().then((status) => {
+      sendResponse({ success: true, status });
+    });
+    return true;
+  }
+
+  if (request.action === 'MAX_AUTO_ADD_SEARCH') {
+    maxAutoEngine.addSearch(request.search).then(() => {
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+
+  if (request.action === 'MAX_AUTO_TEST_SCAN') {
+    maxAutoEngine.testScan(request.searchId).then(() => {
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+
+  // Update checker controls
+  if (request.action === 'GET_UPDATE_STATUS') {
+    updateChecker.getStatus().then((status) => {
+      sendResponse({ success: true, status });
+    });
+    return true;
+  }
+
+  if (request.action === 'CHECK_FOR_UPDATES') {
+    updateChecker.checkForUpdates().then(() => {
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+
+  if (request.action === 'APPLY_UPDATE') {
+    updateChecker.applyUpdate().then(() => {
+      sendResponse({ success: true });
     });
     return true;
   }

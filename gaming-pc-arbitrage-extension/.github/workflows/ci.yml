@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Check for forbidden static content
+      run: |
+        echo "Checking for mock/fixture/demo content in production files..."
+        FORBIDDEN_PATTERNS="(mock|fixture|demo|staticData|lorem|FIXME|TODO)"
+        PROD_FILES=$(find ./extension/src -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" | grep -v ".test." | grep -v ".spec." | grep -v "__tests__")
+        
+        VIOLATIONS=0
+        for file in $PROD_FILES; do
+          if grep -E "$FORBIDDEN_PATTERNS" "$file" > /dev/null 2>&1; then
+            echo "❌ STATIC CONTENT FOUND IN: $file"
+            grep -n -E "$FORBIDDEN_PATTERNS" "$file" | head -5
+            VIOLATIONS=$((VIOLATIONS + 1))
+          fi
+        done
+        
+        if [ $VIOLATIONS -gt 0 ]; then
+          echo "⛔ Build failed: $VIOLATIONS files contain forbidden static content"
+          exit 1
+        else
+          echo "✅ No static content found in production files"
+        fi
+    
+    - name: Lint
+      run: npm run lint
+    
+    - name: Type check
+      run: npm run type-check
+    
+    - name: Test
+      run: npm test
+    
+    - name: Build
+      run: npm run build
+    
+    - name: E2E tests
+      run: npm run test:e2e
