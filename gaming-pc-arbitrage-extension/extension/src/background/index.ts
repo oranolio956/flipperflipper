@@ -84,6 +84,79 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
     return true;
   }
+  
+  // Store scan results from content scripts
+  if (request.action === 'STORE_SCAN_RESULTS') {
+    chrome.storage.local.get(['scannedListings', 'scanHistory'], (result) => {
+      const scannedListings = result.scannedListings || [];
+      const scanHistory = result.scanHistory || [];
+      
+      // Add new listings
+      const newListings = request.listings.map((listing: any) => ({
+        ...listing,
+        scanId: request.scanId,
+        searchId: request.searchId,
+        timestamp: new Date().toISOString()
+      }));
+      
+      // Merge with existing, remove duplicates
+      const allListings = [...newListings, ...scannedListings];
+      const uniqueListings = allListings.filter((listing, index, self) =>
+        index === self.findIndex((l) => l.url === listing.url)
+      );
+      
+      // Keep only last 500 listings
+      const trimmedListings = uniqueListings.slice(0, 500);
+      
+      // Update scan history
+      scanHistory.unshift({
+        scanId: request.scanId,
+        searchId: request.searchId,
+        timestamp: new Date().toISOString(),
+        resultsCount: newListings.length,
+        platform: request.listings[0]?.platform || 'unknown'
+      });
+      
+      // Save to storage
+      chrome.storage.local.set({
+        scannedListings: trimmedListings,
+        scanHistory: scanHistory.slice(0, 100),
+        lastScanTime: new Date().toISOString()
+      }, () => {
+        sendResponse({ success: true, stored: newListings.length });
+      });
+    });
+    return true;
+  }
+  
+  // Handle scan page requests from UI
+  if (request.action === 'SCAN_PAGE') {
+    // Forward to the active tab's content script
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id!, request, (response) => {
+          sendResponse(response || { success: false, error: 'No response from content script' });
+        });
+      } else {
+        sendResponse({ success: false, error: 'No active tab' });
+      }
+    });
+    return true;
+  }
+  
+  // Open dashboard
+  if (request.action === 'openDashboard') {
+    chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
+    sendResponse({ success: true });
+    return true;
+  }
+  
+  // Open settings
+  if (request.action === 'openSettings') {
+    chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html#/settings') });
+    sendResponse({ success: true });
+    return true;
+  }
 
   // Update checker controls
   if (request.action === 'GET_UPDATE_STATUS') {

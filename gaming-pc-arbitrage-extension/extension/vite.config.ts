@@ -1,103 +1,82 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import webExtension from 'vite-plugin-web-extension';
-import path from 'path';
+import { resolve } from 'path';
+import { copyFileSync, mkdirSync, writeFileSync } from 'fs';
 
+// Production build configuration for Chrome Extension
 export default defineConfig({
   plugins: [
     react(),
-    webExtension({
-      manifest: () => ({
-        manifest_version: 3,
-        name: 'Gaming PC Arbitrage Assistant',
-        version: '2.0.0',
-        description: 'Find profitable gaming PC deals across marketplaces',
-        permissions: [
-          'storage',
-          'notifications',
-          'activeTab',
-          'scripting',
-          'alarms',
-          'tabs',
-          'idle'
-        ],
-        host_permissions: [
-          'https://*.facebook.com/*',
-          'https://*.craigslist.org/*',
-          'https://*.offerup.com/*'
-        ],
-        background: {
-          service_worker: 'src/background/index.ts',
-          type: 'module'
-        },
-        action: {
-          default_popup: 'popup.html',
-          default_icon: {
-            '16': 'icons/icon-16.png',
-            '32': 'icons/icon-32.png',
-            '48': 'icons/icon-48.png',
-            '128': 'icons/icon-128.png'
-          }
-        },
-        content_scripts: [
-          {
-            matches: ['https://*.facebook.com/*'],
-            js: ['src/content/facebook.ts'],
-            css: ['src/content/overlay.css'],
-            run_at: 'document_idle'
-          },
-          {
-            matches: ['https://*.craigslist.org/*'],
-            js: ['src/content/craigslist.ts'],
-            css: ['src/content/overlay.css'],
-            run_at: 'document_idle'
-          },
-          {
-            matches: ['https://*.offerup.com/*'],
-            js: ['src/content/offerup.ts'],
-            css: ['src/content/overlay.css'],
-            run_at: 'document_idle'
-          }
-        ],
-        web_accessible_resources: [
-          {
-            resources: ['dashboard.html', 'icons/*'],
-            matches: ['<all_urls>']
-          }
-        ],
-        icons: {
-          '16': 'icons/icon-16.png',
-          '32': 'icons/icon-32.png',
-          '48': 'icons/icon-48.png',
-          '128': 'icons/icon-128.png'
-        }
-      }),
-      additionalInputs: {
-        html: ['popup.html', 'dashboard.html', 'options.html'],
-        scripts: ['src/popup/index.tsx', 'src/dashboard/index.tsx', 'src/options/index.tsx'],
-      },
-    }),
+    {
+      name: 'chrome-extension-build',
+      buildEnd() {
+        // Copy manifest
+        copyFileSync('manifest.json', 'dist/manifest.json');
+        
+        // Copy icons
+        mkdirSync('dist/icons', { recursive: true });
+        ['16', '32', '48', '128'].forEach(size => {
+          copyFileSync(`icons/icon-${size}.png`, `dist/icons/icon-${size}.png`);
+        });
+      }
+    }
   ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@arbitrage/core': path.resolve(__dirname, '../packages/core/src'),
-    },
-  },
+  
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    sourcemap: false,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: false, // Keep console logs for debugging
+        drop_debugger: true
+      }
+    },
     rollupOptions: {
+      input: {
+        popup: resolve(__dirname, 'popup.html'),
+        dashboard: resolve(__dirname, 'dashboard.html'),
+        options: resolve(__dirname, 'options.html'),
+        background: resolve(__dirname, 'src/background/index.ts'),
+        'content-facebook': resolve(__dirname, 'src/content/fb/index.ts'),
+        'content-craigslist': resolve(__dirname, 'src/content/craigslist/index.ts'),
+        'content-offerup': resolve(__dirname, 'src/content/offerup/index.ts'),
+        'content-scanner': resolve(__dirname, 'src/content/scanner/index.ts')
+      },
       output: {
-        entryFileNames: 'js/[name].js',
-        chunkFileNames: 'js/[name].js',
+        entryFileNames: (chunkInfo) => {
+          // Place content scripts and background in js folder
+          if (chunkInfo.name.includes('content-') || chunkInfo.name === 'background') {
+            return 'js/[name].js';
+          }
+          return 'assets/[name]-[hash].js';
+        },
+        chunkFileNames: 'assets/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
           if (assetInfo.name?.endsWith('.css')) {
             return 'css/[name][extname]';
           }
-          return 'assets/[name][extname]';
-        },
-      },
-    },
+          return 'assets/[name]-[hash][extname]';
+        }
+      }
+    }
   },
+  
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+      '@arbitrage/core': resolve(__dirname, '../packages/core/src')
+    }
+  },
+  
+  // Chrome extension specific optimizations
+  optimizeDeps: {
+    exclude: ['chrome']
+  },
+  
+  // Ensure proper module handling
+  esbuild: {
+    target: 'chrome90'
+  }
 });
