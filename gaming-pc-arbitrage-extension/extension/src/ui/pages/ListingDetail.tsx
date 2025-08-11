@@ -1,25 +1,432 @@
-import React from 'react';
-import { FileText } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { 
+  FileText, 
+  DollarSign, 
+  TrendingUp, 
+  AlertTriangle,
+  Copy,
+  ExternalLink,
+  MessageSquare,
+  Calendar,
+  MapPin,
+  Eye,
+  ChevronDown,
+  ChevronUp
+} from 'lucide-react';
 import { PageHeader } from '../design/components/PageHeader';
-import { Card, CardContent } from '../design/components/Card';
-import { useParams } from 'react-router-dom';
+import { Card, CardHeader, CardContent } from '../design/components/Card';
+import { Button } from '../design/components/Button';
+import { LoadingState } from '../design/components/EmptyState';
+import { showToast } from '../design/components/Toast';
+import { formatCurrency, formatPercent } from '../lib/utils';
+import { ROUTES } from '../router/routes';
+
+interface ListingData {
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  platform: 'facebook' | 'craigslist' | 'offerup';
+  price: number;
+  estimatedValue: number;
+  roi: number;
+  riskScore: number;
+  components: Array<{
+    type: string;
+    model: string;
+    value: number;
+  }>;
+  images: string[];
+  location: string;
+  postedDate: Date;
+  sellerInfo: {
+    name: string;
+    responseTime?: string;
+    listingsCount?: number;
+  };
+  analysis: {
+    fmv: number;
+    targetPrice: number;
+    walkAwayPrice: number;
+    profitMargin: number;
+    confidence: number;
+  };
+  risks: string[];
+}
 
 export function ListingDetail() {
   const { id } = useParams();
-  
+  const [loading, setLoading] = useState(true);
+  const [listing, setListing] = useState<ListingData | null>(null);
+  const [offerTone, setOfferTone] = useState<'friendly' | 'professional' | 'urgent'>('friendly');
+  const [offerDraft, setOfferDraft] = useState('');
+  const [showComponents, setShowComponents] = useState(true);
+  const [showRisks, setShowRisks] = useState(false);
+
+  useEffect(() => {
+    loadListingDetails();
+  }, [id]);
+
+  const loadListingDetails = async () => {
+    setLoading(true);
+    try {
+      // In real implementation, fetch from storage or API
+      const mockListing: ListingData = {
+        id: id!,
+        title: 'Gaming PC - RTX 3080, i7-10700K, 32GB RAM',
+        description: 'Selling my custom gaming PC. Runs all games at max settings. Includes RGB lighting and tempered glass case.',
+        url: 'https://facebook.com/marketplace/item/123456',
+        platform: 'facebook',
+        price: 1200,
+        estimatedValue: 1800,
+        roi: 0.5,
+        riskScore: 0.2,
+        components: [
+          { type: 'GPU', model: 'RTX 3080', value: 700 },
+          { type: 'CPU', model: 'i7-10700K', value: 300 },
+          { type: 'RAM', model: '32GB DDR4', value: 150 },
+          { type: 'Storage', model: '1TB NVMe', value: 100 },
+          { type: 'PSU', model: '750W Gold', value: 100 },
+          { type: 'Case', model: 'Lian Li O11', value: 150 },
+          { type: 'Motherboard', model: 'Z490', value: 200 },
+          { type: 'Cooling', model: 'AIO 240mm', value: 100 }
+        ],
+        images: ['image1.jpg', 'image2.jpg'],
+        location: '5 miles away',
+        postedDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+        sellerInfo: {
+          name: 'John D.',
+          responseTime: 'within an hour',
+          listingsCount: 3
+        },
+        analysis: {
+          fmv: 1800,
+          targetPrice: 1000,
+          walkAwayPrice: 1100,
+          profitMargin: 0.44,
+          confidence: 0.85
+        },
+        risks: [
+          'No original receipts mentioned',
+          'Limited seller history',
+          'Price recently reduced'
+        ]
+      };
+      
+      setListing(mockListing);
+      generateOfferDraft(mockListing);
+    } catch (error) {
+      console.error('Failed to load listing:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateOfferDraft = (listing: ListingData) => {
+    const tones = {
+      friendly: `Hi! I'm interested in your ${listing.title}. It looks great! I was wondering if you'd consider $${listing.analysis.targetPrice}? I can pick up today with cash in hand. Thanks!`,
+      professional: `Hello, I'm interested in purchasing your gaming PC. Based on current market values, I'd like to offer $${listing.analysis.targetPrice}. I'm a serious buyer with cash ready and can arrange pickup at your convenience. Please let me know if this works for you.`,
+      urgent: `Hi there! I need a gaming PC ASAP and yours is perfect. I can offer $${listing.analysis.targetPrice} cash and pick up within the hour if that works? Let me know!`
+    };
+    
+    setOfferDraft(tones[offerTone]);
+  };
+
+  const handleCopyOffer = () => {
+    navigator.clipboard.writeText(offerDraft);
+    showToast({
+      type: 'success',
+      title: 'Copied to clipboard',
+      description: 'Offer message ready to paste'
+    });
+  };
+
+  const handleOpenCompose = () => {
+    // Open the marketplace messaging in new tab
+    if (listing) {
+      chrome.tabs.create({ url: listing.url });
+      showToast({
+        type: 'info',
+        title: 'Opening listing',
+        description: 'Paste your message and send manually'
+      });
+    }
+  };
+
+  const helpContent = (
+    <div className="help-content">
+      <h4>Listing Analysis</h4>
+      <p>Review detailed component breakdown, pricing analysis, and risk assessment.</p>
+      <h4>Offer Builder:</h4>
+      <ul>
+        <li>Select your preferred tone</li>
+        <li>Review the generated message</li>
+        <li>Copy and manually send (no auto-send per ToS)</li>
+      </ul>
+      <h4>Next Best Actions:</h4>
+      <p>Follow suggested steps to maximize success rate</p>
+    </div>
+  );
+
+  if (loading) {
+    return <LoadingState message="Loading listing details..." />;
+  }
+
+  if (!listing) {
+    return (
+      <div className="listing-detail-page">
+        <PageHeader title="Listing Not Found" description="This listing could not be loaded" />
+      </div>
+    );
+  }
+
   return (
     <div className="listing-detail-page">
       <PageHeader
-        title="Listing Detail"
-        description="Detailed analysis and actions for this listing"
+        title={listing.title}
+        description={`Listed ${formatRelativeTime(listing.postedDate)} on ${listing.platform}`}
+        helpContent={helpContent}
+        actions={
+          <div className="listing-actions">
+            <a href={listing.url} target="_blank" rel="noopener noreferrer">
+              <Button variant="secondary" icon={<ExternalLink size={16} />}>
+                View Original
+              </Button>
+            </a>
+            <Button variant="primary" icon={<MessageSquare size={16} />} onClick={handleOpenCompose}>
+              Make Offer
+            </Button>
+          </div>
+        }
       />
-      
-      <Card>
-        <CardContent>
-          <p>Listing ID: {id}</p>
-          <p>Detailed listing analysis will appear here.</p>
-        </CardContent>
-      </Card>
+
+      <div className="listing-layout">
+        {/* Main Column */}
+        <div className="listing-main">
+          {/* Pricing Analysis */}
+          <Card variant="elevated">
+            <CardHeader title="Pricing Analysis" />
+            <CardContent>
+              <div className="pricing-grid">
+                <div className="price-stat">
+                  <label>Asking Price</label>
+                  <span className="value">{formatCurrency(listing.price)}</span>
+                </div>
+                <div className="price-stat">
+                  <label>Fair Market Value</label>
+                  <span className="value">{formatCurrency(listing.analysis.fmv)}</span>
+                </div>
+                <div className="price-stat">
+                  <label>Target Price</label>
+                  <span className="value highlight">{formatCurrency(listing.analysis.targetPrice)}</span>
+                </div>
+                <div className="price-stat">
+                  <label>Walk-away Price</label>
+                  <span className="value">{formatCurrency(listing.analysis.walkAwayPrice)}</span>
+                </div>
+              </div>
+              
+              <div className="roi-display">
+                <div className="roi-bar">
+                  <div 
+                    className="roi-fill"
+                    style={{ width: `${Math.min(listing.roi * 100, 100)}%` }}
+                  />
+                </div>
+                <div className="roi-stats">
+                  <span>ROI: {formatPercent(listing.roi)}</span>
+                  <span>Profit Margin: {formatPercent(listing.analysis.profitMargin)}</span>
+                  <span>Confidence: {formatPercent(listing.analysis.confidence)}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Component Breakdown */}
+          <Card>
+            <CardHeader 
+              title="Component Breakdown"
+              action={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowComponents(!showComponents)}
+                  icon={showComponents ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                />
+              }
+            />
+            {showComponents && (
+              <CardContent>
+                <div className="components-table">
+                  {listing.components.map((component, index) => (
+                    <div key={index} className="component-row">
+                      <span className="component-type">{component.type}</span>
+                      <span className="component-model">{component.model}</span>
+                      <span className="component-value">{formatCurrency(component.value)}</span>
+                    </div>
+                  ))}
+                  <div className="component-row total">
+                    <span className="component-type">Total Value</span>
+                    <span className="component-model"></span>
+                    <span className="component-value">{formatCurrency(listing.estimatedValue)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            )}
+          </Card>
+
+          {/* Risk Assessment */}
+          <Card variant={listing.riskScore > 0.5 ? 'bordered' : 'default'}>
+            <CardHeader 
+              title="Risk Assessment"
+              action={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowRisks(!showRisks)}
+                  icon={showRisks ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                />
+              }
+            />
+            {showRisks && (
+              <CardContent>
+                <div className={`risk-level risk-${listing.riskScore < 0.3 ? 'low' : listing.riskScore < 0.7 ? 'medium' : 'high'}`}>
+                  <AlertTriangle size={20} />
+                  <span>Risk Level: {listing.riskScore < 0.3 ? 'Low' : listing.riskScore < 0.7 ? 'Medium' : 'High'}</span>
+                </div>
+                {listing.risks.length > 0 && (
+                  <ul className="risk-list">
+                    {listing.risks.map((risk, index) => (
+                      <li key={index}>{risk}</li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            )}
+          </Card>
+        </div>
+
+        {/* Sidebar */}
+        <div className="listing-sidebar">
+          {/* Offer Builder */}
+          <Card variant="elevated">
+            <CardHeader 
+              title="Offer Builder" 
+              description="Draft your message (manual send required)"
+            />
+            <CardContent>
+              <div className="offer-controls">
+                <label>Tone</label>
+                <select 
+                  value={offerTone}
+                  onChange={(e) => {
+                    setOfferTone(e.target.value as any);
+                    generateOfferDraft(listing);
+                  }}
+                >
+                  <option value="friendly">Friendly</option>
+                  <option value="professional">Professional</option>
+                  <option value="urgent">Urgent Buyer</option>
+                </select>
+              </div>
+              
+              <textarea
+                className="offer-draft"
+                value={offerDraft}
+                onChange={(e) => setOfferDraft(e.target.value)}
+                rows={6}
+              />
+              
+              <div className="offer-actions">
+                <Button 
+                  variant="secondary" 
+                  fullWidth 
+                  icon={<Copy size={16} />}
+                  onClick={handleCopyOffer}
+                >
+                  Copy Message
+                </Button>
+                <Button 
+                  variant="primary" 
+                  fullWidth
+                  icon={<MessageSquare size={16} />}
+                  onClick={handleOpenCompose}
+                >
+                  Open Compose
+                </Button>
+              </div>
+              
+              <p className="compliance-note">
+                <AlertTriangle size={14} />
+                Platform rules require manual message sending
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Next Best Action */}
+          <Card>
+            <CardHeader title="Next Best Action" />
+            <CardContent>
+              <div className="actions-list">
+                <button className="action-item">
+                  <Calendar size={16} />
+                  <span>Schedule follow-up for tomorrow</span>
+                </button>
+                <button className="action-item">
+                  <MapPin size={16} />
+                  <span>Add to pickup route</span>
+                </button>
+                <button className="action-item">
+                  <Eye size={16} />
+                  <span>Watch for price drops</span>
+                </button>
+                <Link to={ROUTES.COMPS} className="action-item">
+                  <TrendingUp size={16} />
+                  <span>Update component prices</span>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Seller Info */}
+          <Card>
+            <CardHeader title="Seller Information" />
+            <CardContent>
+              <div className="seller-info">
+                <div className="info-row">
+                  <span className="label">Name</span>
+                  <span className="value">{listing.sellerInfo.name}</span>
+                </div>
+                <div className="info-row">
+                  <span className="label">Response Time</span>
+                  <span className="value">{listing.sellerInfo.responseTime}</span>
+                </div>
+                <div className="info-row">
+                  <span className="label">Other Listings</span>
+                  <span className="value">{listing.sellerInfo.listingsCount}</span>
+                </div>
+                <div className="info-row">
+                  <span className="label">Location</span>
+                  <span className="value">{listing.location}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
+}
+
+// Helper function
+function formatRelativeTime(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) return 'today';
+  if (diffDays === 1) return 'yesterday';
+  if (diffDays < 7) return `${diffDays} days ago`;
+  return date.toLocaleDateString();
 }
