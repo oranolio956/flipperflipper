@@ -5,8 +5,8 @@ node_modules/
 
 # Build outputs
 dist/
-build/
-*.zip
+# build/  # Commented out to allow committing the packaged extension
+# *.zip   # Commented out to allow committing the zip file
 .cache/
 
 # Testing
