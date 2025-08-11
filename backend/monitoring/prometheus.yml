@@ -1,0 +1,175 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'proxyassessment'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - 'alertmanager:9093'
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - "alerts/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+
+  # Node exporter for system metrics
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node_exporter:9100']
+        labels:
+          service: 'system'
+
+  # Backend API metrics
+  - job_name: 'backend'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['backend:8000']
+        labels:
+          service: 'api'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # PostgreSQL metrics
+  - job_name: 'postgresql'
+    static_configs:
+      - targets: ['postgres_exporter:9187']
+        labels:
+          service: 'database'
+          database: 'proxydb'
+
+  # Redis metrics
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis_exporter:9121']
+        labels:
+          service: 'cache'
+          instance: 'primary'
+
+  # Nginx metrics (if nginx-prometheus-exporter is added)
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx:9113']
+        labels:
+          service: 'proxy'
+
+  # Grafana metrics
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['grafana:3000']
+        labels:
+          service: 'visualization'
+
+  # Docker metrics (requires cAdvisor)
+  - job_name: 'docker'
+    static_configs:
+      - targets: ['cadvisor:8080']
+        labels:
+          service: 'containers'
+
+  # Blackbox exporter for endpoint monitoring
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - https://localhost/health
+          - https://localhost/api/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox_exporter:9115
+
+# Recording rules for common queries
+# These are evaluated at scrape time to improve query performance
+recording_rules:
+  - name: proxy_metrics
+    interval: 1m
+    rules:
+      # Success rate per protocol
+      - record: proxy:success_rate:1m
+        expr: |
+          sum by (protocol) (
+            rate(proxy_tests_total{result="success"}[1m])
+          ) / sum by (protocol) (
+            rate(proxy_tests_total[1m])
+          )
+      
+      # Average response time
+      - record: proxy:response_time:avg_1m
+        expr: |
+          avg by (protocol, country) (
+            rate(proxy_response_time_sum[1m]) / 
+            rate(proxy_response_time_count[1m])
+          )
+      
+      # Active proxies count
+      - record: proxy:active:count
+        expr: |
+          count by (protocol, country) (
+            proxy_last_test_timestamp > (time() - 3600)
+          )
+
+  - name: api_metrics
+    interval: 30s
+    rules:
+      # API request rate
+      - record: api:request_rate:30s
+        expr: |
+          sum by (endpoint, method) (
+            rate(http_requests_total[30s])
+          )
+      
+      # API error rate
+      - record: api:error_rate:30s
+        expr: |
+          sum by (endpoint) (
+            rate(http_requests_total{status=~"5.."}[30s])
+          )
+      
+      # API latency quantiles
+      - record: api:latency:quantile_30s
+        expr: |
+          histogram_quantile(0.95,
+            sum by (endpoint, le) (
+              rate(http_request_duration_seconds_bucket[30s])
+            )
+          )
+
+  - name: system_metrics
+    interval: 1m
+    rules:
+      # CPU usage
+      - record: system:cpu_usage:percent
+        expr: |
+          100 - (avg by (instance) (
+            irate(node_cpu_seconds_total{mode="idle"}[5m])
+          ) * 100)
+      
+      # Memory usage
+      - record: system:memory_usage:percent
+        expr: |
+          (1 - (node_memory_MemAvailable_bytes / 
+               node_memory_MemTotal_bytes)) * 100
+      
+      # Disk usage
+      - record: system:disk_usage:percent
+        expr: |
+          100 - (node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs"} / 
+                 node_filesystem_size_bytes * 100)
