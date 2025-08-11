@@ -1,0 +1,121 @@
+<Window x:Class="ProxyAssessmentTool.Views.SafeModeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ProxyAssessmentTool - Safe Mode"
+        Width="600" Height="500"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize">
+    <Grid Background="#FFF0F0F0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#FFFF6B6B" Padding="20">
+            <StackPanel>
+                <TextBlock Text="⚠ Safe Mode" 
+                           FontSize="24" 
+                           FontWeight="Bold"
+                           Foreground="White"/>
+                <TextBlock Text="The application encountered a problem during startup"
+                           FontSize="14"
+                           Foreground="White"
+                           Margin="0,5,0,0"/>
+            </StackPanel>
+        </Border>
+        
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" Margin="20">
+            <StackPanel>
+                <!-- Summary -->
+                <TextBlock Text="What happened?" 
+                           FontSize="16" 
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,10"/>
+                <TextBlock x:Name="SummaryText" 
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,20"/>
+                
+                <!-- Details Expander -->
+                <Expander Header="Technical Details" 
+                          IsExpanded="False">
+                    <Border Background="#FFF8F8F8" 
+                            BorderBrush="#FFE0E0E0" 
+                            BorderThickness="1"
+                            Padding="10"
+                            Margin="0,5,0,0">
+                        <TextBox x:Name="DetailsText"
+                                 IsReadOnly="True"
+                                 TextWrapping="Wrap"
+                                 FontFamily="Consolas"
+                                 FontSize="11"
+                                 MaxHeight="200"
+                                 VerticalScrollBarVisibility="Auto"/>
+                    </Border>
+                </Expander>
+                
+                <!-- Diagnostics -->
+                <TextBlock Text="Diagnostic Information" 
+                           FontSize="16" 
+                           FontWeight="SemiBold"
+                           Margin="0,20,0,10"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Startup Time:" FontWeight="SemiBold"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="StartupTimeText" Margin="10,0,0,0"/>
+                    
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Log Location:" FontWeight="SemiBold" Margin="0,5,0,0"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="LogLocationText" Margin="10,5,0,0"/>
+                    
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Version:" FontWeight="SemiBold" Margin="0,5,0,0"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="VersionText" Margin="10,5,0,0"/>
+                    
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Environment:" FontWeight="SemiBold" Margin="0,5,0,0"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" x:Name="EnvironmentText" Margin="10,5,0,0"/>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+        
+        <!-- Actions -->
+        <Border Grid.Row="2" Background="#FFF8F8F8" BorderBrush="#FFE0E0E0" BorderThickness="0,1,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="20">
+                <Button x:Name="OpenLogsButton" 
+                        Content="📁 Open Logs Folder" 
+                        Width="140" 
+                        Height="35"
+                        Margin="5"
+                        Click="OpenLogsButton_Click"/>
+                <Button x:Name="CopyDiagnosticsButton" 
+                        Content="📋 Copy Diagnostics" 
+                        Width="140" 
+                        Height="35"
+                        Margin="5"
+                        Click="CopyDiagnosticsButton_Click"/>
+                <Button x:Name="RestartButton" 
+                        Content="🔄 Restart App" 
+                        Width="140" 
+                        Height="35"
+                        Margin="5"
+                        Click="RestartButton_Click"/>
+                <Button x:Name="ExitButton" 
+                        Content="❌ Exit" 
+                        Width="100" 
+                        Height="35"
+                        Margin="5"
+                        Click="ExitButton_Click"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

@@ -1,30 +1,58 @@
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProxyAssessmentTool", "src\ProxyAssessmentTool\ProxyAssessmentTool.csproj", "{B8D5F1E2-5A3B-4D9E-8F1A-6C7B8E9F0A2D}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E3C9A3E2-63F5-4B6D-B7F5-D1EED9E56B7C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProxyAssessmentTool.Core", "src\ProxyAssessmentTool.Core\ProxyAssessmentTool.Core.csproj", "{A7C5D3E1-4B2A-4C8F-9E3D-5F8A7B9C0E1F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProxyAssessmentTool.Core", "src\ProxyAssessmentTool.Core\ProxyAssessmentTool.Core.csproj", "{FBCE2BAF-FC9C-4034-982B-ED04D10B7A8B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProxyAssessmentTool.Tests", "tests\ProxyAssessmentTool.Tests\ProxyAssessmentTool.Tests.csproj", "{C9E7F4A3-6D5C-4E2B-A1F9-8D3C5B7A9F2E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProxyAssessmentTool", "src\ProxyAssessmentTool\ProxyAssessmentTool.csproj", "{1C32A1C7-29B8-4893-80D8-C616DDDEC23F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProxyAssessmentTool.Updater", "src\ProxyAssessmentTool.Updater\ProxyAssessmentTool.Updater.csproj", "{2D4B7F8E-9C5A-4E12-A8B3-F9E4C2D6A7B1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{9F87F526-2E5B-4F7C-9A8B-E9D7E7B9C4D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProxyAssessmentTool.Tests", "tests\ProxyAssessmentTool.Tests\ProxyAssessmentTool.Tests.csproj", "{3A2C8F5E-7B4D-4E9A-8C6E-D1F2E3A4B5C6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8F9E2D5C-4A3B-4E7F-9C8D-E2F3A4B5C6D7}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		Directory.Build.props = Directory.Build.props
+		README.md = README.md
+		LICENSE = LICENSE
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B8D5F1E2-5A3B-4D9E-8F1A-6C7B8E9F0A2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B8D5F1E2-5A3B-4D9E-8F1A-6C7B8E9F0A2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B8D5F1E2-5A3B-4D9E-8F1A-6C7B8E9F0A2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B8D5F1E2-5A3B-4D9E-8F1A-6C7B8E9F0A2D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A7C5D3E1-4B2A-4C8F-9E3D-5F8A7B9C0E1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A7C5D3E1-4B2A-4C8F-9E3D-5F8A7B9C0E1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A7C5D3E1-4B2A-4C8F-9E3D-5F8A7B9C0E1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A7C5D3E1-4B2A-4C8F-9E3D-5F8A7B9C0E1F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C9E7F4A3-6D5C-4E2B-A1F9-8D3C5B7A9F2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C9E7F4A3-6D5C-4E2B-A1F9-8D3C5B7A9F2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C9E7F4A3-6D5C-4E2B-A1F9-8D3C5B7A9F2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C9E7F4A3-6D5C-4E2B-A1F9-8D3C5B7A9F2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBCE2BAF-FC9C-4034-982B-ED04D10B7A8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBCE2BAF-FC9C-4034-982B-ED04D10B7A8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBCE2BAF-FC9C-4034-982B-ED04D10B7A8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBCE2BAF-FC9C-4034-982B-ED04D10B7A8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C32A1C7-29B8-4893-80D8-C616DDDEC23F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C32A1C7-29B8-4893-80D8-C616DDDEC23F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C32A1C7-29B8-4893-80D8-C616DDDEC23F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C32A1C7-29B8-4893-80D8-C616DDDEC23F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D4B7F8E-9C5A-4E12-A8B3-F9E4C2D6A7B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D4B7F8E-9C5A-4E12-A8B3-F9E4C2D6A7B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D4B7F8E-9C5A-4E12-A8B3-F9E4C2D6A7B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D4B7F8E-9C5A-4E12-A8B3-F9E4C2D6A7B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A2C8F5E-7B4D-4E9A-8C6E-D1F2E3A4B5C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A2C8F5E-7B4D-4E9A-8C6E-D1F2E3A4B5C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A2C8F5E-7B4D-4E9A-8C6E-D1F2E3A4B5C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A2C8F5E-7B4D-4E9A-8C6E-D1F2E3A4B5C6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FBCE2BAF-FC9C-4034-982B-ED04D10B7A8B} = {E3C9A3E2-63F5-4B6D-B7F5-D1EED9E56B7C}
+		{1C32A1C7-29B8-4893-80D8-C616DDDEC23F} = {E3C9A3E2-63F5-4B6D-B7F5-D1EED9E56B7C}
+		{2D4B7F8E-9C5A-4E12-A8B3-F9E4C2D6A7B1} = {E3C9A3E2-63F5-4B6D-B7F5-D1EED9E56B7C}
+		{3A2C8F5E-7B4D-4E9A-8C6E-D1F2E3A4B5C6} = {9F87F526-2E5B-4F7C-9A8B-E9D7E7B9C4D3}
 	EndGlobalSection
 EndGlobal

@@ -5,7 +5,6 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <ApplicationIcon>app.ico</ApplicationIcon>
     
     <!-- Single-file publishing settings -->
     <PublishSingleFile>true</PublishSingleFile>
@@ -17,35 +16,18 @@
     
     <!-- WPF compatibility -->
     <PublishTrimmed>false</PublishTrimmed>
-    <TrimMode>copyused</TrimMode>
     
     <!-- Assembly info -->
     <AssemblyVersion>1.0.0</AssemblyVersion>
     <FileVersion>1.0.0</FileVersion>
     <Company>ProxyAssessmentTool</Company>
-    <Product>ProxyAssessmentTool</Product>
+    <Product>ProxyAssessmentTool Updater</Product>
     <Copyright>Copyright © 2024</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-    <PackageReference Include="ModernWpfUI" Version="0.9.6" />
-    <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-    <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
-    <PackageReference Include="Serilog.Sinks.EventLog" Version="3.1.0" />
-    <PackageReference Include="Serilog.Formatting.Compact" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\ProxyAssessmentTool.Core\ProxyAssessmentTool.Core.csproj" />
-  </ItemGroup>
-
-  <!-- Ensure XAML resources are included -->
-  <ItemGroup>
-    <Resource Include="Resources\**\*.xaml" />
+    <PackageReference Include="System.IO.Compression" Version="4.3.0" />
   </ItemGroup>
 
 </Project>

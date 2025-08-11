@@ -1,133 +1,249 @@
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using ModernWpf;
+using ProxyAssessmentTool.Core;
 using ProxyAssessmentTool.Core.Interfaces;
 using ProxyAssessmentTool.Core.Services;
-using ProxyAssessmentTool.Services;
-using ProxyAssessmentTool.ViewModels;
 using ProxyAssessmentTool.Views;
 using Serilog;
 using Serilog.Events;
 
 namespace ProxyAssessmentTool
 {
-    /// <summary>
-    /// Main application class with dependency injection setup
-    /// </summary>
     public partial class App : Application
     {
         private IHost? _host;
-        private ILogger<App>? _logger;
-
-        protected override void OnStartup(StartupEventArgs e)
+        private SplashWindow? _splash;
+        private readonly Stopwatch _startupTimer = Stopwatch.StartNew();
+        private readonly StartupHealthTracker _healthTracker = new();
+        private CancellationTokenSource? _startupCts;
+        
+        [STAThread]
+        public static void Main()
         {
-            base.OnStartup(e);
-
-            // Set up global exception handling
+            // Set DPI awareness before any UI creation
+            SetProcessDpiAwareness();
+            
+            // Configure global exception handlers first
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
-            DispatcherUnhandledException += OnDispatcherUnhandledException;
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
-
-            // Run async initialization without async void
-            Task.Run(async () =>
-            {
-                try
-                {
-                    // Build and start the host
-                    _host = CreateHostBuilder(e.Args).Build();
-                    await _host.StartAsync();
-
-                    _logger = _host.Services.GetRequiredService<ILogger<App>>();
-                    _logger.LogInformation("ProxyAssessmentTool starting up");
-
-                    // Check for required files and first-run setup
-                    await PerformStartupChecksAsync();
-
-                    // Apply theme based on Windows settings
-                    await Dispatcher.InvokeAsync(() =>
-                    {
-                        ThemeManager.Current.ApplicationTheme = ThemeManager.Current.ActualApplicationTheme;
-
-                        // Create and show the main window
-                        var mainWindow = _host.Services.GetRequiredService<MainWindow>();
-                        MainWindow = mainWindow;
-                        mainWindow.Show();
-                    });
-                }
-                catch (Exception ex)
-                {
-                    _logger?.LogCritical(ex, "Critical startup error");
-                    await Dispatcher.InvokeAsync(() =>
-                    {
-                        MessageBox.Show(
-                            $"Failed to start application: {ex.Message}",
-                            "Startup Error",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Error);
-                        Shutdown();
-                    });
-                }
-            });
+            
+            var app = new App();
+            app.InitializeComponent();
+            app.Run();
         }
 
-        protected override async void OnExit(ExitEventArgs e)
+        protected override async void OnStartup(StartupEventArgs e)
         {
-            _logger?.LogInformation("ProxyAssessmentTool shutting down");
-
-            if (_host != null)
+            // Critical: Keep OnStartup minimal and use async properly
+            base.OnStartup(e);
+            
+            try
             {
-                await _host.StopAsync(TimeSpan.FromSeconds(5));
-                _host.Dispose();
+                _healthTracker.RecordStartupBegin();
+                
+                // Show splash immediately
+                _splash = new SplashWindow();
+                _splash.Show();
+                _splash.UpdateProgress("Initializing...", 0);
+                
+                // Start async initialization with timeout
+                _startupCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                var initSuccess = await InitializeApplicationAsync(_startupCts.Token);
+                
+                if (!initSuccess)
+                {
+                    ShowSafeMode("Startup timeout - entering Safe Mode");
+                    return;
+                }
+                
+                // Show main window
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    var mainWindow = _host!.Services.GetRequiredService<MainWindow>();
+                    mainWindow.Show();
+                    
+                    // Only now switch shutdown mode
+                    ShutdownMode = ShutdownMode.OnMainWindowClose;
+                    
+                    _splash?.Close();
+                    _splash = null;
+                });
+                
+                _healthTracker.RecordStartupSuccess(_startupTimer.Elapsed);
             }
-
-            Log.CloseAndFlush();
-            base.OnExit(e);
+            catch (Exception ex)
+            {
+                _healthTracker.RecordStartupFailure(ex, _startupTimer.Elapsed);
+                ShowSafeMode($"Startup failed: {ex.Message}", ex);
+            }
         }
 
-        private static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .UseContentRoot(AppDomain.CurrentDomain.BaseDirectory)
-                .ConfigureAppConfiguration((context, config) =>
+        private async Task<bool> InitializeApplicationAsync(CancellationToken ct)
+        {
+            try
+            {
+                // Step 1: Initialize logging
+                _splash?.UpdateProgress("Setting up logging...", 10);
+                ConfigureLogging();
+                Log.Information("Application starting - Version {Version}", GetType().Assembly.GetName().Version);
+                
+                // Step 2: Verify environment
+                _splash?.UpdateProgress("Checking environment...", 20);
+                if (!await VerifyEnvironmentAsync(ct))
+                    return false;
+                
+                // Step 3: Build DI container
+                _splash?.UpdateProgress("Loading services...", 40);
+                _host = CreateHostBuilder().Build();
+                
+                // Step 4: Initialize database
+                _splash?.UpdateProgress("Initializing database...", 60);
+                using var scope = _host.Services.CreateScope();
+                var dbService = scope.ServiceProvider.GetRequiredService<IDatabaseService>();
+                await dbService.InitializeAsync(ct);
+                
+                // Step 5: Warm up critical services
+                _splash?.UpdateProgress("Starting services...", 80);
+                await _host.StartAsync(ct);
+                
+                // Step 6: Verify file associations
+                _splash?.UpdateProgress("Configuring file associations...", 90);
+                VerifyFileAssociations();
+                
+                _splash?.UpdateProgress("Ready!", 100);
+                await Task.Delay(500, ct); // Brief pause to show completion
+                
+                return true;
+            }
+            catch (OperationCanceledException)
+            {
+                Log.Warning("Startup initialization cancelled (timeout)");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Failed to initialize application");
+                throw;
+            }
+        }
+
+        private void ConfigureLogging()
+        {
+            var logPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "ProxyAssessmentTool",
+                "logs",
+                $"{DateTime.Now:yyyy-MM-dd}.ndjson");
+            
+            Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
+            
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                .Enrich.FromLogContext()
+                .Enrich.WithThreadId()
+                .Enrich.WithProcessId()
+                .WriteTo.File(
+                    logPath,
+                    formatter: new Serilog.Formatting.Compact.CompactJsonFormatter(),
+                    rollingInterval: RollingInterval.Day,
+                    retainedFileCountLimit: 7,
+                    fileSizeLimitBytes: 50_000_000)
+                .WriteTo.Debug()
+                .CreateLogger();
+        }
+
+        private async Task<bool> VerifyEnvironmentAsync(CancellationToken ct)
+        {
+            try
+            {
+                // Check app data directory
+                var appData = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "ProxyAssessmentTool");
+                
+                Directory.CreateDirectory(appData);
+                Directory.CreateDirectory(Path.Combine(appData, "data"));
+                Directory.CreateDirectory(Path.Combine(appData, "config"));
+                Directory.CreateDirectory(Path.Combine(appData, "reports"));
+                
+                // Test write permissions
+                var testFile = Path.Combine(appData, $"test_{Guid.NewGuid()}.tmp");
+                await File.WriteAllTextAsync(testFile, "test", ct);
+                File.Delete(testFile);
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Environment verification failed");
+                return false;
+            }
+        }
+
+        private void VerifyFileAssociations()
+        {
+            try
+            {
+                // Check if running from file association
+                var args = Environment.GetCommandLineArgs();
+                if (args.Length > 1 && File.Exists(args[1]))
                 {
-                    config.SetBasePath(AppDomain.CurrentDomain.BaseDirectory);
-                    config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-                    config.AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", optional: true);
-                    config.AddEnvironmentVariables("PAT_");
-                    config.AddCommandLine(args);
-                })
-                .UseSerilog((context, services, configuration) =>
+                    var file = args[1];
+                    var ext = Path.GetExtension(file)?.ToLowerInvariant();
+                    
+                    if (ext == ".paup")
+                    {
+                        // Launch updater instead
+                        LaunchUpdater(file);
+                        Shutdown(0);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "File association check failed");
+            }
+        }
+
+        private void LaunchUpdater(string updateFile)
+        {
+            try
+            {
+                var updaterPath = Path.Combine(AppContext.BaseDirectory, "ProxyAssessmentTool.Updater.exe");
+                if (File.Exists(updaterPath))
                 {
-                    configuration
-                        .ReadFrom.Configuration(context.Configuration)
-                        .MinimumLevel.Debug()
-                        .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                        .Enrich.FromLogContext()
-                        .WriteTo.File(
-                            Path.Combine(GetLogDirectory(), "proxy-assessment-.log"),
-                            rollingInterval: RollingInterval.Day,
-                            retainedFileCountLimit: 30,
-                            outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}"
-                        )
-                        .WriteTo.EventLog(
-                            "ProxyAssessmentTool",
-                            manageEventSource: true,
-                            restrictedToMinimumLevel: LogEventLevel.Warning
-                        );
-                })
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = updaterPath,
+                        Arguments = $"\"{updateFile}\"",
+                        UseShellExecute = true
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to launch updater");
+            }
+        }
+
+        private IHostBuilder CreateHostBuilder()
+        {
+            return Host.CreateDefaultBuilder()
+                .UseSerilog()
                 .ConfigureServices((context, services) =>
                 {
-                    // Configuration
-                    services.AddSingleton<IConfiguration>(context.Configuration);
-                    
-                    // Core Services
+                    // Core services
                     services.AddSingleton<IConfigurationManager, ConfigurationManager>();
+                    services.AddSingleton<IDatabaseService, DatabaseService>();
                     services.AddSingleton<IConsentLedger, ConsentLedger>();
                     services.AddSingleton<IAuditLogger, AuditLogger>();
                     services.AddSingleton<IEvidenceStore, EvidenceStore>();
@@ -155,95 +271,119 @@ namespace ProxyAssessmentTool
                     services.AddSingleton<IDatabaseService, DatabaseService>();
                     services.AddSingleton<IFindingsRepository, FindingsRepository>();
                     
-                    // UI Services
-                    services.AddSingleton<INavigationService, NavigationService>();
-                    services.AddSingleton<IDialogService, DialogService>();
-                    services.AddSingleton<INotificationService, NotificationService>();
-                    
-                    // ViewModels
-                    services.AddTransient<MainViewModel>();
-                    services.AddTransient<DashboardViewModel>();
-                    services.AddTransient<ScopeConsentViewModel>();
-                    services.AddTransient<DiscoveryViewModel>();
-                    services.AddTransient<ValidationViewModel>();
-                    services.AddTransient<FindingsViewModel>();
-                    services.AddTransient<ReportsViewModel>();
-                    services.AddTransient<SettingsViewModel>();
-                    
-                    // Views
+                    // Windows
                     services.AddTransient<MainWindow>();
-                    services.AddTransient<DashboardView>();
-                    services.AddTransient<ScopeConsentView>();
-                    services.AddTransient<DiscoveryView>();
-                    services.AddTransient<ValidationView>();
-                    services.AddTransient<FindingsView>();
-                    services.AddTransient<ReportsView>();
-                    services.AddTransient<SettingsView>();
+                    services.AddTransient<SafeModeWindow>();
                 });
+        }
 
-        private async Task PerformStartupChecksAsync()
+        private void ShowSafeMode(string reason, Exception? exception = null)
         {
-            var startupValidator = _host!.Services.GetRequiredService<IStartupValidator>();
-            var result = await startupValidator.ValidateAsync();
-            
-            if (!result.IsValid)
+            try
             {
-                _logger!.LogWarning("Startup validation failed: {Issues}", result.Issues);
+                Log.Warning("Entering Safe Mode: {Reason}", reason);
                 
-                // Show first-run wizard if needed
-                if (result.RequiresFirstRunSetup)
+                // Ensure we're on UI thread
+                if (!Dispatcher.CheckAccess())
                 {
-                    var firstRunWindow = _host.Services.GetRequiredService<FirstRunWizard>();
-                    var dialogResult = firstRunWindow.ShowDialog();
-                    
-                    if (dialogResult != true)
-                    {
-                        Shutdown(0);
-                        return;
-                    }
+                    Dispatcher.Invoke(() => ShowSafeMode(reason, exception));
+                    return;
                 }
+                
+                _splash?.Close();
+                
+                var safeModeWindow = new SafeModeWindow(reason, exception);
+                safeModeWindow.Show();
+                
+                // Keep app alive in safe mode
+                ShutdownMode = ShutdownMode.OnLastWindowClose;
             }
-        }
-
-        private static string GetLogDirectory()
-        {
-            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            var logDir = Path.Combine(appData, "ProxyAssessmentTool", "Logs");
-            Directory.CreateDirectory(logDir);
-            return logDir;
-        }
-
-        private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            var exception = e.ExceptionObject as Exception;
-            _logger?.LogCritical(exception, "Unhandled exception occurred");
-            
-            MessageBox.Show(
-                $"A critical error occurred: {exception?.Message}\n\nThe application will now close.",
-                "Critical Error",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error
-            );
+            catch (Exception ex)
+            {
+                // Last resort - show message box
+                MessageBox.Show(
+                    $"Critical startup failure:\n\n{reason}\n\nPlease check logs at:\n{GetLogPath()}",
+                    "ProxyAssessmentTool - Safe Mode",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                
+                Log.Fatal(ex, "Failed to show Safe Mode window");
+                Shutdown(1);
+            }
         }
 
         private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            _logger?.LogError(e.Exception, "Unhandled dispatcher exception");
+            Log.Error(e.Exception, "Unhandled dispatcher exception");
             
-            MessageBox.Show(
-                $"An error occurred: {e.Exception.Message}\n\nThe operation has been cancelled.",
-                "Error",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error
-            );
-            
-            e.Handled = true;
+            if (!_host?.Services.GetService<MainWindow>()?.IsLoaded ?? true)
+            {
+                // Still in startup - show safe mode
+                ShowSafeMode("Unhandled exception during startup", e.Exception);
+                e.Handled = true;
+            }
+            else
+            {
+                // Runtime error - show error dialog
+                MessageBox.Show(
+                    $"An unexpected error occurred:\n\n{e.Exception.Message}\n\nThe application will continue running.",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                e.Handled = true;
+            }
         }
 
-        private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+        private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            _logger?.LogError(e.Exception, "Unobserved task exception");
-            e.SetObserved();
+            var exception = e.ExceptionObject as Exception;
+            Log.Fatal(exception, "Unhandled exception - IsTerminating: {IsTerminating}", e.IsTerminating);
+            
+            if (e.IsTerminating)
+            {
+                MessageBox.Show(
+                    $"Fatal error:\n\n{exception?.Message ?? "Unknown error"}\n\nThe application must close.",
+                    "ProxyAssessmentTool - Fatal Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Stop);
+            }
+        }
+
+        private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+        {
+            Log.Error(e.Exception, "Unobserved task exception");
+            e.SetObserved(); // Prevent process termination
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            _startupCts?.Cancel();
+            _host?.Dispose();
+            Log.CloseAndFlush();
+            base.OnExit(e);
+        }
+
+        private static string GetLogPath()
+        {
+            return Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "ProxyAssessmentTool",
+                "logs");
+        }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool SetProcessDPIAware();
+        
+        private static void SetProcessDpiAwareness()
+        {
+            try
+            {
+                SetProcessDPIAware();
+            }
+            catch
+            {
+                // Ignore - not critical
+            }
         }
     }
 }
