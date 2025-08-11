@@ -1,0 +1,30 @@
+# Proxy Scanner Blocklist
+# IPs listed here will never be scanned
+# One IP per line, lines starting with # are comments
+
+# Localhost and private ranges
+127.0.0.1
+::1
+
+# US Government ranges (partial list)
+6.0.0.0/8
+7.0.0.0/8
+11.0.0.0/8
+21.0.0.0/8
+22.0.0.0/8
+26.0.0.0/8
+28.0.0.0/8
+29.0.0.0/8
+30.0.0.0/8
+
+# DoD ranges
+214.0.0.0/8
+215.0.0.0/8
+
+# Critical infrastructure
+8.8.8.8
+8.8.4.4
+1.1.1.1
+1.0.0.1
+
+# Add your own IPs below

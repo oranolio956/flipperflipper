@@ -26,9 +26,11 @@ import httpx
 from concurrent.futures import ThreadPoolExecutor
 import psutil
 import hashlib
+import random
 
 # Import our proxy discovery module
 from proxy_sources import ProxySourceManager, ProxyEntry as DiscoveredProxy
+from proxy_scanner import EthicalScanManager, IntelligentTargetSelector, ScanTarget
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -87,6 +89,10 @@ class ProxyTester:
         
         # Proxy discovery manager
         self.proxy_source_manager = ProxySourceManager()
+        
+        # Proxy scanner for active discovery
+        self.scanner = EthicalScanManager(max_concurrent=50, requests_per_second=10)
+        self.target_selector = IntelligentTargetSelector()
         
         # GeoIP database (you'll need to download this)
         try:
@@ -287,6 +293,102 @@ class ProxyTester:
                 
             except Exception as e:
                 logger.error(f"Discover and test error: {str(e)}")
+                return {
+                    'status': 'error',
+                    'message': str(e)
+                }
+        
+        @self.app.post("/scan")
+        async def scan_for_proxies(
+            target_ips: List[str] = None,
+            max_targets: int = 100,
+            focus_on_mobile: bool = False
+        ):
+            """Actively scan for proxies on the internet"""
+            try:
+                # Generate targets
+                targets = []
+                
+                if target_ips:
+                    # Scan specific IPs
+                    async for target in self.target_selector.generate_targets(
+                        seed_ips=target_ips, 
+                        max_targets=max_targets
+                    ):
+                        targets.append(target)
+                else:
+                    # Generate targets from high-value ranges
+                    ranges = await self.target_selector.asn_service.get_high_value_ranges(
+                        min_reputation=0.8 if not focus_on_mobile else 0.5
+                    )
+                    
+                    # Generate targets from these ranges
+                    count = 0
+                    for range_info in ranges:
+                        if count >= max_targets:
+                            break
+                        
+                        # Focus on mobile if requested
+                        if focus_on_mobile and 'mobile' not in range_info.get('name', '').lower():
+                            continue
+                        
+                        for ip_range in range_info['ranges'][:2]:  # First 2 ranges
+                            network = ipaddress.ip_network(ip_range, strict=False)
+                            hosts = list(network.hosts())
+                            
+                            # Sample some IPs
+                            sample_size = min(5, len(hosts))
+                            for ip in random.sample(hosts, sample_size):
+                                if count >= max_targets:
+                                    break
+                                
+                                for port in self.target_selector.common_proxy_ports[:3]:
+                                    targets.append(ScanTarget(
+                                        ip=str(ip),
+                                        port=port,
+                                        priority=range_info['reputation']
+                                    ))
+                                    count += 1
+                
+                # Estimate scan
+                estimate = self.target_selector.estimate_scan_size(targets)
+                
+                # Start scanning
+                logger.info(f"Starting scan of {len(targets)} targets")
+                
+                # Scan in batches
+                all_results = []
+                batch_size = 20
+                
+                for i in range(0, len(targets), batch_size):
+                    batch = targets[i:i + batch_size]
+                    results = await self.scanner.scan_batch(batch)
+                    
+                    # Convert scan results to proxy results
+                    for scan_result in results:
+                        if scan_result.is_proxy:
+                            # Test the proxy fully
+                            proxy_result = await self.test_proxy(
+                                scan_result.ip,
+                                scan_result.port,
+                                scan_result.proxy_type
+                            )
+                            all_results.append(asdict(proxy_result))
+                
+                # Filter working proxies
+                working = [r for r in all_results if r['working']]
+                
+                return {
+                    'status': 'success',
+                    'scan_estimate': estimate,
+                    'targets_scanned': len(targets),
+                    'proxies_found': len(working),
+                    'results': working,
+                    'scan_stats': self.scanner.get_scan_statistics()
+                }
+                
+            except Exception as e:
+                logger.error(f"Scan error: {str(e)}")
                 return {
                     'status': 'error',
                     'message': str(e)

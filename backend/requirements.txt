@@ -59,3 +59,10 @@ numpy==1.26.2
 beautifulsoup4==4.12.2
 cloudscraper==1.2.71
 fake-useragent==1.4.0
+
+# Network scanning
+dnspython==2.4.2
+python-whois==0.8.0
+aiofiles==23.2.1
+netaddr==0.9.0
+pyasn==1.6.1
