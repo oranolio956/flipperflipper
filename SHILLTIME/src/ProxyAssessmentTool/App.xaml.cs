@@ -64,6 +64,9 @@ namespace ProxyAssessmentTool
                     return;
                 }
                 
+                // Store service provider for access by views
+                Properties["ServiceProvider"] = _host!.Services;
+                
                 // Show main window
                 await Dispatcher.InvokeAsync(() =>
                 {
@@ -271,9 +274,13 @@ namespace ProxyAssessmentTool
                     services.AddSingleton<IDatabaseService, DatabaseService>();
                     services.AddSingleton<IFindingsRepository, FindingsRepository>();
                     
-                    // Windows
+                    // Update Service
+                    services.AddSingleton<IGitHubUpdateService, GitHubUpdateService>();
+                    
+                    // Views
                     services.AddTransient<MainWindow>();
                     services.AddTransient<SafeModeWindow>();
+                    services.AddTransient<SettingsView>();
                 });
         }
 
@@ -358,6 +365,13 @@ namespace ProxyAssessmentTool
         protected override void OnExit(ExitEventArgs e)
         {
             _startupCts?.Cancel();
+            
+            // Dispose update service
+            if (_host?.Services.GetService<IGitHubUpdateService>() is IDisposable updateService)
+            {
+                updateService.Dispose();
+            }
+            
             _host?.Dispose();
             Log.CloseAndFlush();
             base.OnExit(e);

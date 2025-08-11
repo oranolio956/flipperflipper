@@ -25,7 +25,11 @@
                 <MenuItem Header="E_xit" Click="ExitMenuItem_Click"/>
             </MenuItem>
             <MenuItem Header="_Tools">
-                <MenuItem Header="_Settings..." Click="SettingsMenuItem_Click"/>
+                <MenuItem Header="_Settings..." Click="SettingsMenuItem_Click" InputGestureText="Ctrl+,">
+                    <MenuItem.Icon>
+                        <TextBlock Text="⚙" FontSize="14"/>
+                    </MenuItem.Icon>
+                </MenuItem>
                 <Separator/>
                 <MenuItem Header="_Collect Diagnostics..." Click="CollectDiagnostics_Click"/>
             </MenuItem>
@@ -40,13 +44,105 @@
             </MenuItem>
         </Menu>
         
-        <!-- Main Content -->
+        <!-- Main Content with Navigation -->
         <Grid Grid.Row="1">
-            <TextBlock Text="ProxyAssessmentTool - Ready" 
-                       HorizontalAlignment="Center" 
-                       VerticalAlignment="Center"
-                       FontSize="24"
-                       Foreground="Gray"/>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200" MinWidth="150"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Navigation Panel -->
+            <Border Grid.Column="0" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+                <StackPanel Margin="0,10">
+                    <RadioButton x:Name="DashboardNav" 
+                                 Style="{StaticResource NavigationRadioButtonStyle}"
+                                 IsChecked="True"
+                                 Click="NavigationButton_Click"
+                                 Tag="Dashboard">
+                        <StackPanel Orientation="Horizontal" Margin="15,10">
+                            <TextBlock Text="📊" Margin="0,0,10,0"/>
+                            <TextBlock Text="Dashboard"/>
+                        </StackPanel>
+                    </RadioButton>
+                    
+                    <RadioButton x:Name="AssessmentNav" 
+                                 Style="{StaticResource NavigationRadioButtonStyle}"
+                                 Click="NavigationButton_Click"
+                                 Tag="Assessment">
+                        <StackPanel Orientation="Horizontal" Margin="15,10">
+                            <TextBlock Text="🔍" Margin="0,0,10,0"/>
+                            <TextBlock Text="Assessment"/>
+                        </StackPanel>
+                    </RadioButton>
+                    
+                    <RadioButton x:Name="FindingsNav" 
+                                 Style="{StaticResource NavigationRadioButtonStyle}"
+                                 Click="NavigationButton_Click"
+                                 Tag="Findings">
+                        <StackPanel Orientation="Horizontal" Margin="15,10">
+                            <TextBlock Text="📋" Margin="0,0,10,0"/>
+                            <TextBlock Text="Findings"/>
+                        </StackPanel>
+                    </RadioButton>
+                    
+                    <RadioButton x:Name="ReportsNav" 
+                                 Style="{StaticResource NavigationRadioButtonStyle}"
+                                 Click="NavigationButton_Click"
+                                 Tag="Reports">
+                        <StackPanel Orientation="Horizontal" Margin="15,10">
+                            <TextBlock Text="📄" Margin="0,0,10,0"/>
+                            <TextBlock Text="Reports"/>
+                        </StackPanel>
+                    </RadioButton>
+                    
+                    <Separator Margin="10,10"/>
+                    
+                    <RadioButton x:Name="SettingsNav" 
+                                 Style="{StaticResource NavigationRadioButtonStyle}"
+                                 Click="NavigationButton_Click"
+                                 Tag="Settings">
+                        <Grid Margin="15,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBlock Grid.Column="0" Text="⚙" Margin="0,0,10,0"/>
+                            <TextBlock Grid.Column="1" Text="Settings"/>
+                            
+                            <!-- Update Badge -->
+                            <Border Grid.Column="2" 
+                                    x:Name="SettingsUpdateBadge"
+                                    Background="#FFFF3B30"
+                                    CornerRadius="8"
+                                    Width="16" Height="16"
+                                    Visibility="Collapsed">
+                                <TextBlock Text="!" 
+                                           Foreground="White"
+                                           FontSize="10"
+                                           FontWeight="Bold"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </RadioButton>
+                </StackPanel>
+            </Border>
+            
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="1" 
+                          Width="1" 
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Stretch"
+                          Background="{DynamicResource SystemControlForegroundBaseLowBrush}"/>
+            
+            <!-- Content Area -->
+            <Frame Grid.Column="2" 
+                   x:Name="ContentFrame"
+                   NavigationUIVisibility="Hidden"
+                   Margin="0"/>
         </Grid>
         
         <!-- Status Bar -->
@@ -56,8 +152,52 @@
             </StatusBarItem>
             <Separator/>
             <StatusBarItem HorizontalAlignment="Right">
-                <TextBlock x:Name="VersionText"/>
+                <StackPanel Orientation="Horizontal">
+                    <!-- Update Available Indicator -->
+                    <Border x:Name="UpdateAvailableIndicator"
+                            Background="#FF0078D4"
+                            CornerRadius="2"
+                            Padding="6,2"
+                            Margin="0,0,10,0"
+                            Visibility="Collapsed"
+                            MouseLeftButtonUp="UpdateAvailableIndicator_Click"
+                            Cursor="Hand">
+                        <TextBlock Text="Update Available" 
+                                   Foreground="White"
+                                   FontSize="11"/>
+                    </Border>
+                    
+                    <TextBlock x:Name="VersionText"/>
+                </StackPanel>
             </StatusBarItem>
         </StatusBar>
     </Grid>
+    
+    <Window.Resources>
+        <!-- Navigation RadioButton Style -->
+        <Style x:Key="NavigationRadioButtonStyle" TargetType="RadioButton">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Border" 
+                                Background="Transparent"
+                                BorderThickness="0">
+                            <ContentPresenter HorizontalAlignment="Left"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" 
+                                        Value="{DynamicResource SystemControlHighlightListLowBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Border" Property="Background" 
+                                        Value="{DynamicResource SystemControlHighlightListAccentLowBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
 </Window>
