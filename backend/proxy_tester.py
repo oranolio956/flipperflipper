@@ -31,6 +31,7 @@ import random
 # Import our proxy discovery module
 from proxy_sources import ProxySourceManager, ProxyEntry as DiscoveredProxy
 from proxy_scanner import EthicalScanManager, IntelligentTargetSelector, ScanTarget
+from advanced_testing import AdvancedProxyTester
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -93,6 +94,9 @@ class ProxyTester:
         # Proxy scanner for active discovery
         self.scanner = EthicalScanManager(max_concurrent=50, requests_per_second=10)
         self.target_selector = IntelligentTargetSelector()
+        
+        # Advanced proxy tester
+        self.advanced_tester = AdvancedProxyTester()
         
         # GeoIP database (you'll need to download this)
         try:
@@ -293,6 +297,26 @@ class ProxyTester:
                 
             except Exception as e:
                 logger.error(f"Discover and test error: {str(e)}")
+                return {
+                    'status': 'error',
+                    'message': str(e)
+                }
+        
+        @self.app.post("/test/advanced")
+        async def test_proxy_advanced(
+            ip: str,
+            port: int,
+            protocol: str = 'socks5'
+        ):
+            """Run advanced tests on a proxy"""
+            try:
+                results = await self.advanced_tester.run_all_tests(ip, port, protocol)
+                return {
+                    'status': 'success',
+                    'results': results
+                }
+            except Exception as e:
+                logger.error(f"Advanced test error: {str(e)}")
                 return {
                     'status': 'error',
                     'message': str(e)
