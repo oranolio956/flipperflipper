@@ -1,132 +1,147 @@
 /**
- * Centralized route definitions for type-safe navigation
+ * Route definitions with type safety
+ * Apple-grade navigation architecture
  */
 
 export const ROUTES = {
-  HOME: '/',
-  DASHBOARD: '/dashboard',
-  SCANNER: '/scanner',
-  PIPELINE: '/pipeline',
-  LISTING_DETAIL: '/listing/:id',
-  COMPS: '/comps',
-  FINANCE: '/finance',
-  INVENTORY: '/inventory',
-  ROUTES_PLANNER: '/routes',
-  ANALYTICS: '/analytics',
-  EXPERIMENTS: '/experiments',
-  TEAM: '/team',
-  SETTINGS: '/settings',
-  AUTOMATION: '/automation',
-  HELP: '/help',
-} as const;
-
-export type RoutePath = typeof ROUTES[keyof typeof ROUTES];
-
-// Route metadata for navigation and breadcrumbs
-export const ROUTE_META = {
-  [ROUTES.HOME]: {
-    title: 'Home',
-    icon: 'Home',
-    description: 'Overview and quick actions',
-  },
-  [ROUTES.DASHBOARD]: {
+  dashboard: {
+    path: '/',
     title: 'Dashboard',
-    icon: 'LayoutDashboard',
-    description: 'Performance metrics and insights at a glance',
+    icon: 'layout-dashboard',
+    testId: 'route-dashboard'
   },
-  [ROUTES.SCANNER]: {
+  scanner: {
+    path: '/scanner',
     title: 'Scanner',
-    icon: 'Scan',
-    description: 'Scan and triage marketplace listings',
+    icon: 'scan',
+    testId: 'route-scanner'
   },
-  [ROUTES.PIPELINE]: {
-    title: 'Deal Pipeline',
-    icon: 'GitPullRequest',
-    description: 'Track deals through stages',
+  pipeline: {
+    path: '/pipeline',
+    title: 'Pipeline',
+    icon: 'git-pull-request',
+    testId: 'route-pipeline'
   },
-  [ROUTES.LISTING_DETAIL]: {
-    title: 'Listing',
-    icon: 'FileText',
-    description: 'Detailed listing analysis',
-    hidden: true, // Don't show in main nav
-  },
-  [ROUTES.COMPS]: {
-    title: 'Comps',
-    icon: 'BarChart3',
-    description: 'Component pricing database',
-  },
-  [ROUTES.FINANCE]: {
-    title: 'Finance',
-    icon: 'DollarSign',
-    description: 'P&L and cash flow tracking',
-  },
-  [ROUTES.INVENTORY]: {
+  inventory: {
+    path: '/inventory',
     title: 'Inventory',
-    icon: 'Package',
-    description: 'Parts and systems tracking',
+    icon: 'package',
+    testId: 'route-inventory'
   },
-  [ROUTES.ROUTES_PLANNER]: {
+  routes: {
+    path: '/routes',
     title: 'Routes',
-    icon: 'Route',
-    description: 'Multi-stop pickup planning',
+    icon: 'map-pin',
+    testId: 'route-routes'
   },
-  [ROUTES.ANALYTICS]: {
+  finance: {
+    path: '/finance',
+    title: 'Finance',
+    icon: 'dollar-sign',
+    testId: 'route-finance'
+  },
+  comps: {
+    path: '/comps',
+    title: 'Comps',
+    icon: 'bar-chart-2',
+    testId: 'route-comps'
+  },
+  analytics: {
+    path: '/analytics',
     title: 'Analytics',
-    icon: 'TrendingUp',
-    description: 'Performance insights and trends',
+    icon: 'trending-up',
+    testId: 'route-analytics'
   },
-  [ROUTES.EXPERIMENTS]: {
+  experiments: {
+    path: '/experiments',
     title: 'Experiments',
-    icon: 'FlaskConical',
-    description: 'A/B test results',
+    icon: 'flask',
+    testId: 'route-experiments'
   },
-  [ROUTES.TEAM]: {
+  automation: {
+    path: '/automation',
+    title: 'Automation',
+    icon: 'cpu',
+    testId: 'route-automation'
+  },
+  team: {
+    path: '/team',
     title: 'Team',
-    icon: 'Users',
-    description: 'Manage team members',
+    icon: 'users',
+    testId: 'route-team'
   },
-  [ROUTES.SETTINGS]: {
+  settings: {
+    path: '/settings',
     title: 'Settings',
-    icon: 'Settings',
-    description: 'Configure your preferences',
+    icon: 'settings',
+    testId: 'route-settings'
   },
-  [ROUTES.AUTOMATION]: {
-    title: 'Automation Center',
-    icon: 'Zap',
-    description: 'Max Auto controls and status',
+  integrations: {
+    path: '/integrations',
+    title: 'Integrations',
+    icon: 'plug',
+    testId: 'route-integrations'
   },
-  [ROUTES.HELP]: {
+  help: {
+    path: '/help',
     title: 'Help',
-    icon: 'HelpCircle',
-    description: 'Guides and support',
+    icon: 'help-circle',
+    testId: 'route-help'
   },
+  features: {
+    path: '/features',
+    title: 'Features',
+    icon: 'layers',
+    testId: 'route-features'
+  }
 } as const;
 
-// Helper to build parameterized routes
-export function buildRoute(route: string, params: Record<string, string>): string {
-  let path = route;
-  Object.entries(params).forEach(([key, value]) => {
-    path = path.replace(`:${key}`, value);
-  });
+export type RouteName = keyof typeof ROUTES;
+export type Route = typeof ROUTES[RouteName];
+
+// Type-safe route builder
+export function buildRoute(name: RouteName, params?: Record<string, string>): string {
+  const route = ROUTES[name];
+  let path = route.path;
+  
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      path = path.replace(`:${key}`, value);
+    });
+  }
+  
   return path;
 }
 
-// Main navigation items (order matters)
-export const MAIN_NAV_ROUTES = [
-  ROUTES.DASHBOARD,
-  ROUTES.SCANNER,
-  ROUTES.PIPELINE,
-  ROUTES.COMPS,
-  ROUTES.FINANCE,
-  ROUTES.INVENTORY,
-  ROUTES.ROUTES_PLANNER,
-  ROUTES.ANALYTICS,
-] as const;
+// Navigation groups for sidebar
+export const NAV_GROUPS = [
+  {
+    label: 'Core',
+    routes: ['dashboard', 'scanner', 'pipeline'] as RouteName[]
+  },
+  {
+    label: 'Operations',
+    routes: ['inventory', 'routes', 'finance'] as RouteName[]
+  },
+  {
+    label: 'Intelligence',
+    routes: ['comps', 'analytics', 'experiments'] as RouteName[]
+  },
+  {
+    label: 'System',
+    routes: ['automation', 'team', 'settings', 'integrations'] as RouteName[]
+  },
+  {
+    label: 'Support',
+    routes: ['help', 'features'] as RouteName[]
+  }
+];
 
-export const SECONDARY_NAV_ROUTES = [
-  ROUTES.EXPERIMENTS,
-  ROUTES.TEAM,
-  ROUTES.AUTOMATION,
-  ROUTES.SETTINGS,
-  ROUTES.HELP,
-] as const;
+// Quick access routes for command palette
+export const QUICK_ACCESS_ROUTES = [
+  'dashboard',
+  'scanner',
+  'pipeline',
+  'automation',
+  'settings'
+] as RouteName[];

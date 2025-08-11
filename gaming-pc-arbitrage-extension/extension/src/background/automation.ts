@@ -229,23 +229,19 @@ class AutomationHandler {
   }
 
   private async updateDashboardStats(result: ScanResult): Promise<void> {
-    const { recentCandidates = [] } = await chrome.storage.local.get(['recentCandidates']);
+    // Real candidates are now stored via content script messages
+    // This method now only updates scan statistics
+    const { automationStats = {} } = await chrome.storage.local.get(['automationStats']);
     
-    // Add placeholder candidates (in real implementation, these would come from content script)
-    if (result.newCandidates > 0) {
-      const newCandidates = Array.from({ length: Math.min(result.newCandidates, 5) }, (_, i) => ({
-        id: `auto-${Date.now()}-${i}`,
-        title: `Gaming PC - Found via automation`,
-        platform: new URL(result.url).hostname.split('.')[0],
-        price: Math.floor(Math.random() * 1000) + 500,
-        estimatedProfit: Math.floor(Math.random() * 300) + 100,
-        riskScore: Math.random() * 0.5,
-        foundAt: new Date(),
-      }));
-
-      const updated = [...newCandidates, ...recentCandidates].slice(0, 20);
-      await chrome.storage.local.set({ recentCandidates: updated });
-    }
+    const updatedStats = {
+      ...automationStats,
+      lastScanUrl: result.url,
+      lastScanTime: new Date().toISOString(),
+      totalScans: (automationStats.totalScans || 0) + 1,
+      totalCandidatesFound: (automationStats.totalCandidatesFound || 0) + result.newCandidates,
+    };
+    
+    await chrome.storage.local.set({ automationStats: updatedStats });
   }
 
   private async isUserActive(): Promise<boolean> {

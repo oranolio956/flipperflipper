@@ -7,50 +7,118 @@ import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 /**
- * Merge Tailwind classes with clsx
+ * Merge Tailwind CSS classes with proper precedence
  */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 /**
- * Debounce function execution
+ * Format currency values
+ */
+export function formatCurrency(amount: number, currency = 'USD'): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+/**
+ * Format percentage values
+ */
+export function formatPercent(value: number, decimals = 1): string {
+  return `${value.toFixed(decimals)}%`;
+}
+
+/**
+ * Format relative time (e.g., "2 hours ago")
+ */
+export function formatRelativeTime(date: Date | string): string {
+  const now = new Date();
+  const then = typeof date === 'string' ? new Date(date) : date;
+  const seconds = Math.floor((now.getTime() - then.getTime()) / 1000);
+
+  if (seconds < 60) return 'just now';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+  
+  return then.toLocaleDateString();
+}
+
+/**
+ * Debounce function calls
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null;
+  let timeout: NodeJS.Timeout;
   
   return function executedFunction(...args: Parameters<T>) {
     const later = () => {
-      timeout = null;
+      clearTimeout(timeout);
       func(...args);
     };
     
-    if (timeout) clearTimeout(timeout);
+    clearTimeout(timeout);
     timeout = setTimeout(later, wait);
   };
 }
 
 /**
- * Throttle function execution
+ * Throttle function calls
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {
-  let inThrottle = false;
+  let inThrottle: boolean;
   
   return function executedFunction(...args: Parameters<T>) {
     if (!inThrottle) {
-      func(...args);
+      func.apply(this, args);
       inThrottle = true;
-      setTimeout(() => {
-        inThrottle = false;
-      }, limit);
+      setTimeout(() => inThrottle = false, limit);
     }
   };
+}
+
+/**
+ * Generate unique ID
+ */
+export function generateId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+/**
+ * Parse price from string
+ */
+export function parsePrice(priceString: string): number {
+  const cleaned = priceString.replace(/[^0-9.]/g, '');
+  return parseFloat(cleaned) || 0;
+}
+
+/**
+ * Calculate ROI percentage
+ */
+export function calculateROI(cost: number, revenue: number): number {
+  if (cost === 0) return 0;
+  return ((revenue - cost) / cost) * 100;
+}
+
+/**
+ * Check if URL is valid
+ */
+export function isValidUrl(string: string): boolean {
+  try {
+    new URL(string);
+    return true;
+  } catch (_) {
+    return false;
+  }
 }
 
 /**
@@ -61,142 +129,72 @@ export function sleep(ms: number): Promise<void> {
 }
 
 /**
- * Retry a function with exponential backoff
+ * Retry async function with exponential backoff
  */
 export async function retry<T>(
   fn: () => Promise<T>,
-  options: {
-    maxAttempts?: number;
-    initialDelay?: number;
-    maxDelay?: number;
-    factor?: number;
-  } = {}
+  maxAttempts = 3,
+  initialDelay = 1000
 ): Promise<T> {
-  const {
-    maxAttempts = 3,
-    initialDelay = 1000,
-    maxDelay = 10000,
-    factor = 2,
-  } = options;
+  let lastError: Error;
   
-  let delay = initialDelay;
-  
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
       return await fn();
     } catch (error) {
-      if (attempt === maxAttempts) {
-        throw error;
+      lastError = error as Error;
+      if (attempt < maxAttempts - 1) {
+        const delay = initialDelay * Math.pow(2, attempt);
+        await sleep(delay);
       }
-      
-      await sleep(delay);
-      delay = Math.min(delay * factor, maxDelay);
     }
   }
   
-  throw new Error('Retry failed');
+  throw lastError!;
 }
 
 /**
- * Create a deferred promise
+ * Group array items by key
  */
-export function createDeferred<T>() {
-  let resolve: (value: T) => void;
-  let reject: (reason?: any) => void;
-  
-  const promise = new Promise<T>((res, rej) => {
-    resolve = res;
-    reject = rej;
-  });
-  
-  return {
-    promise,
-    resolve: resolve!,
-    reject: reject!,
-  };
-}
-
-/**
- * Check if running in development mode
- */
-export function isDev(): boolean {
-  return process.env.NODE_ENV === 'development';
-}
-
-/**
- * Safe JSON parse with fallback
- */
-export function safeJsonParse<T>(json: string, fallback: T): T {
-  try {
-    return JSON.parse(json);
-  } catch {
-    return fallback;
-  }
-}
-
-/**
- * Format bytes to human readable string
- */
-export function formatBytes(bytes: number, decimals = 2): string {
-  if (bytes === 0) return '0 Bytes';
-  
-  const k = 1024;
-  const dm = decimals < 0 ? 0 : decimals;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-}
-
-/**
- * Generate a unique ID
- */
-export function uid(): string {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2);
-}
-
-/**
- * Deep clone an object
- */
-export function deepClone<T>(obj: T): T {
-  return JSON.parse(JSON.stringify(obj));
-}
-
-/**
- * Check if two objects are deeply equal
- */
-export function deepEqual(obj1: any, obj2: any): boolean {
-  if (obj1 === obj2) return true;
-  
-  if (obj1 == null || obj2 == null) return false;
-  if (obj1.constructor !== obj2.constructor) return false;
-  
-  if (obj1 instanceof Date && obj2 instanceof Date) {
-    return obj1.getTime() === obj2.getTime();
-  }
-  
-  if (Array.isArray(obj1)) {
-    if (obj1.length !== obj2.length) return false;
-    for (let i = 0; i < obj1.length; i++) {
-      if (!deepEqual(obj1[i], obj2[i])) return false;
+export function groupBy<T, K extends keyof any>(
+  items: T[],
+  getKey: (item: T) => K
+): Record<K, T[]> {
+  return items.reduce((result, item) => {
+    const key = getKey(item);
+    if (!result[key]) {
+      result[key] = [];
     }
-    return true;
+    result[key].push(item);
+    return result;
+  }, {} as Record<K, T[]>);
+}
+
+/**
+ * Chunk array into smaller arrays
+ */
+export function chunk<T>(array: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size));
   }
+  return chunks;
+}
+
+/**
+ * Simple memoization
+ */
+export function memoize<T extends (...args: any[]) => any>(fn: T): T {
+  const cache = new Map();
   
-  if (typeof obj1 === 'object') {
-    const keys1 = Object.keys(obj1);
-    const keys2 = Object.keys(obj2);
-    
-    if (keys1.length !== keys2.length) return false;
-    
-    for (const key of keys1) {
-      if (!keys2.includes(key)) return false;
-      if (!deepEqual(obj1[key], obj2[key])) return false;
+  return ((...args: Parameters<T>) => {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) {
+      return cache.get(key);
     }
     
-    return true;
-  }
-  
-  return false;
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  }) as T;
 }

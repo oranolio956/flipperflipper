@@ -1,226 +1,154 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { 
-  Search, 
-  Command, 
-  User, 
-  Bell, 
+  LayoutDashboard, 
+  Scan, 
+  GitPullRequest, 
+  Package,
+  MapPin,
+  DollarSign,
+  BarChart2,
+  TrendingUp,
+  Flask,
+  Cpu,
+  Users,
+  Settings,
+  Plug,
   HelpCircle,
-  Zap,
-  WifiOff,
-  Shield,
-  ChevronLeft,
-  Menu
+  Layers,
+  Menu,
+  X
 } from 'lucide-react';
-import { NavLink, Breadcrumbs } from './router/NavLink';
-import { MAIN_NAV_ROUTES, SECONDARY_NAV_ROUTES, ROUTE_META } from './router/routes';
-import { CommandPalette } from './commands/CommandPalette';
-import { Toast } from './design/components/Toast';
-import { cn } from './lib/utils';
+import { NavLink } from './router/NavLink';
+import { VersionHUD } from './components/VersionHUD';
+import { ROUTES, NAV_GROUPS } from './router/routes';
+import { cn } from '@/lib/utils';
+
+const iconMap = {
+  'layout-dashboard': LayoutDashboard,
+  'scan': Scan,
+  'git-pull-request': GitPullRequest,
+  'package': Package,
+  'map-pin': MapPin,
+  'dollar-sign': DollarSign,
+  'bar-chart-2': BarChart2,
+  'trending-up': TrendingUp,
+  'flask': Flask,
+  'cpu': Cpu,
+  'users': Users,
+  'settings': Settings,
+  'plug': Plug,
+  'help-circle': HelpCircle,
+  'layers': Layers
+};
 
 export function AppShell() {
-  const [isCommandPaletteOpen, setCommandPaletteOpen] = useState(false);
-  const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [isOffline, setOffline] = useState(!navigator.onLine);
-  const [automationStatus, setAutomationStatus] = useState<'active' | 'paused' | 'off'>('off');
+  const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const location = useLocation();
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setCommandPaletteOpen(true);
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === '\\') {
-        e.preventDefault();
-        setSidebarCollapsed(!isSidebarCollapsed);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isSidebarCollapsed]);
-
-  // Online/offline status
-  useEffect(() => {
-    const handleOnline = () => setOffline(false);
-    const handleOffline = () => setOffline(true);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
-  // Load automation status
-  useEffect(() => {
-    chrome.storage.local.get(['automationEnabled'], (result) => {
-      setAutomationStatus(result.automationEnabled ? 'active' : 'off');
-    });
-  }, []);
-
-  const currentMeta = ROUTE_META[location.pathname as keyof typeof ROUTE_META];
+  // Find current page title
+  const currentRoute = Object.values(ROUTES).find(r => r.path === location.pathname);
+  const pageTitle = currentRoute?.title || 'Gaming PC Arbitrage';
 
   return (
-    <div className="app-shell">
-      {/* Skip to content link for accessibility */}
-      <a href="#main-content" className="skip-to-content">
-        Skip to main content
-      </a>
-
-      {/* Top Bar */}
-      <header className="top-bar" role="banner">
-        <div className="top-bar-left">
-          <button
-            className="sidebar-toggle"
-            onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}
-            aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            {isSidebarCollapsed ? <Menu size={20} /> : <ChevronLeft size={20} />}
-          </button>
-          <Breadcrumbs />
-        </div>
-
-        <div className="top-bar-center">
-          <div className="search-bar">
-            <Search size={16} className="search-icon" />
-            <input
-              type="search"
-              placeholder="Search listings, deals, or comps..."
-              className="search-input"
-              aria-label="Global search"
-            />
-          </div>
-        </div>
-
-        <div className="top-bar-right">
-          <button
-            className="top-bar-button"
-            onClick={() => setCommandPaletteOpen(true)}
-            aria-label="Open command palette"
-            title="⌘K"
-          >
-            <Command size={18} />
-          </button>
-
-          <button
-            className="top-bar-button"
-            aria-label="Notifications"
-          >
-            <Bell size={18} />
-            <span className="notification-badge">3</span>
-          </button>
-
-          <button
-            className="top-bar-button"
-            aria-label="Help"
-          >
-            <HelpCircle size={18} />
-          </button>
-
-          <button
-            className="top-bar-button user-menu"
-            aria-label="User menu"
-          >
-            <User size={18} />
-          </button>
-        </div>
-      </header>
-
-      {/* Left Sidebar */}
-      <nav 
-        className={cn('sidebar', isSidebarCollapsed && 'sidebar-collapsed')}
-        role="navigation"
-        aria-label="Main navigation"
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Sidebar */}
+      <aside 
+        className={cn(
+          "flex flex-col w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700",
+          "transition-all duration-200 ease-in-out",
+          !sidebarOpen && "-ml-64"
+        )}
       >
-        <div className="sidebar-header">
-          <div className="app-logo">
-            <Shield size={24} />
-            {!isSidebarCollapsed && <span>PC Arbitrage</span>}
-          </div>
-        </div>
-
-        <div className="sidebar-content">
-          <div className="nav-section">
-            <ul className="nav-list">
-              {MAIN_NAV_ROUTES.map((route) => (
-                <li key={route}>
-                  <NavLink 
-                    to={route} 
-                    showIcon 
-                    className={cn(
-                      'sidebar-link',
-                      isSidebarCollapsed && 'sidebar-link-collapsed'
-                    )}
-                  />
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="nav-section nav-section-secondary">
-            <ul className="nav-list">
-              {SECONDARY_NAV_ROUTES.map((route) => (
-                <li key={route}>
-                  <NavLink 
-                    to={route} 
-                    showIcon 
-                    className={cn(
-                      'sidebar-link',
-                      isSidebarCollapsed && 'sidebar-link-collapsed'
-                    )}
-                  />
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* Status Tray */}
-        <div className="status-tray">
-          <div 
-            className={cn('status-item', automationStatus === 'active' && 'status-active')}
-            title={`Max Auto is ${automationStatus}. Click to manage.`}
+        {/* Logo */}
+        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700">
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+            PC Arbitrage Pro
+          </h1>
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
           >
-            <Zap size={16} />
-            {!isSidebarCollapsed && (
-              <span className="status-label">
-                Auto: {automationStatus}
-              </span>
-            )}
-          </div>
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-          {isOffline && (
-            <div className="status-item status-warning" title="Working offline">
-              <WifiOff size={16} />
-              {!isSidebarCollapsed && <span className="status-label">Offline</span>}
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto py-4">
+          {NAV_GROUPS.map((group) => (
+            <div key={group.label} className="mb-6">
+              <h2 className="px-6 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                {group.label}
+              </h2>
+              <div className="px-3">
+                {group.routes.map((routeName) => {
+                  const route = ROUTES[routeName];
+                  const Icon = iconMap[route.icon as keyof typeof iconMap];
+                  
+                  return (
+                    <NavLink
+                      key={routeName}
+                      to={route.path}
+                      icon={Icon && <Icon className="w-4 h-4" />}
+                      data-testid={route.testId}
+                    >
+                      {route.title}
+                    </NavLink>
+                  );
+                })}
+              </div>
             </div>
-          )}
-        </div>
-      </nav>
+          ))}
+        </nav>
 
-      {/* Main Content */}
-      <main 
-        id="main-content" 
-        className="main-content"
-        role="main"
-        aria-label={currentMeta?.title}
-      >
-        <Outlet />
-      </main>
+        {/* Version HUD */}
+        <VersionHUD />
+      </aside>
 
-      {/* Command Palette */}
-      <CommandPalette 
-        isOpen={isCommandPaletteOpen}
-        onClose={() => setCommandPaletteOpen(false)}
-      />
+      {/* Main content */}
+      <div className="flex-1 flex flex-col">
+        {/* Top bar */}
+        <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <div className="h-full px-6 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                {pageTitle}
+              </h2>
+            </div>
+            
+            {/* Quick actions */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => chrome.runtime.sendMessage({ action: 'openDashboard' })}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                data-testid="dashboard-button"
+              >
+                Dashboard
+              </button>
+              <button
+                onClick={() => chrome.runtime.sendMessage({ action: 'openSettings' })}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                data-testid="settings-button"
+              >
+                Settings
+              </button>
+            </div>
+          </div>
+        </header>
 
-      {/* Global Toast Container */}
-      <Toast />
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="container mx-auto px-6 py-8">
+            <Outlet />
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

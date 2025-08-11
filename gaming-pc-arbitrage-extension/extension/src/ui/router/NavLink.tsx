@@ -1,108 +1,77 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { cn } from '../lib/utils';
-import * as Icons from 'lucide-react';
-import { ROUTE_META } from './routes';
+import { NavLink as RouterNavLink, NavLinkProps } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
-interface NavLinkProps {
-  to: string;
-  children?: React.ReactNode;
-  className?: string;
-  activeClassName?: string;
-  exactMatch?: boolean;
-  showIcon?: boolean;
-  showDescription?: boolean;
-  onClick?: () => void;
-}
-
-export function NavLink({
-  to,
-  children,
-  className,
-  activeClassName = 'nav-link-active',
-  exactMatch = false,
-  showIcon = false,
-  showDescription = false,
-  onClick,
-}: NavLinkProps) {
-  const location = useLocation();
-  const isActive = exactMatch 
-    ? location.pathname === to
-    : location.pathname.startsWith(to) && to !== '/';
-
-  const meta = ROUTE_META[to as keyof typeof ROUTE_META];
-  const Icon = meta?.icon ? Icons[meta.icon as keyof typeof Icons] : null;
-
+/**
+ * Enhanced NavLink with Apple-grade active states
+ * Handles focus management and accessibility
+ */
+export const NavLink = React.forwardRef<
+  HTMLAnchorElement,
+  NavLinkProps & { icon?: React.ReactNode }
+>(({ className, children, icon, ...props }, ref) => {
   return (
-    <Link
-      to={to}
-      className={cn(
-        'nav-link',
-        className,
-        isActive && activeClassName
-      )}
-      aria-current={isActive ? 'page' : undefined}
-      onClick={onClick}
+    <RouterNavLink
+      ref={ref}
+      className={({ isActive, isPending }) =>
+        cn(
+          // Base styles
+          'group relative flex items-center gap-3 rounded-lg px-3 py-2',
+          'text-sm font-medium transition-all duration-150',
+          'hover:bg-gray-100 dark:hover:bg-gray-800',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500',
+          
+          // Active state
+          isActive && [
+            'bg-indigo-50 text-indigo-700',
+            'dark:bg-indigo-900/20 dark:text-indigo-400',
+            'before:absolute before:inset-y-2 before:left-0 before:w-0.5',
+            'before:bg-indigo-600 before:rounded-full',
+            'dark:before:bg-indigo-400'
+          ],
+          
+          // Pending state
+          isPending && 'opacity-60',
+          
+          // Custom className
+          className
+        )
+      }
+      aria-current={props['aria-current'] || 'page'}
+      {...props}
     >
-      <span className="nav-link-content">
-        {showIcon && Icon && (
-          <Icon className="nav-link-icon" aria-hidden="true" />
-        )}
-        <span className="nav-link-label">
-          {children || meta?.title}
+      {icon && (
+        <span className="flex-shrink-0 text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-200">
+          {icon}
         </span>
-        {showDescription && meta?.description && (
-          <span className="nav-link-description">
-            {meta.description}
-          </span>
-        )}
-      </span>
-    </Link>
+      )}
+      {children}
+    </RouterNavLink>
   );
-}
+});
 
-// Breadcrumb component using the route metadata
-export function Breadcrumbs() {
-  const location = useLocation();
-  const pathSegments = location.pathname.split('/').filter(Boolean);
-  
-  const breadcrumbs = pathSegments.map((segment, index) => {
-    const path = '/' + pathSegments.slice(0, index + 1).join('/');
-    const meta = ROUTE_META[path as keyof typeof ROUTE_META];
-    
-    return {
-      path,
-      label: meta?.title || segment,
-      isLast: index === pathSegments.length - 1,
-    };
-  });
+NavLink.displayName = 'NavLink';
 
-  if (breadcrumbs.length === 0) {
-    breadcrumbs.push({
-      path: '/',
-      label: 'Home',
-      isLast: true,
-    });
-  }
-
+// Breadcrumb variant
+export const BreadcrumbLink = React.forwardRef<
+  HTMLAnchorElement,
+  NavLinkProps
+>(({ className, ...props }, ref) => {
   return (
-    <nav aria-label="Breadcrumb" className="breadcrumbs">
-      <ol className="breadcrumb-list">
-        {breadcrumbs.map((crumb, index) => (
-          <li key={crumb.path} className="breadcrumb-item">
-            {crumb.isLast ? (
-              <span aria-current="page">{crumb.label}</span>
-            ) : (
-              <>
-                <Link to={crumb.path}>{crumb.label}</Link>
-                <span aria-hidden="true" className="breadcrumb-separator">
-                  /
-                </span>
-              </>
-            )}
-          </li>
-        ))}
-      </ol>
-    </nav>
+    <RouterNavLink
+      ref={ref}
+      className={({ isActive }) =>
+        cn(
+          'text-sm transition-colors duration-150',
+          isActive
+            ? 'text-gray-900 dark:text-gray-100 font-medium'
+            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200',
+          className
+        )
+      }
+      {...props}
+    />
   );
-}
+});
+
+BreadcrumbLink.displayName = 'BreadcrumbLink';
