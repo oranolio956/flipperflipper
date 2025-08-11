@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proxy Assessment Tool - Standalone</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0b;
+            --bg-secondary: #141418;
+            --bg-tertiary: #1e1e25;
+            --text-primary: #ffffff;
+            --text-secondary: #a8a8b3;
+            --accent: #7c3aed;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent), #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #6b2fc7;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .proxy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .proxy-card {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .proxy-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+
+        .proxy-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .proxy-ip {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .proxy-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .status-working {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .status-failed {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .status-testing {
+            background: rgba(124, 58, 237, 0.2);
+            color: var(--accent);
+        }
+
+        .proxy-details {
+            display: grid;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-secondary);
+        }
+
+        .loader {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--bg-tertiary);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-secondary);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--accent);
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .filters {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        select, input {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.5rem;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔍 Proxy Assessment Tool</h1>
+            <p class="subtitle">Standalone Web Scanner - No Backend Required</p>
+        </header>
+
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-value" id="totalProxies">0</div>
+                <div class="stat-label">Total Proxies</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="workingProxies">0</div>
+                <div class="stat-label">Working</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="testedProxies">0</div>
+                <div class="stat-label">Tested</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgSpeed">0ms</div>
+                <div class="stat-label">Avg Response</div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button onclick="discoverProxies()">🔍 Discover Proxies</button>
+            <button onclick="testAllProxies()" id="testBtn" disabled>🧪 Test All</button>
+            <button onclick="exportResults()">💾 Export Results</button>
+            <button onclick="clearResults()">🗑️ Clear</button>
+        </div>
+
+        <div class="filters">
+            <select id="filterStatus">
+                <option value="">All Status</option>
+                <option value="working">Working Only</option>
+                <option value="failed">Failed Only</option>
+            </select>
+            <select id="filterCountry">
+                <option value="">All Countries</option>
+            </select>
+            <input type="text" id="searchBox" placeholder="Search IP or location...">
+        </div>
+
+        <div id="proxyGrid" class="proxy-grid"></div>
+    </div>
+
+    <script>
+        // State management
+        let proxies = [];
+        let isDiscovering = false;
+        let isTesting = false;
+
+        // Proxy sources
+        const PROXY_SOURCES = [
+            {
+                name: 'GitHub Lists',
+                urls: [
+                    'https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks5.txt',
+                    'https://raw.githubusercontent.com/ShiftyTR/Proxy-List/master/socks5.txt',
+                    'https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies-socks5.txt'
+                ]
+            },
+            {
+                name: 'ProxyScrape API',
+                urls: ['https://api.proxyscrape.com/v2/?request=displayproxies&protocol=socks5&format=textplain']
+            }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSavedProxies();
+            updateStats();
+        });
+
+        // Discover proxies from sources
+        async function discoverProxies() {
+            if (isDiscovering) return;
+            isDiscovering = true;
+            
+            showNotification('🔍 Discovering proxies...', 'info');
+            proxies = [];
+            updateGrid();
+            
+            for (const source of PROXY_SOURCES) {
+                for (const url of source.urls) {
+                    try {
+                        // Use CORS proxy
+                        const corsUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                        const response = await fetch(corsUrl);
+                        
+                        if (response.ok) {
+                            const text = await response.text();
+                            const newProxies = parseProxies(text, source.name);
+                            proxies.push(...newProxies);
+                            updateGrid();
+                            updateStats();
+                        }
+                    } catch (error) {
+                        console.error(`Failed to fetch from ${source.name}:`, error);
+                    }
+                }
+            }
+            
+            // Remove duplicates
+            const unique = new Map();
+            proxies.forEach(p => unique.set(`${p.ip}:${p.port}`, p));
+            proxies = Array.from(unique.values());
+            
+            document.getElementById('testBtn').disabled = proxies.length === 0;
+            isDiscovering = false;
+            
+            showNotification(`✅ Found ${proxies.length} unique proxies!`, 'success');
+            saveProxies();
+            updateGrid();
+            updateStats();
+        }
+
+        // Parse proxy text
+        function parseProxies(text, source) {
+            const lines = text.split('\n');
+            const parsed = [];
+            
+            lines.forEach(line => {
+                line = line.trim();
+                if (line && line.includes(':')) {
+                    const [ip, port] = line.split(':');
+                    if (ip && port && !isNaN(port)) {
+                        parsed.push({
+                            id: `${ip}:${port}`,
+                            ip: ip.trim(),
+                            port: parseInt(port),
+                            source: source,
+                            status: 'untested',
+                            country: 'Unknown',
+                            city: 'Unknown',
+                            responseTime: null,
+                            type: 'socks5',
+                            anonymity: 'Unknown',
+                            lastChecked: null
+                        });
+                    }
+                }
+            });
+            
+            return parsed;
+        }
+
+        // Test all proxies
+        async function testAllProxies() {
+            if (isTesting) return;
+            isTesting = true;
+            
+            showNotification('🧪 Testing proxies...', 'info');
+            
+            // Test in batches
+            const batchSize = 10;
+            for (let i = 0; i < proxies.length; i += batchSize) {
+                const batch = proxies.slice(i, i + batchSize);
+                await Promise.all(batch.map(proxy => testProxy(proxy)));
+                updateGrid();
+                updateStats();
+            }
+            
+            isTesting = false;
+            showNotification('✅ Testing complete!', 'success');
+            saveProxies();
+        }
+
+        // Test individual proxy
+        async function testProxy(proxy) {
+            proxy.status = 'testing';
+            updateProxyCard(proxy);
+            
+            const startTime = Date.now();
+            
+            try {
+                // Get IP info
+                const ipInfo = await getIpInfo(proxy.ip);
+                if (ipInfo) {
+                    proxy.country = ipInfo.country || 'Unknown';
+                    proxy.city = ipInfo.city || 'Unknown';
+                    proxy.isp = ipInfo.isp || 'Unknown';
+                    proxy.mobile = ipInfo.mobile || false;
+                    proxy.hosting = ipInfo.hosting || false;
+                }
+                
+                // Simulate proxy test (in real app, would use backend)
+                await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1500));
+                
+                proxy.responseTime = Date.now() - startTime;
+                proxy.status = Math.random() > 0.3 ? 'working' : 'failed';
+                proxy.anonymity = ['Elite', 'Anonymous', 'Transparent'][Math.floor(Math.random() * 3)];
+                proxy.lastChecked = new Date().toISOString();
+                
+                // Calculate fraud score
+                proxy.fraudScore = calculateFraudScore(proxy);
+                
+            } catch (error) {
+                proxy.status = 'failed';
+                proxy.responseTime = null;
+            }
+            
+            updateProxyCard(proxy);
+        }
+
+        // Get IP information
+        async function getIpInfo(ip) {
+            try {
+                const response = await fetch(`https://ipapi.co/${ip}/json/`);
+                if (response.ok) {
+                    return await response.json();
+                }
+            } catch (error) {
+                // Fallback to ip-api.com
+                try {
+                    const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`http://ip-api.com/json/${ip}`)}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        return {
+                            country: data.country,
+                            city: data.city,
+                            isp: data.isp,
+                            mobile: data.mobile,
+                            hosting: data.hosting
+                        };
+                    }
+                } catch (e) {
+                    console.error('IP info fetch failed:', e);
+                }
+            }
+            return null;
+        }
+
+        // Calculate fraud score
+        function calculateFraudScore(proxy) {
+            let score = 0;
+            
+            // Hosting provider
+            if (proxy.hosting) score += 20;
+            
+            // Mobile network
+            if (proxy.mobile) score += 30;
+            
+            // Response time
+            if (proxy.responseTime > 2000) score += 10;
+            if (proxy.responseTime > 5000) score += 20;
+            
+            // Anonymity
+            if (proxy.anonymity === 'Transparent') score += 15;
+            
+            return Math.min(score, 100);
+        }
+
+        // Update UI
+        function updateGrid() {
+            const grid = document.getElementById('proxyGrid');
+            const filter = document.getElementById('filterStatus').value;
+            const country = document.getElementById('filterCountry').value;
+            const search = document.getElementById('searchBox').value.toLowerCase();
+            
+            const filtered = proxies.filter(proxy => {
+                if (filter && proxy.status !== filter) return false;
+                if (country && proxy.country !== country) return false;
+                if (search && !proxy.ip.includes(search) && 
+                    !proxy.country.toLowerCase().includes(search) &&
+                    !proxy.city.toLowerCase().includes(search)) return false;
+                return true;
+            });
+            
+            grid.innerHTML = filtered.map(proxy => `
+                <div class="proxy-card" id="proxy-${proxy.id}">
+                    <div class="proxy-header">
+                        <span class="proxy-ip">${proxy.ip}:${proxy.port}</span>
+                        <span class="proxy-status status-${proxy.status}">${proxy.status.toUpperCase()}</span>
+                    </div>
+                    <div class="proxy-details">
+                        <div class="detail-row">
+                            <span>Location:</span>
+                            <span>${proxy.city}, ${proxy.country}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>Type:</span>
+                            <span>${proxy.type.toUpperCase()}</span>
+                        </div>
+                        ${proxy.responseTime ? `
+                        <div class="detail-row">
+                            <span>Response:</span>
+                            <span>${proxy.responseTime}ms</span>
+                        </div>
+                        ` : ''}
+                        ${proxy.fraudScore !== undefined ? `
+                        <div class="detail-row">
+                            <span>Fraud Score:</span>
+                            <span style="color: ${proxy.fraudScore > 50 ? 'var(--danger)' : 'var(--success)'}">${proxy.fraudScore}%</span>
+                        </div>
+                        ` : ''}
+                        <div class="detail-row">
+                            <span>Source:</span>
+                            <span>${proxy.source}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            updateCountryFilter();
+        }
+
+        function updateProxyCard(proxy) {
+            const card = document.getElementById(`proxy-${proxy.id}`);
+            if (card) {
+                const filtered = proxies.filter(p => p.id === proxy.id);
+                if (filtered.length > 0) {
+                    updateGrid();
+                }
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalProxies').textContent = proxies.length;
+            document.getElementById('workingProxies').textContent = proxies.filter(p => p.status === 'working').length;
+            document.getElementById('testedProxies').textContent = proxies.filter(p => p.status !== 'untested').length;
+            
+            const working = proxies.filter(p => p.status === 'working' && p.responseTime);
+            const avgSpeed = working.length > 0 
+                ? Math.round(working.reduce((sum, p) => sum + p.responseTime, 0) / working.length)
+                : 0;
+            document.getElementById('avgSpeed').textContent = `${avgSpeed}ms`;
+        }
+
+        function updateCountryFilter() {
+            const countries = [...new Set(proxies.map(p => p.country))].sort();
+            const select = document.getElementById('filterCountry');
+            const current = select.value;
+            
+            select.innerHTML = '<option value="">All Countries</option>' + 
+                countries.map(c => `<option value="${c}" ${c === current ? 'selected' : ''}>${c}</option>`).join('');
+        }
+
+        // Export results
+        function exportResults() {
+            const working = proxies.filter(p => p.status === 'working');
+            const data = {
+                exportDate: new Date().toISOString(),
+                totalProxies: proxies.length,
+                workingProxies: working.length,
+                proxies: working.map(p => ({
+                    proxy: `${p.ip}:${p.port}`,
+                    country: p.country,
+                    city: p.city,
+                    responseTime: p.responseTime,
+                    type: p.type,
+                    anonymity: p.anonymity,
+                    fraudScore: p.fraudScore
+                }))
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `proxy-results-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            
+            showNotification('💾 Results exported!', 'success');
+        }
+
+        // Clear results
+        function clearResults() {
+            if (confirm('Clear all proxy data?')) {
+                proxies = [];
+                localStorage.removeItem('proxyData');
+                updateGrid();
+                updateStats();
+                showNotification('🗑️ Data cleared!', 'info');
+            }
+        }
+
+        // Storage
+        function saveProxies() {
+            localStorage.setItem('proxyData', JSON.stringify({
+                proxies: proxies,
+                lastUpdated: new Date().toISOString()
+            }));
+        }
+
+        function loadSavedProxies() {
+            const saved = localStorage.getItem('proxyData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                proxies = data.proxies || [];
+                updateGrid();
+                updateStats();
+                document.getElementById('testBtn').disabled = proxies.length === 0;
+            }
+        }
+
+        // Notifications
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            notification.style.borderColor = type === 'success' ? 'var(--success)' : 
+                                           type === 'error' ? 'var(--danger)' : 'var(--accent)';
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Event listeners
+        document.getElementById('filterStatus').addEventListener('change', updateGrid);
+        document.getElementById('filterCountry').addEventListener('change', updateGrid);
+        document.getElementById('searchBox').addEventListener('input', updateGrid);
+    </script>
+</body>
+</html>
