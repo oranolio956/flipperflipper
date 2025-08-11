@@ -27,6 +27,7 @@ from concurrent.futures import ThreadPoolExecutor
 import psutil
 import hashlib
 import random
+import os
 
 # Import our proxy discovery module
 from proxy_sources import ProxySourceManager, ProxyEntry as DiscoveredProxy
@@ -1197,10 +1198,13 @@ if __name__ == "__main__":
     # Create and run the application
     tester = ProxyTester()
     
+    # Get port from environment (for Render)
+    port = int(os.environ.get("PORT", 8000))
+    
     # Run with uvicorn
     uvicorn.run(
         tester.app,
         host="0.0.0.0",
-        port=8000,
+        port=port,
         log_level="info"
     )

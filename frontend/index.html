@@ -724,10 +724,10 @@
     <div class="notifications" id="notifications"></div>
     
     <script>
-        // Configuration
-        const API_URL = window.location.hostname === 'localhost' 
+        // Configuration - Dynamic backend URL
+        let API_URL = window.location.hostname === 'localhost' 
             ? 'http://localhost:8000' 
-            : 'https://your-api-domain.com'; // Replace with your actual API domain
+            : 'https://proxy-assessment-backend.onrender.com';
         
         let ws = null;
         let map = null;
