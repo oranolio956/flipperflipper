@@ -32,7 +32,7 @@
       "@/integrations/*": ["packages/integrations/src/*"],
       "@arbitrage/core": ["packages/core/src/index.ts"]
     },
-    "types": ["chrome", "node", "vitest/globals"]
+    "types": ["node", "vitest/globals"]
   },
   "exclude": ["node_modules", "dist", "*.config.js", "*.config.ts"]
 }

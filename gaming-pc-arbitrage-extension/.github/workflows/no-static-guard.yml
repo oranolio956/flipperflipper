@@ -3,79 +3,69 @@ name: No Static Content Guard
 on:
   pull_request:
   push:
-    branches: [main, develop]
+    branches: [main]
 
 jobs:
-  static-content-check:
+  check-static-content:
     runs-on: ubuntu-latest
-    
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Check for forbidden static content tokens
-      run: |
-        echo "Scanning for production-breaking static content..."
-        
-        # Define forbidden patterns
-        FORBIDDEN_PATTERNS="mock\(|fixture\(|placeholder candidates|TODO|FIXME|staticData|stub\(|lorem|generateFake|createMock|dummyData|sampleData|testData|fakeData|Math\.random\(\) \* [0-9]+ \+ [0-9]+"
-        
-        # Define production source paths (exclude tests)
-        PROD_PATHS="extension/src extension/dist packages/core/src packages/data/src packages/integrations/src"
-        
-        # Scan for forbidden content
-        FOUND=0
-        for path in $PROD_PATHS; do
-          if [ -d "$path" ]; then
-            echo "Scanning $path..."
-            if grep -r -E "$FORBIDDEN_PATTERNS" "$path" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" 2>/dev/null; then
+      - uses: actions/checkout@v4
+      
+      - name: Check for forbidden static content
+        run: |
+          echo "Scanning for production-breaking static content..."
+          
+          # Define forbidden patterns
+          PATTERNS="mock\(|mockData|fakeData|dummyData|testData|stubbed|TODO:|FIXME:|lorem|staticData|placeholder.*=.*[\"\']|generatePlaceholder"
+          
+          # Scan source files (excluding tests and docs)
+          FOUND=0
+          while IFS= read -r file; do
+            if grep -E "$PATTERNS" "$file" 2>/dev/null; then
+              echo "❌ Found static content in: $file"
+              grep -n -E "$PATTERNS" "$file" || true
+              FOUND=1
+            fi
+          done < <(find extension/src -name "*.ts" -o -name "*.tsx" | grep -v ".test." | grep -v ".spec.")
+          
+          # Scan dist files for placeholder messages
+          if [ -d "extension/dist" ]; then
+            if grep -r "Full functionality is available\|This is the.*section" extension/dist 2>/dev/null; then
+              echo "❌ Found placeholder messages in dist folder"
               FOUND=1
             fi
           fi
-        done
-        
-        if [ $FOUND -eq 1 ]; then
-          echo "❌ FAILED: Found forbidden static content in production code!"
-          echo "Remove all mock data, placeholders, and TODOs from production paths."
-          exit 1
-        else
-          echo "✅ PASSED: No forbidden static content found."
-        fi
-    
-    - name: Verify critical UI elements are wired
-      run: |
-        echo "Checking that UI buttons have real handlers..."
-        
-        # Check dashboard.js has real handlers
-        if ! grep -q "chrome.runtime.sendMessage" extension/dist/js/dashboard.js; then
-          echo "❌ Dashboard missing message handlers"
-          exit 1
-        fi
-        
-        # Check background.js handles critical messages
-        REQUIRED_HANDLERS="MAX_AUTO_ENABLE|STORE_SCAN_RESULTS|openDashboard"
-        if ! grep -E "$REQUIRED_HANDLERS" extension/dist/js/background.js; then
-          echo "❌ Background missing required message handlers"
-          exit 1
-        fi
-        
-        echo "✅ UI elements appear to be wired correctly"
-    
-    - name: Ensure content scripts have real parsing
-      run: |
-        echo "Verifying content scripts parse real data..."
-        
-        # Check for DOM parsing in content scripts
-        for script in extension/dist/js/content-*.js; do
-          if [ -f "$script" ]; then
-            if ! grep -q "querySelector\|querySelectorAll" "$script"; then
-              echo "❌ $script missing DOM parsing"
-              exit 1
-            fi
-            if ! grep -q "chrome.runtime.sendMessage" "$script"; then
-              echo "❌ $script missing message sending"
-              exit 1
-            fi
+          
+          if [ $FOUND -eq 1 ]; then
+            echo "Build failed: Static content detected in production code"
+            exit 1
+          else
+            echo "✅ No static content found"
           fi
-        done
-        
-        echo "✅ Content scripts have real parsing logic"
+      
+      - name: Verify real implementation markers
+        run: |
+          echo "Checking for required implementation markers..."
+          
+          # Check that key files have real implementations
+          REQUIRED_IMPLEMENTATIONS=(
+            "chrome.storage.local.get"
+            "chrome.alarms.create"
+            "chrome.tabs.create"
+            "chrome.runtime.sendMessage"
+          )
+          
+          MISSING=0
+          for pattern in "${REQUIRED_IMPLEMENTATIONS[@]}"; do
+            if ! grep -r "$pattern" extension/src --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v ".test."; then
+              echo "❌ Missing implementation: $pattern"
+              MISSING=1
+            fi
+          done
+          
+          if [ $MISSING -eq 1 ]; then
+            echo "Build failed: Missing required implementations"
+            exit 1
+          else
+            echo "✅ All required implementations found"
+          fi

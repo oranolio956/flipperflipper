@@ -6,6 +6,7 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true
+    ,"noEmit": false
   },
   "include": ["src/**/*"],
   "exclude": ["**/*.test.ts", "**/*.spec.ts"],
