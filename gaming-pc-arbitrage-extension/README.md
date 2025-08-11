@@ -208,4 +208,4 @@ Built with:
 
 ---
 
-**Note**: This extension is not affiliated with Facebook, Craigslist, or OfferUp. All trademarks belong to their respective owners.
+**Note**: This extension is not affiliated with Facebook, Craigslist, or OfferUp. All trademarks belong to their respective owners.# Updated Mon Aug 11 04:20:20 AM UTC 2025
