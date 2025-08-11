@@ -1,0 +1,40 @@
+END USER LICENSE AGREEMENT - ProxyAssessmentTool
+
+IMPORTANT: READ THIS LICENSE CAREFULLY BEFORE USING THIS SOFTWARE.
+
+1. GRANT OF LICENSE
+This End User License Agreement ("Agreement") grants you a non-exclusive, non-transferable license to use ProxyAssessmentTool ("Software") subject to the terms below.
+
+2. AUTHORIZED USE ONLY
+This Software is designed for authorized security assessments only. By using this Software, you agree that:
+- You will only use it on systems you own or have explicit written permission to assess
+- You will not use it for any illegal or unauthorized purposes
+- You will comply with all applicable laws and regulations
+- You understand that unauthorized use may result in civil and criminal penalties
+
+3. RESTRICTIONS
+You may not:
+- Use the Software to scan or assess any system without proper authorization
+- Reverse engineer, decompile, or disassemble the Software
+- Remove or alter any proprietary notices or labels
+- Use the Software for any malicious purpose
+
+4. CONSENT AND AUTHORIZATION
+Before each use, you must:
+- Obtain explicit written authorization from system owners
+- Verify you are within authorized scope
+- Document your authorization
+
+5. NO WARRANTY
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+
+6. LIMITATION OF LIABILITY
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM THE USE OF THIS SOFTWARE.
+
+7. COMPLIANCE
+You are responsible for ensuring your use complies with all applicable laws, regulations, and policies.
+
+8. TERMINATION
+This license is effective until terminated. It will terminate automatically if you fail to comply with any term of this Agreement.
+
+By installing or using this Software, you acknowledge that you have read this Agreement, understand it, and agree to be bound by its terms and conditions.

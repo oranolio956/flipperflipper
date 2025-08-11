@@ -2,6 +2,17 @@
 
 **IMPORTANT SAFETY REMINDER**: This guidance is solely for consent-based assessment of your own or explicitly authorized assets. Do not use it to discover or assess third-party systems without written permission. Do not generate or run code that relays traffic through discovered proxies to external destinations.
 
+## Quick Start - Installation
+
+**Easy Install**: Simply run **`INSTALL_ProxyAssessmentTool.bat`** as Administrator
+
+The installer will automatically:
+- ✅ Assemble the application from parts
+- ✅ Install to Program Files
+- ✅ Create desktop and Start Menu shortcuts
+- ✅ Set up required directories
+- ✅ Provide an uninstaller
+
 ## Overview
 
 A Windows desktop application for autonomous discovery and assessment of potentially misconfigured proxy services within owned or explicitly authorized assets. The tool enforces strict eligibility criteria and provides comprehensive remediation guidance.

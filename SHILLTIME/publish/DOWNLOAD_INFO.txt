@@ -1,0 +1,1 @@
+The ProxyAssessmentTool.exe file is 230MB and may be too large for GitHub without Git LFS. Please download from the releases section or build locally using the publish_minimal.sh script.
