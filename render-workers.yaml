@@ -1,0 +1,74 @@
+services:
+  # Privastra Worker
+  - type: worker
+    name: privastra-worker
+    env: docker
+    region: oregon
+    plan: free
+    dockerfilePath: ./worker.Dockerfile
+    dockerCommand: celery -A app.core.celery_app worker --loglevel=info --concurrency=2 -Q privastra,default
+    envVars:
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: proxy-assessment-redis
+          property: connectionString
+      - key: DATABASE_URL
+        fromDatabase:
+          name: proxy-assessment-db
+          property: connectionString
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: ENVIRONMENT
+        value: production
+    autoDeploy: true
+
+  # Scheduler Worker (Beat)
+  - type: worker
+    name: scheduler-worker
+    env: docker
+    region: oregon
+    plan: free
+    dockerfilePath: ./worker.Dockerfile
+    dockerCommand: celery -A app.core.celery_app beat --loglevel=info
+    envVars:
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: proxy-assessment-redis
+          property: connectionString
+      - key: DATABASE_URL
+        fromDatabase:
+          name: proxy-assessment-db
+          property: connectionString
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: ENVIRONMENT
+        value: production
+    autoDeploy: true
+
+  # Scraper Worker
+  - type: worker
+    name: scraper-worker
+    env: docker
+    region: oregon
+    plan: free
+    dockerfilePath: ./worker.Dockerfile
+    dockerCommand: celery -A app.core.celery_app worker --loglevel=info --concurrency=4 -Q scraper
+    envVars:
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: proxy-assessment-redis
+          property: connectionString
+      - key: DATABASE_URL
+        fromDatabase:
+          name: proxy-assessment-db
+          property: connectionString
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: ENVIRONMENT
+        value: production
+      - key: MAX_CONCURRENT_REQUESTS
+        value: 50
+    autoDeploy: true

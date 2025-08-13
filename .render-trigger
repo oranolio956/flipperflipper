@@ -1,4 +1,5 @@
 # Render Deploy Trigger
-# Last updated: 2024-08-13 18:25 UTC
+# Last updated: 2024-08-13 18:28 UTC
 # This file is used to trigger Render deployments when updated
 # Current deployment includes worker infrastructure fixes
+# Added render-workers.yaml for specific worker deployments
