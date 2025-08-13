@@ -1,0 +1,28 @@
+# Core dependencies with Python 3.12 compatibility
+celery==5.3.4
+greenlet==3.0.3  # Latest version compatible with Python 3.12
+gevent==24.2.1
+redis==5.0.1
+kombu==5.3.4
+
+# Database
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+asyncpg==0.29.0
+
+# Required for celery
+billiard==4.2.0
+vine==5.1.0
+amqp==5.2.0
+
+# Async libraries
+aiohttp==3.9.1
+asyncio==3.4.3
+
+# Monitoring
+flower==2.0.1
+
+# Other dependencies
+python-dotenv==1.0.0
+pydantic==2.5.2
+loguru==0.7.2
