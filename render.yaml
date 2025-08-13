@@ -25,7 +25,7 @@ services:
       - key: ENVIRONMENT
         value: production
     healthCheckPath: /
-    autoDeploy: false
+    autoDeploy: true  # Enable auto-deploy from main branch
 
   # Redis Instance
   - type: redis
