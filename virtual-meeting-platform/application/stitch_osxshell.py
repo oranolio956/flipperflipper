@@ -2,7 +2,7 @@
 # Copyright (c) 2017, Nathan Lopez
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 
-import meeting_platform_lib
+import stitch_lib
 from meeting_platform_help import *
 from meeting_platform_utils import *
 

