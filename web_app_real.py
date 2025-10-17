@@ -36,6 +36,19 @@ from Application import stitch_cmd, stitch_lib
 from Application.stitch_utils import *
 from Application.stitch_gen import *
 from ssl_utils import get_ssl_context
+from input_validation import (
+    ValidationError, InputValidator, validate_command_input, 
+    validate_connection_id, validate_upload_filename, validate_parameter_value
+)
+from connection_health import (
+    start_health_monitoring, stop_health_monitoring, update_connection_activity,
+    record_command_metrics, get_connection_status, get_all_connections_status,
+    get_health_summary
+)
+from file_operations import (
+    log_file_upload, log_file_download, validate_file_upload,
+    get_file_statistics, SecureFileHandler
+)
 
 # Import the new enhanced modules
 from config import Config
@@ -253,7 +266,7 @@ def log_debug(message, level="INFO", category="System"):
         username = session.get('username', 'system')
     
     # Sanitize username for logs
-    sanitized_user = sanitize_for_log(username, 'username') if username != 'system' else 'system'
+    sanitized_user = InputValidator.sanitize_for_log(username) if username != 'system' else 'system'
     
     log_entry = {
         'timestamp': timestamp,
@@ -274,58 +287,7 @@ def log_debug(message, level="INFO", category="System"):
     
     print(f"[{level}] {message}")
 
-def sanitize_for_log(data, data_type='generic'):
-    """
-    Sanitize sensitive data for secure logging.
-    
-    Args:
-        data: The sensitive data to sanitize
-        data_type: Type of data ('username', 'command', 'generic')
-    
-    Returns:
-        Sanitized string safe for logging
-    """
-    import hashlib
-    import re
-    
-    if data is None or data == '':
-        return '[EMPTY]'
-    
-    data_str = str(data)
-    
-    if data_type == 'username':
-        # Show first 2 chars + *** + hash for correlation
-        # This allows tracking the same user across logs without exposing identity
-        prefix = data_str[:2] if len(data_str) >= 2 else data_str[0] if len(data_str) == 1 else ''
-        hash_suffix = hashlib.sha256(data_str.encode()).hexdigest()[:8]
-        return f"{prefix}***[{hash_suffix}]"
-    
-    elif data_type == 'command':
-        # Sanitize commands by redacting sensitive parameters
-        # List of sensitive parameter patterns
-        sensitive_patterns = [
-            (r'(password|passwd|pwd|pass)[\s=:]+[\S]+', r'\1=[REDACTED]'),
-            (r'(key|apikey|api_key|token|secret)[\s=:]+[\S]+', r'\1=[REDACTED]'),
-            (r'(auth|authorization|bearer)[\s=:]+[\S]+(\s+[\S]+)?', r'\1=[REDACTED]'),
-            (r'--password[\s=]+[\S]+', r'--password=[REDACTED]'),
-            (r'-p[\s]+[\S]+', r'-p [REDACTED]'),
-            (r'(https?://[^:]+:)([^@]+)(@)', r'\1[REDACTED]\3'),  # URLs with credentials
-        ]
-        
-        sanitized = data_str
-        for pattern, replacement in sensitive_patterns:
-            sanitized = re.sub(pattern, replacement, sanitized, flags=re.IGNORECASE)
-        
-        # If command is too long, truncate it
-        if len(sanitized) > 200:
-            sanitized = sanitized[:200] + '... [truncated]'
-        
-        return sanitized
-    
-    else:
-        # Generic sanitization - just hash it
-        hash_val = hashlib.sha256(data_str.encode()).hexdigest()[:12]
-        return f"[REDACTED:{hash_val}]"
+# Old sanitize_for_log function removed - now using InputValidator.sanitize_for_log
 
 def login_required(f):
     @wraps(f)
@@ -354,7 +316,7 @@ def set_server_header(response):
     response.headers['X-XSS-Protection'] = '1; mode=block'
     
     # Strict-Transport-Security: Enforce HTTPS (only when HTTPS is enabled)
-    if https_enabled:
+    if Config.ENABLE_HTTPS:
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     
     # Content-Security-Policy: Comprehensive policy to prevent XSS and data injection
@@ -436,7 +398,7 @@ def login():
             # Track metrics
             metrics_collector.increment_counter('total_logins')
             
-            log_debug(f"✓ User {sanitize_for_log(username, 'username')} logged in from {client_ip}", "INFO", "Authentication")
+            log_debug(f"✓ User {InputValidator.sanitize_for_log(username)} logged in from {client_ip}", "INFO", "Authentication")
             return redirect(url_for('index'))
         else:
             # Failed login - track with enhanced system
@@ -450,11 +412,11 @@ def login():
                 remaining_seconds = get_lockout_time_remaining(client_ip)
                 remaining_minutes = (remaining_seconds + 59) // 60
                 flash(f'Too many failed attempts. Account locked for {remaining_minutes} minutes.', 'error')
-                log_debug(f"✗ Failed login triggered lockout for {sanitize_for_log(username, 'username')} from {client_ip}", "WARNING", "Security")
+                log_debug(f"✗ Failed login triggered lockout for {InputValidator.sanitize_for_log(username)} from {client_ip}", "WARNING", "Security")
             else:
                 attempts_remaining = MAX_LOGIN_ATTEMPTS - attempt_count
                 flash(f'Invalid credentials. {attempts_remaining} attempts remaining.', 'error')
-                log_debug(f"✗ Failed login attempt for user {sanitize_for_log(username, 'username')} from {client_ip} (attempt {attempt_count}/{MAX_LOGIN_ATTEMPTS})", "WARNING", "Security")
+                log_debug(f"✗ Failed login attempt for user {InputValidator.sanitize_for_log(username)} from {client_ip} (attempt {attempt_count}/{MAX_LOGIN_ATTEMPTS})", "WARNING", "Security")
     
     return render_template('login.html')
 
@@ -462,7 +424,7 @@ def login():
 def logout():
     username = session.get('username', 'unknown')
     session.clear()
-    log_debug(f"User {sanitize_for_log(username, 'username')} logged out", "INFO", "Authentication")
+    log_debug(f"User {InputValidator.sanitize_for_log(username)} logged out", "INFO", "Authentication")
     return redirect(url_for('login'))
 
 # ============================================================================
@@ -493,6 +455,7 @@ def get_connections():
             
             # Update health tracking for online connections
             if is_online:
+                update_connection_activity(target)
                 now = datetime.now().isoformat()
                 if target not in connection_health:
                     connection_health[target] = {
@@ -502,7 +465,8 @@ def get_connections():
                 else:
                     connection_health[target]['last_seen'] = now
             
-            # Get health metrics
+            # Get comprehensive health metrics
+            health_status = get_connection_status(target)
             health_data = connection_health.get(target, {})
             
             # Get connection details
@@ -517,6 +481,11 @@ def get_connections():
                     'status': 'online' if is_online else 'offline',
                     'connected_at': health_data.get('connected_at', 'N/A'),
                     'last_seen': health_data.get('last_seen', 'N/A'),
+                    # Enhanced health metrics
+                    'health': health_status,
+                    'connection_quality': health_status.get('connection_quality', 'unknown') if health_status else 'unknown',
+                    'avg_response_time': health_status.get('avg_response_time', 0) if health_status else 0,
+                    'total_commands': health_status.get('total_commands', 0) if health_status else 0,
                 }
             else:
                 # New connection not yet in history
@@ -568,18 +537,68 @@ def get_active_connections():
 @login_required
 @limiter.limit(f"{API_POLLING_PER_HOUR} per hour")  # High limit for UI polling
 def server_status():
-    """Get Stitch server status"""
+    """Get Stitch server status with health metrics"""
     try:
         server = get_stitch_server()
+        health_summary = get_health_summary()
+        
         status = {
             'listening': server.listen_port is not None,
             'port': server.listen_port if server.listen_port else 'Not listening',
             'active_connections': len(server.inf_sock),
-            'server_running': server.server_thread is not None
+            'server_running': server.server_thread is not None,
+            'health_summary': health_summary,
+            'timestamp': datetime.now().isoformat()
         }
         return jsonify(status)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/connections/health')
+@login_required
+@limiter.limit(f"{API_POLLING_PER_HOUR} per hour")
+def connections_health():
+    """Get detailed health information for all connections"""
+    try:
+        health_data = get_all_connections_status()
+        return jsonify({
+            'success': True,
+            'connections': health_data,
+            'summary': get_health_summary(),
+            'timestamp': datetime.now().isoformat()
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/files/statistics')
+@login_required
+@limiter.limit("10 per minute")
+def file_statistics():
+    """Get file operation statistics"""
+    try:
+        stats = get_file_statistics()
+        return jsonify({
+            'success': True,
+            'statistics': stats,
+            'timestamp': datetime.now().isoformat()
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/files/statistics')
+@login_required
+@limiter.limit("10 per minute")
+def file_statistics():
+    """Get file operation statistics"""
+    try:
+        stats = get_file_statistics()
+        return jsonify({
+            'success': True,
+            'statistics': stats,
+            'timestamp': datetime.now().isoformat()
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 # ============================================================================
 # Routes - Command Execution (REAL)
@@ -607,32 +626,15 @@ def execute_command():
         command = data.get('command')
         parameters = data.get('parameters', None)  # Optional parameters for interactive commands
         
-        # Server-side validation (critical for security)
-        if not command:
-            return jsonify({'success': False, 'error': 'Missing command'}), 400
+        # Comprehensive server-side validation (critical for security)
+        try:
+            command = validate_command_input(command)
+        except ValidationError as e:
+            return jsonify({'success': False, 'error': f'Invalid command: {str(e)}'}), 400
+        except Exception as e:
+            return jsonify({'success': False, 'error': 'Command validation failed'}), 400
         
-        # Validate command is a string
-        if not isinstance(command, str):
-            return jsonify({'success': False, 'error': 'Invalid command type'}), 400
-        
-        # Trim and validate
-        command = command.strip()
-        if not command or len(command) < 1:
-            return jsonify({'success': False, 'error': 'Command cannot be empty'}), 400
-        
-        # Length validation (prevent DoS)
-        MAX_COMMAND_LENGTH = 500
-        if len(command) > MAX_COMMAND_LENGTH:
-            return jsonify({'success': False, 'error': f'Command too long (max {MAX_COMMAND_LENGTH} characters)'}), 400
-        
-        # Check for null bytes and control characters (security)
-        if any(ord(c) < 32 and c not in '\t\n\r' for c in command):
-            return jsonify({'success': False, 'error': 'Command contains invalid control characters'}), 400
-        
-        # Sanitize excessive whitespace
-        command = ' '.join(command.split())
-        
-        log_debug(f"Executing command: {sanitize_for_log(command, 'command')} on {conn_id or 'server'}", "INFO", "Command")
+        log_debug(f"Executing command: {InputValidator.sanitize_for_log(command)} on {conn_id or 'server'}", "INFO", "Command")
         
         # Track command
         command_entry = {
@@ -737,7 +739,7 @@ def export_commands():
 
 @app.route('/api/upload', methods=['POST'])
 @login_required
-@limiter.limit(f"{EXECUTIONS_PER_MINUTE} per minute")
+@limiter.limit("5 per minute")  # Strict rate limit for file uploads
 def upload_file():
     """Upload file to target - with validation"""
     import os
@@ -758,10 +760,19 @@ def upload_file():
         
         target_id = target_id.strip()
         
-        # Validate filename
-        if not file.filename or file.filename == '':
-            log_debug("Upload failed: Empty filename", "ERROR", "Upload")
-            return jsonify({'error': 'No file selected'}), 400
+        # Comprehensive filename validation
+        try:
+            validated_filename = validate_upload_filename(file.filename)
+        except ValidationError as e:
+            log_file_upload(file.filename or 'unknown', 0, target_id or 'unknown', 
+                          session.get('username', 'unknown'), False, str(e))
+            log_debug(f"Upload failed: Invalid filename - {str(e)}", "ERROR", "Upload")
+            return jsonify({'error': f'Invalid filename: {str(e)}'}), 400
+        except Exception as e:
+            log_file_upload(file.filename or 'unknown', 0, target_id or 'unknown',
+                          session.get('username', 'unknown'), False, str(e))
+            log_debug(f"Upload failed: Filename validation error - {str(e)}", "ERROR", "Upload")
+            return jsonify({'error': 'Filename validation failed'}), 400
         
         # Check file size (100MB limit)
         MAX_FILE_SIZE = 100 * 1024 * 1024
@@ -769,9 +780,16 @@ def upload_file():
         file_size = file.tell()
         file.seek(0)
         
-        if file_size > MAX_FILE_SIZE:
-            log_debug(f"Upload failed: File too large ({file_size} bytes)", "ERROR", "Upload")
-            return jsonify({'error': 'File too large (max 100MB)'}), 400
+        # Enhanced file security validation
+        file_content = file.read(1024)  # Read first 1KB for content analysis
+        file.seek(0)  # Reset file pointer
+        
+        is_valid, validation_error = validate_file_upload(file.filename, file_size, file_content)
+        if not is_valid:
+            log_file_upload(file.filename, file_size, target_id, 
+                          session.get('username', 'unknown'), False, validation_error)
+            log_debug(f"Upload failed: Security validation - {validation_error}", "ERROR", "Upload")
+            return jsonify({'error': f'File security validation failed: {validation_error}'}), 400
         
         # Get server and validate connection exists and is ONLINE
         server = get_stitch_server()
@@ -795,12 +813,17 @@ def upload_file():
             upload_command = f"upload {temp_path}"
             output = execute_real_command(upload_command, target_id)
             
+            # Log successful upload
+            log_file_upload(file.filename, file_size, target_id,
+                          session.get('username', 'unknown'), True)
             log_debug(f"File uploaded: {file.filename} to {target_id}", "INFO", "Upload")
             
             return jsonify({
                 'success': True,
                 'output': f"✅ File '{file.filename}' uploaded successfully!\n\n{output}",
-                'filename': file.filename
+                'filename': file.filename,
+                'size': file_size,
+                'upload_time': datetime.now().isoformat()
             })
         
         finally:
@@ -810,7 +833,9 @@ def upload_file():
             except:
                 pass
         
-    except Exception as e:
+        except Exception as e:
+        log_file_upload(file.filename if 'file' in locals() and file else 'unknown', 
+                       0, target_id or 'unknown', session.get('username', 'unknown'), False, str(e))
         log_debug(f"Error uploading file: {str(e)}", "ERROR", "Upload")
         return jsonify({'error': str(e)}), 500
 
@@ -823,6 +848,14 @@ def execute_real_command(command, conn_id=None, parameters=None):
         parameters: Optional dict of parameters for interactive commands
     """
     try:
+        # Validate command input first
+        try:
+            command = validate_command_input(command)
+        except ValidationError as e:
+            return f"❌ Command validation failed: {str(e)}"
+        except Exception as e:
+            return f"❌ Command validation error: {str(e)}"
+        
         server = get_stitch_server()
         
         # Commands that work without a target
@@ -842,6 +875,12 @@ def execute_real_command(command, conn_id=None, parameters=None):
         if not conn_id:
             return f"❌ Command '{command}' requires selecting a target connection.\n\nPlease select an ONLINE connection from the dashboard first."
         
+        # Validate connection ID
+        try:
+            conn_id = validate_connection_id(conn_id)
+        except ValidationError as e:
+            return f"❌ Invalid connection ID: {str(e)}"
+        
         # Check if connection is online
         if conn_id not in server.inf_sock:
             return f"❌ Connection {conn_id} is OFFLINE.\n\nCommand execution requires an active connection."
@@ -855,7 +894,12 @@ def execute_real_command(command, conn_id=None, parameters=None):
             return f"❌ No AES encryption key found for {conn_id}.\n\nUse 'addkey' to add the key first."
         
         # Execute command on target using stitch_lib with parameters
+        start_time = time.time()
         output = execute_on_target(target_socket, command, conn_aes_key, conn_id, parameters)
+        execution_time = time.time() - start_time
+        
+        # Record command execution metrics
+        record_command_metrics(conn_id, execution_time)
         
         return output
         
@@ -1078,24 +1122,21 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
                     subcommand = cmd_args.split()[0] if cmd_args else None
                     subcommand_def = cmd_def['subcommands'].get(subcommand)
                     if subcommand_def and 'parameters' in subcommand_def:
-                        # Validate all required parameters are present
+                        # Validate all required parameters are present and valid
                         for param_def in subcommand_def['parameters']:
                             param_name = param_def['name']
                             if param_def.get('required') and param_name not in parameters:
                                 return output_header + f"❌ Missing required parameter: {param_name}\n\nCommand: {cmd_name} {subcommand}"
                             if param_name in parameters:
                                 value = parameters[param_name]
-                                # Basic validation
-                                if param_def['type'] == 'number':
-                                    try:
-                                        int_val = int(value)
-                                        if param_name == 'port' and not (1 <= int_val <= 65535):
-                                            return output_header + f"❌ Invalid port number: {value} (must be 1-65535)"
-                                        input_queue.append(str(int_val))
-                                    except ValueError:
-                                        return output_header + f"❌ Invalid number for {param_name}: {value}"
-                                else:
-                                    input_queue.append(str(value))
+                                # Comprehensive validation using validation module
+                                try:
+                                    validated_value = validate_parameter_value(param_name, value, param_def['type'])
+                                    input_queue.append(str(validated_value))
+                                except ValidationError as e:
+                                    return output_header + f"❌ Invalid parameter {param_name}: {str(e)}"
+                                except Exception as e:
+                                    return output_header + f"❌ Parameter validation failed for {param_name}: {str(e)}"
                         # Add confirmation if required
                         if subcommand_def.get('confirmation'):
                             input_queue.append('y')
@@ -1106,7 +1147,15 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
                         if param_def.get('required') and param_name not in parameters:
                             return output_header + f"❌ Missing required parameter: {param_name}\n\nCommand: {cmd_name}"
                         if param_name in parameters:
-                            input_queue.append(str(parameters[param_name]))
+                            value = parameters[param_name]
+                            # Comprehensive validation
+                            try:
+                                validated_value = validate_parameter_value(param_name, value, param_def['type'])
+                                input_queue.append(str(validated_value))
+                            except ValidationError as e:
+                                return output_header + f"❌ Invalid parameter {param_name}: {str(e)}"
+                            except Exception as e:
+                                return output_header + f"❌ Parameter validation failed for {param_name}: {str(e)}"
                     # Add confirmation if required
                     if cmd_def.get('confirmation'):
                         input_queue.append('y')
@@ -1455,6 +1504,7 @@ def get_command_history():
 
 @app.route('/api/files/downloads')
 @login_required
+@limiter.limit("20 per minute")  # Rate limit for file listing
 def list_downloads():
     try:
         downloads = []
@@ -1476,6 +1526,7 @@ def list_downloads():
 
 @app.route('/api/files/download/<path:filename>')
 @login_required
+@limiter.limit("10 per minute")  # Rate limit for file downloads
 def download_file(filename):
     try:
         filepath = os.path.join(downloads_path, filename)
@@ -1488,10 +1539,15 @@ def download_file(filename):
             return jsonify({'error': 'Invalid file path'}), 403
         
         if os.path.exists(filepath) and os.path.isfile(filepath):
-            log_debug(f"Downloading file: {filename}", "INFO", "Files")
+            file_size = os.path.getsize(filepath)
+            log_file_download(filename, file_size, 'server', 
+                            session.get('username', 'unknown'), True)
+            log_debug(f"Downloading file: {filename} ({file_size} bytes)", "INFO", "Files")
             return send_file(filepath, as_attachment=True)
+        log_file_download(filename, 0, 'server', session.get('username', 'unknown'), False, 'File not found')
         return jsonify({'error': 'File not found'}), 404
     except Exception as e:
+        log_file_download(filename, 0, 'server', session.get('username', 'unknown'), False, str(e))
         return jsonify({'error': str(e)}), 500
 
 # ============================================================================
@@ -1530,13 +1586,18 @@ def monitor_connections():
         time.sleep(SERVER_RETRY_DELAY_SECONDS)
 
 def start_stitch_server():
-    """Start the Stitch server"""
+    """Start the Stitch server with health monitoring"""
     log_debug("Initializing Stitch RAT server", "INFO", "Server")
     try:
         server = get_stitch_server()
         # Start listening on port 4040
         server.do_listen('4040')
         log_debug("Stitch server listening on port 4040", "INFO", "Server")
+        
+        # Start health monitoring
+        start_health_monitoring(server)
+        log_debug("Connection health monitoring started", "INFO", "Health")
+        
     except Exception as e:
         log_debug(f"Stitch server error: {str(e)}", "ERROR", "Server")
 

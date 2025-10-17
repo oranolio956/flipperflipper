@@ -48,9 +48,10 @@ class Config:
             return secret_key
         
         # Check for existing secret key file
-        if cls.SECRET_KEY_FILE.exists():
+        secret_key_file = cls.APPLICATION_DIR / '.secret_key'
+        if secret_key_file.exists():
             try:
-                with open(cls.SECRET_KEY_FILE, 'r') as f:
+                with open(secret_key_file, 'r') as f:
                     secret_key = f.read().strip()
                     if secret_key:
                         return secret_key
@@ -64,16 +65,16 @@ class Config:
             cls.APPLICATION_DIR.mkdir(parents=True, exist_ok=True)
             
             # Save to file with restricted permissions
-            with open(cls.SECRET_KEY_FILE, 'w') as f:
+            with open(secret_key_file, 'w') as f:
                 f.write(secret_key)
             
             # Set file permissions (Unix/Linux only)
             try:
-                os.chmod(cls.SECRET_KEY_FILE, 0o600)
+                os.chmod(secret_key_file, 0o600)
             except:
                 pass  # Windows doesn't support chmod
             
-            print(f"✓ Generated persistent secret key: {cls.SECRET_KEY_FILE}")
+            print(f"✓ Generated persistent secret key: {secret_key_file}")
             print("  Sessions will persist across server restarts")
         except Exception as e:
             print(f"⚠️  Could not save secret key to file: {e}")
@@ -81,8 +82,8 @@ class Config:
         
         return secret_key
     
-    # Get persistent secret key
-    SECRET_KEY = ensure_secret_key.__func__(None)  # Call as static method
+    # Get persistent secret key - will be set after class definition
+    SECRET_KEY = None
     
     # Session Configuration
     SESSION_COOKIE_HTTPONLY = True
@@ -374,6 +375,9 @@ class Config:
                 errors.append(f"Cannot create {dir_attr}: {e}")
         
         return errors
+
+# Initialize secret key after class definition
+Config.SECRET_KEY = Config.ensure_secret_key()
 
 # Initialize configuration on module load
 _validation_errors = Config.validate()

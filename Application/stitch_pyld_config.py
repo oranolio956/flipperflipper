@@ -2,11 +2,12 @@
 # Copyright (c) 2017, Nathan Lopez
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 
+import configparser
 from .stitch_utils import *
 
 class stitch_ini():
     def __init__(self):
-        self.Config = ConfigParser.ConfigParser()
+        self.Config = configparser.ConfigParser()
         self.Config.read(st_config)
         if windows_client():
             self.section = "Windows"
@@ -172,7 +173,7 @@ def print_st_config():
     KEYLOGGER_BOOT = {}\n\n'''.format(BIND,BHOST,BPORT,LISTEN,LHOST,LPORT,EMAIL,KEYLOGGER_BOOT))
 
 def gen_default_st_config():
-    with open(st_config, 'wb') as sc:
+    with open(st_config, 'w') as sc:
         content = '''
 [Windows]
 BIND = True

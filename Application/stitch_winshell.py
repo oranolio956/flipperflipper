@@ -15,7 +15,7 @@ class st_winshell(cmd.Cmd):
         self.dir_comp = []
         self.all_comp = []
         socket.settimeout(30)
-        self.cli_temp = 'C:\\Windows\\Temp\\'
+        self.cli_temp = r'C:\Windows\Temp\\'
         self.ignore = ['cls','clear','EOF','exit']
         self.cli_dwld= os.path.join(downloads_path,target)
         self.cli_os = stitch_lib.st_receive(socket, aes_key)

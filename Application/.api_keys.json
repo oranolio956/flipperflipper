@@ -1,0 +1,9 @@
+{
+  "663a09468bdbe89e436a6f7e4cfb69163ee7d01c71c4b997bba5164bdc05ea15": {
+    "name": "test_key",
+    "description": "Test API key for audit",
+    "created_at": "2025-10-17T15:02:03.125836",
+    "last_used": "2025-10-17T15:02:03.125989",
+    "usage_count": 1
+  }
+}

