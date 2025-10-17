@@ -45,6 +45,10 @@ from connection_health import (
     record_command_metrics, get_connection_status, get_all_connections_status,
     get_health_summary
 )
+from file_operations import (
+    log_file_upload, log_file_download, validate_file_upload,
+    get_file_statistics, SecureFileHandler
+)
 
 # Import the new enhanced modules
 from config import Config
@@ -566,6 +570,36 @@ def connections_health():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/files/statistics')
+@login_required
+@limiter.limit("10 per minute")
+def file_statistics():
+    """Get file operation statistics"""
+    try:
+        stats = get_file_statistics()
+        return jsonify({
+            'success': True,
+            'statistics': stats,
+            'timestamp': datetime.now().isoformat()
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/files/statistics')
+@login_required
+@limiter.limit("10 per minute")
+def file_statistics():
+    """Get file operation statistics"""
+    try:
+        stats = get_file_statistics()
+        return jsonify({
+            'success': True,
+            'statistics': stats,
+            'timestamp': datetime.now().isoformat()
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 # ============================================================================
 # Routes - Command Execution (REAL)
 # ============================================================================
@@ -730,9 +764,13 @@ def upload_file():
         try:
             validated_filename = validate_upload_filename(file.filename)
         except ValidationError as e:
+            log_file_upload(file.filename or 'unknown', 0, target_id or 'unknown', 
+                          session.get('username', 'unknown'), False, str(e))
             log_debug(f"Upload failed: Invalid filename - {str(e)}", "ERROR", "Upload")
             return jsonify({'error': f'Invalid filename: {str(e)}'}), 400
         except Exception as e:
+            log_file_upload(file.filename or 'unknown', 0, target_id or 'unknown',
+                          session.get('username', 'unknown'), False, str(e))
             log_debug(f"Upload failed: Filename validation error - {str(e)}", "ERROR", "Upload")
             return jsonify({'error': 'Filename validation failed'}), 400
         
@@ -742,9 +780,16 @@ def upload_file():
         file_size = file.tell()
         file.seek(0)
         
-        if file_size > MAX_FILE_SIZE:
-            log_debug(f"Upload failed: File too large ({file_size} bytes)", "ERROR", "Upload")
-            return jsonify({'error': 'File too large (max 100MB)'}), 400
+        # Enhanced file security validation
+        file_content = file.read(1024)  # Read first 1KB for content analysis
+        file.seek(0)  # Reset file pointer
+        
+        is_valid, validation_error = validate_file_upload(file.filename, file_size, file_content)
+        if not is_valid:
+            log_file_upload(file.filename, file_size, target_id, 
+                          session.get('username', 'unknown'), False, validation_error)
+            log_debug(f"Upload failed: Security validation - {validation_error}", "ERROR", "Upload")
+            return jsonify({'error': f'File security validation failed: {validation_error}'}), 400
         
         # Get server and validate connection exists and is ONLINE
         server = get_stitch_server()
@@ -768,12 +813,17 @@ def upload_file():
             upload_command = f"upload {temp_path}"
             output = execute_real_command(upload_command, target_id)
             
+            # Log successful upload
+            log_file_upload(file.filename, file_size, target_id,
+                          session.get('username', 'unknown'), True)
             log_debug(f"File uploaded: {file.filename} to {target_id}", "INFO", "Upload")
             
             return jsonify({
                 'success': True,
                 'output': f"✅ File '{file.filename}' uploaded successfully!\n\n{output}",
-                'filename': file.filename
+                'filename': file.filename,
+                'size': file_size,
+                'upload_time': datetime.now().isoformat()
             })
         
         finally:
@@ -783,7 +833,9 @@ def upload_file():
             except:
                 pass
         
-    except Exception as e:
+        except Exception as e:
+        log_file_upload(file.filename if 'file' in locals() and file else 'unknown', 
+                       0, target_id or 'unknown', session.get('username', 'unknown'), False, str(e))
         log_debug(f"Error uploading file: {str(e)}", "ERROR", "Upload")
         return jsonify({'error': str(e)}), 500
 
@@ -1487,10 +1539,15 @@ def download_file(filename):
             return jsonify({'error': 'Invalid file path'}), 403
         
         if os.path.exists(filepath) and os.path.isfile(filepath):
-            log_debug(f"Downloading file: {filename}", "INFO", "Files")
+            file_size = os.path.getsize(filepath)
+            log_file_download(filename, file_size, 'server', 
+                            session.get('username', 'unknown'), True)
+            log_debug(f"Downloading file: {filename} ({file_size} bytes)", "INFO", "Files")
             return send_file(filepath, as_attachment=True)
+        log_file_download(filename, 0, 'server', session.get('username', 'unknown'), False, 'File not found')
         return jsonify({'error': 'File not found'}), 404
     except Exception as e:
+        log_file_download(filename, 0, 'server', session.get('username', 'unknown'), False, str(e))
         return jsonify({'error': str(e)}), 500
 
 # ============================================================================
