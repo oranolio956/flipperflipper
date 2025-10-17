@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  stitch-c2:
+    build: .
+    container_name: enhanced-stitch
+    ports:
+      - "4433:4433"
+      - "4455:4455"
+    environment:
+      - DISPLAY=:99
+      - VPS_IP=${VPS_IP:-localhost}
+    volumes:
+      - ./Payloads:/opt/stitch/Payloads
+      - ./Logs:/opt/stitch/Logs
+    restart: unless-stopped
+    networks:
+      - stitch-network
+
+networks:
+  stitch-network:
+    driver: bridge
