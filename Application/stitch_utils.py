@@ -17,10 +17,16 @@ import shutil
 import sqlite3
 import zipfile
 import threading
-import cStringIO
+try:
+    import cStringIO as StringIO
+except ImportError:
+    import io as StringIO
 import contextlib
 import subprocess
-import ConfigParser
+try:
+    import ConfigParser
+except ImportError:
+    import configparser as ConfigParser
 from time import sleep
 from Crypto import Random
 from getpass import getpass
@@ -70,7 +76,7 @@ def run_command(command):
                 return subp_output
         return "[!] {}".format(errors)
     except KeyboardInterrupt:
-        print "Terminated command."
+        print("Terminated command.")
 
 def start_command(command):
     try:
@@ -225,7 +231,7 @@ def check_int(val):
         is_int = int(val)
         return True
     except ValueError:
-        print "{} is not a valid number.".format(val)
+        print("{} is not a valid number.".format(val))
         return False
 
 def append_slash_if_dir(p):

@@ -2,7 +2,7 @@
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 
 import sys
-from st_aes import *
+from Stitch_Vars.st_aes import *
 from random import randint,choice
 from string import ascii_uppercase
 

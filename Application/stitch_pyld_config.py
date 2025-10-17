@@ -3,6 +3,11 @@
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 
 from stitch_utils import *
+try:
+    raw_input
+except NameError:
+    # Python 3
+    raw_input = input
 
 class stitch_ini():
     def __init__(self):
@@ -159,7 +164,7 @@ def print_st_config():
     EMAIL = stini.get_value("EMAIL")
     KEYLOGGER_BOOT = stini.get_bool("KEYLOGGER_BOOT")
     st_print("=== Stitch {} Configuration ===".format(stini.section))
-    print '''
+    print('''
     BIND = {}
     BHOST = {}
     BPORT = {}
@@ -169,7 +174,7 @@ def print_st_config():
     LPORT = {}
 
     GMAIL = {}
-    KEYLOGGER_BOOT = {}\n\n'''.format(BIND,BHOST,BPORT,LISTEN,LHOST,LPORT,EMAIL,KEYLOGGER_BOOT)
+    KEYLOGGER_BOOT = {}\n\n'''.format(BIND,BHOST,BPORT,LISTEN,LHOST,LPORT,EMAIL,KEYLOGGER_BOOT))
 
 def gen_default_st_config():
     with open(st_config, 'wb') as sc:
