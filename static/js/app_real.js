@@ -868,7 +868,7 @@ async function uploadFile() {
     try {
         const formData = new FormData();
         formData.append('file', selectedFile);
-        formData.append('target_id', selectedConnection);
+        formData.append('target_id', selectedConnection.id);
         
         const xhr = new XMLHttpRequest();
         
@@ -888,7 +888,8 @@ async function uploadFile() {
                 
                 // Show result in command output
                 if (response.output) {
-                    addOutput(response.output);
+                    const outputElem = document.getElementById('commandOutput');
+                    outputElem.textContent = response.output + '\n' + (outputElem.textContent || '');
                 }
             } else {
                 const error = JSON.parse(xhr.responseText);
@@ -903,6 +904,11 @@ async function uploadFile() {
         });
         
         xhr.open('POST', '/api/upload', true);
+        // Include CSRF token header for Flask-WTF
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        if (csrfMeta) {
+            xhr.setRequestHeader('X-CSRFToken', csrfMeta.getAttribute('content'));
+        }
         xhr.send(formData);
         
     } catch (error) {

@@ -81,8 +81,8 @@ class Config:
         
         return secret_key
     
-    # Get persistent secret key
-    SECRET_KEY = ensure_secret_key.__func__(None)  # Call as static method
+    # Get persistent secret key (invoke after class body via placeholder)
+    SECRET_KEY = None
     
     # Session Configuration
     SESSION_COOKIE_HTTPONLY = True
@@ -376,6 +376,8 @@ class Config:
         return errors
 
 # Initialize configuration on module load
+# Resolve SECRET_KEY after class creation
+Config.SECRET_KEY = Config.ensure_secret_key()
 _validation_errors = Config.validate()
 if _validation_errors:
     print("⚠️  Configuration warnings:")
