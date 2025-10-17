@@ -47,8 +47,8 @@ def st_send(client, data, aes_enc):
     client.sendall(eof)
 
 class stitch_commands_library:
-    __slots__= ['client', 'cli_target', 'cli_port', 'cli_os','cli_platform',
-                'cli_hostname', 'cli_user', 'cli_dwld', 'cli_temp',]
+    __slots__= ['client', 'cli_target', 'cli_port', 'aes_key', 'cli_os','cli_platform',
+                'cli_hostname', 'cli_user', 'cli_dwld', 'cli_temp', 'cli_hosts_file']
 
     def __init__(self, client, target, port, aes_key, os, platform, hostname, user, dwld, temp):
         self.client = client

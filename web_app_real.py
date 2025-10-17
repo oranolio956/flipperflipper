@@ -354,7 +354,7 @@ def set_server_header(response):
     response.headers['X-XSS-Protection'] = '1; mode=block'
     
     # Strict-Transport-Security: Enforce HTTPS (only when HTTPS is enabled)
-    if https_enabled:
+    if Config.ENABLE_HTTPS:
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     
     # Content-Security-Policy: Comprehensive policy to prevent XSS and data injection

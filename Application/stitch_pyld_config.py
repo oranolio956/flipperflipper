@@ -172,7 +172,7 @@ def print_st_config():
     KEYLOGGER_BOOT = {}\n\n'''.format(BIND,BHOST,BPORT,LISTEN,LHOST,LPORT,EMAIL,KEYLOGGER_BOOT))
 
 def gen_default_st_config():
-    with open(st_config, 'wb') as sc:
+    with open(st_config, 'w') as sc:
         content = '''
 [Windows]
 BIND = True
