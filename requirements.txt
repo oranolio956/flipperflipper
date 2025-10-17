@@ -75,3 +75,4 @@ pyudev>=0.24.1; sys_platform == 'linux'
 # - Optional dependencies are commented out - uncomment as needed
 # - Run: pip install -r requirements.txt
 psutil
+pytest>=8.0.0

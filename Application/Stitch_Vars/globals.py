@@ -39,7 +39,16 @@ options_hostsfile = ['update','remove','show']
 options_freeze    = ['status','start','stop']
 options_keylogger = ['status','start','stop','dump']
 
-stitch_path        = os.path.dirname(os.path.realpath(sys.argv[0]))
+def _detect_stitch_root():
+    """Determine Stitch repository root robustly for CLI, web, and test contexts."""
+    # Prefer path relative to this module when available (import context)
+    module_root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+    if os.path.isdir(os.path.join(module_root, 'Application')) and os.path.isdir(os.path.join(module_root, 'PyLib')):
+        return module_root
+    # Fallback to executable/argv path (CLI context)
+    return os.path.dirname(os.path.realpath(sys.argv[0]))
+
+stitch_path        = _detect_stitch_root()
 app_path           = os.path.join(stitch_path,'Application')
 stitch_vars_path   = os.path.join(app_path,'Stitch_Vars')
 pylib_path         = os.path.join(stitch_path,'PyLib')
@@ -70,7 +79,7 @@ st_paths = [pylib_path,
 
 for p in st_paths:
     if not os.path.exists(p):
-        os.mkdir(p)
+        os.makedirs(p, exist_ok=True)
 
 if not os.path.exists(st_aes):
     key  = ''.join(random.SystemRandom().choice(string.ascii_lowercase + string.ascii_uppercase + string.digits) for _ in range(32))
