@@ -434,6 +434,8 @@ def login():
             session.permanent = True
             session['logged_in'] = True
             session['username'] = username
+            # For compatibility with metrics/auth utils expecting 'user'
+            session['user'] = username
             session['login_time'] = datetime.now().isoformat()
             
             # Track metrics
