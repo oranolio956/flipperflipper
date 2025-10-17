@@ -46,6 +46,9 @@ def assemble_stitch():
         main_code += add_listen_main()
     elif BIND:
         main_code += add_bind_main()
+    
+    # Add enhanced functionality
+    main_code += add_enhanced_main()
     main_code += add_run_main()
 
     required_imports = get_requirements()

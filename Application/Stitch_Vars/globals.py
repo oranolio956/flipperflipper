@@ -74,7 +74,7 @@ for p in st_paths:
 
 if not os.path.exists(st_aes):
     key  = ''.join(random.SystemRandom().choice(string.ascii_lowercase + string.ascii_uppercase + string.digits) for _ in range(32))
-    key  = base64.b64encode(key)
+    key  = base64.b64encode(key.encode('utf-8')).decode('utf-8')
     code = '''# Copyright (c) 2017, Nathan Lopez
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 

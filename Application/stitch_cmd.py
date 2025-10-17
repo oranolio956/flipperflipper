@@ -36,7 +36,7 @@ class stitch_server(cmd.Cmd):
                 if dict1[option] == -1:
                     pass
             except:
-                print("exception on {}!".format(option))
+                print()("exception on {}!".format(option))
                 dict1[option] = None
         return dict1
 
@@ -49,7 +49,7 @@ class stitch_server(cmd.Cmd):
                 if dict1[option] == -1:
                     pass
             except:
-                print("exception on {}!".format(option))
+                print()("exception on {}!".format(option))
                 dict1[option] = None
         return dict1
 
@@ -63,11 +63,11 @@ class stitch_server(cmd.Cmd):
             n_user = self.ConfigSectionMap(n)['user']
             n_os = self.ConfigSectionMap(n)['os']
             n_hostname = self.ConfigSectionMap(n)['hostname']
-            print_cyan('\n{}'.format(n))
-            print_border(len(n),'-')
-            print('   User: {}\n   Hostname: {}\n   Listening Port: {}\n'
+            print()_cyan('\n{}'.format(n))
+            print()_border(len(n),'-')
+            print()('   User: {}\n   Hostname: {}\n   Listening Port: {}\n'
             '   Operating System: {}\n'.format( n_user, n_hostname, n_port, n_os))
-        print ""
+        print() ""
 
     def remove_hsection(self,section):
         if section in self.Config.sections():
@@ -168,7 +168,7 @@ class stitch_server(cmd.Cmd):
         if line != '':
             try:
                 os.chdir(line)
-                print
+                print()
             except Exception as e:
                 st_print("[*] {}\n".format(e))
         else:
@@ -289,12 +289,12 @@ class stitch_server(cmd.Cmd):
                 n_user = '----'
                 n_os = '----------------'
                 n_hostname = '--------'
-            print_cyan ('\n{}'.format(n),)
-            print_border(len(n),'-')
-            print ('   User: {}\n   Hostname: {}\n'
+            print()_cyan ('\n{}'.format(n),)
+            print()_border(len(n),'-')
+            print() ('   User: {}\n   Hostname: {}\n'
             '   Operating System: {}\n'.format(n_user, n_hostname, n_os))
             i += 1
-        print
+        print()
 
     def do_shell (self,line):
         if len(line.split()) != 1:
@@ -439,7 +439,7 @@ class stitch_server(cmd.Cmd):
         return True
 
     def do_EOF(self, line):
-        print
+        print()
         return self.do_exit(line)
 
 ################################################################################
