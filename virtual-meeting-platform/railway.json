@@ -1,0 +1,9 @@
+{
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "startCommand": "python3 meeting_server.py",
+    "restartPolicyType": "ON_FAILURE"
+  }
+}
