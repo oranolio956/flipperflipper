@@ -479,6 +479,7 @@ def logout():
 def get_connections():
     """Get REAL-TIME connections from Stitch server"""
     try:
+        metrics_collector.increment_counter('api_requests')
         server = get_stitch_server()
         connections = []
         
@@ -555,6 +556,7 @@ def get_connections():
 def get_active_connections():
     """Get only ONLINE connections"""
     try:
+        metrics_collector.increment_counter('api_requests')
         server = get_stitch_server()
         active_conns = []
         
@@ -575,6 +577,7 @@ def get_active_connections():
 def server_status():
     """Get Stitch server status"""
     try:
+        metrics_collector.increment_counter('api_requests')
         server = get_stitch_server()
         status = {
             'listening': server.listen_port is not None,
@@ -607,6 +610,7 @@ def get_command_definitions():
 def execute_command():
     """Execute REAL commands on targets"""
     try:
+        metrics_collector.increment_counter('api_requests')
         data = request.json
         conn_id = data.get('connection_id')
         command = data.get('command')
@@ -672,6 +676,7 @@ def export_logs():
     import csv
     import io
     try:
+        metrics_collector.increment_counter('api_requests')
         format_type = request.args.get('format', 'json').lower()
         
         if format_type == 'json':
@@ -713,6 +718,7 @@ def export_commands():
     import csv
     import io
     try:
+        metrics_collector.increment_counter('api_requests')
         format_type = request.args.get('format', 'json').lower()
         
         if format_type == 'json':
@@ -753,6 +759,7 @@ def upload_file():
     import os
     import tempfile
     try:
+        metrics_collector.increment_counter('api_requests')
         # Validate file presence
         if 'file' not in request.files:
             log_debug("Upload failed: No file in request", "ERROR", "Upload")
@@ -1528,18 +1535,21 @@ def show_aes_keys():
 @login_required
 def get_debug_logs():
     limit = int(request.args.get('limit', DEFAULT_LOG_FETCH_LIMIT))
+    metrics_collector.increment_counter('api_requests')
     return jsonify(debug_logs[-limit:])
 
 @app.route('/api/command/history')
 @login_required
 def get_command_history():
     limit = int(request.args.get('limit', DEFAULT_HISTORY_FETCH_LIMIT))
+    metrics_collector.increment_counter('api_requests')
     return jsonify(command_history[-limit:])
 
 @app.route('/api/files/downloads')
 @login_required
 def list_downloads():
     try:
+        metrics_collector.increment_counter('api_requests')
         downloads = []
         if os.path.exists(downloads_path):
             for root, dirs, files in os.walk(downloads_path):
@@ -1561,6 +1571,7 @@ def list_downloads():
 @login_required
 def download_file(filename):
     try:
+        metrics_collector.increment_counter('api_requests')
         filepath = os.path.join(downloads_path, filename)
         
         # Prevent directory traversal (including symlink attacks)
