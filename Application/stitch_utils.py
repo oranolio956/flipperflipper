@@ -20,7 +20,7 @@ import threading
 from io import StringIO, BytesIO
 import contextlib
 import subprocess
-import configparser as ConfigParser
+import configparser
 from time import sleep
 from Crypto import Random
 from getpass import getpass
@@ -35,7 +35,7 @@ if sys.platform.startswith('win'):
     import readline
     import win32crypt
     p_bar = "="
-    temp = 'C:\\Windows\\Temp\\'
+    temp = r'C:\Windows\Temp\\'
     readline.parse_and_bind("tab: complete")
 else:
     temp = '/tmp/'
@@ -50,7 +50,7 @@ else:
 if configuration_path not in sys.path:
     sys.path.append(configuration_path)
 
-aes_lib = ConfigParser.ConfigParser()
+aes_lib = configparser.ConfigParser()
 aes_lib.read(st_aes_lib)
 if aes_abbrev not in aes_lib.sections():
     aesfile = open(st_aes_lib,'w')
@@ -115,7 +115,7 @@ def show_aes():
               'enable communication from payloads created on this system.\n')
 
 def add_aes(key):
-    aes_lib = ConfigParser.ConfigParser()
+    aes_lib = configparser.ConfigParser()
     aes_lib.read(st_aes_lib)
     if len(key) != 44:
         st_print('[!] Invalid AES key. Keys must be 32 bytes after decryption.\n')

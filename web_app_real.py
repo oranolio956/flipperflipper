@@ -36,6 +36,15 @@ from Application import stitch_cmd, stitch_lib
 from Application.stitch_utils import *
 from Application.stitch_gen import *
 from ssl_utils import get_ssl_context
+from input_validation import (
+    ValidationError, InputValidator, validate_command_input, 
+    validate_connection_id, validate_upload_filename, validate_parameter_value
+)
+from connection_health import (
+    start_health_monitoring, stop_health_monitoring, update_connection_activity,
+    record_command_metrics, get_connection_status, get_all_connections_status,
+    get_health_summary
+)
 
 # Import the new enhanced modules
 from config import Config
@@ -253,7 +262,7 @@ def log_debug(message, level="INFO", category="System"):
         username = session.get('username', 'system')
     
     # Sanitize username for logs
-    sanitized_user = sanitize_for_log(username, 'username') if username != 'system' else 'system'
+    sanitized_user = InputValidator.sanitize_for_log(username) if username != 'system' else 'system'
     
     log_entry = {
         'timestamp': timestamp,
@@ -274,58 +283,7 @@ def log_debug(message, level="INFO", category="System"):
     
     print(f"[{level}] {message}")
 
-def sanitize_for_log(data, data_type='generic'):
-    """
-    Sanitize sensitive data for secure logging.
-    
-    Args:
-        data: The sensitive data to sanitize
-        data_type: Type of data ('username', 'command', 'generic')
-    
-    Returns:
-        Sanitized string safe for logging
-    """
-    import hashlib
-    import re
-    
-    if data is None or data == '':
-        return '[EMPTY]'
-    
-    data_str = str(data)
-    
-    if data_type == 'username':
-        # Show first 2 chars + *** + hash for correlation
-        # This allows tracking the same user across logs without exposing identity
-        prefix = data_str[:2] if len(data_str) >= 2 else data_str[0] if len(data_str) == 1 else ''
-        hash_suffix = hashlib.sha256(data_str.encode()).hexdigest()[:8]
-        return f"{prefix}***[{hash_suffix}]"
-    
-    elif data_type == 'command':
-        # Sanitize commands by redacting sensitive parameters
-        # List of sensitive parameter patterns
-        sensitive_patterns = [
-            (r'(password|passwd|pwd|pass)[\s=:]+[\S]+', r'\1=[REDACTED]'),
-            (r'(key|apikey|api_key|token|secret)[\s=:]+[\S]+', r'\1=[REDACTED]'),
-            (r'(auth|authorization|bearer)[\s=:]+[\S]+(\s+[\S]+)?', r'\1=[REDACTED]'),
-            (r'--password[\s=]+[\S]+', r'--password=[REDACTED]'),
-            (r'-p[\s]+[\S]+', r'-p [REDACTED]'),
-            (r'(https?://[^:]+:)([^@]+)(@)', r'\1[REDACTED]\3'),  # URLs with credentials
-        ]
-        
-        sanitized = data_str
-        for pattern, replacement in sensitive_patterns:
-            sanitized = re.sub(pattern, replacement, sanitized, flags=re.IGNORECASE)
-        
-        # If command is too long, truncate it
-        if len(sanitized) > 200:
-            sanitized = sanitized[:200] + '... [truncated]'
-        
-        return sanitized
-    
-    else:
-        # Generic sanitization - just hash it
-        hash_val = hashlib.sha256(data_str.encode()).hexdigest()[:12]
-        return f"[REDACTED:{hash_val}]"
+# Old sanitize_for_log function removed - now using InputValidator.sanitize_for_log
 
 def login_required(f):
     @wraps(f)
@@ -436,7 +394,7 @@ def login():
             # Track metrics
             metrics_collector.increment_counter('total_logins')
             
-            log_debug(f"✓ User {sanitize_for_log(username, 'username')} logged in from {client_ip}", "INFO", "Authentication")
+            log_debug(f"✓ User {InputValidator.sanitize_for_log(username)} logged in from {client_ip}", "INFO", "Authentication")
             return redirect(url_for('index'))
         else:
             # Failed login - track with enhanced system
@@ -450,11 +408,11 @@ def login():
                 remaining_seconds = get_lockout_time_remaining(client_ip)
                 remaining_minutes = (remaining_seconds + 59) // 60
                 flash(f'Too many failed attempts. Account locked for {remaining_minutes} minutes.', 'error')
-                log_debug(f"✗ Failed login triggered lockout for {sanitize_for_log(username, 'username')} from {client_ip}", "WARNING", "Security")
+                log_debug(f"✗ Failed login triggered lockout for {InputValidator.sanitize_for_log(username)} from {client_ip}", "WARNING", "Security")
             else:
                 attempts_remaining = MAX_LOGIN_ATTEMPTS - attempt_count
                 flash(f'Invalid credentials. {attempts_remaining} attempts remaining.', 'error')
-                log_debug(f"✗ Failed login attempt for user {sanitize_for_log(username, 'username')} from {client_ip} (attempt {attempt_count}/{MAX_LOGIN_ATTEMPTS})", "WARNING", "Security")
+                log_debug(f"✗ Failed login attempt for user {InputValidator.sanitize_for_log(username)} from {client_ip} (attempt {attempt_count}/{MAX_LOGIN_ATTEMPTS})", "WARNING", "Security")
     
     return render_template('login.html')
 
@@ -462,7 +420,7 @@ def login():
 def logout():
     username = session.get('username', 'unknown')
     session.clear()
-    log_debug(f"User {sanitize_for_log(username, 'username')} logged out", "INFO", "Authentication")
+    log_debug(f"User {InputValidator.sanitize_for_log(username)} logged out", "INFO", "Authentication")
     return redirect(url_for('login'))
 
 # ============================================================================
@@ -607,32 +565,15 @@ def execute_command():
         command = data.get('command')
         parameters = data.get('parameters', None)  # Optional parameters for interactive commands
         
-        # Server-side validation (critical for security)
-        if not command:
-            return jsonify({'success': False, 'error': 'Missing command'}), 400
+        # Comprehensive server-side validation (critical for security)
+        try:
+            command = validate_command_input(command)
+        except ValidationError as e:
+            return jsonify({'success': False, 'error': f'Invalid command: {str(e)}'}), 400
+        except Exception as e:
+            return jsonify({'success': False, 'error': 'Command validation failed'}), 400
         
-        # Validate command is a string
-        if not isinstance(command, str):
-            return jsonify({'success': False, 'error': 'Invalid command type'}), 400
-        
-        # Trim and validate
-        command = command.strip()
-        if not command or len(command) < 1:
-            return jsonify({'success': False, 'error': 'Command cannot be empty'}), 400
-        
-        # Length validation (prevent DoS)
-        MAX_COMMAND_LENGTH = 500
-        if len(command) > MAX_COMMAND_LENGTH:
-            return jsonify({'success': False, 'error': f'Command too long (max {MAX_COMMAND_LENGTH} characters)'}), 400
-        
-        # Check for null bytes and control characters (security)
-        if any(ord(c) < 32 and c not in '\t\n\r' for c in command):
-            return jsonify({'success': False, 'error': 'Command contains invalid control characters'}), 400
-        
-        # Sanitize excessive whitespace
-        command = ' '.join(command.split())
-        
-        log_debug(f"Executing command: {sanitize_for_log(command, 'command')} on {conn_id or 'server'}", "INFO", "Command")
+        log_debug(f"Executing command: {InputValidator.sanitize_for_log(command)} on {conn_id or 'server'}", "INFO", "Command")
         
         # Track command
         command_entry = {
@@ -758,10 +699,15 @@ def upload_file():
         
         target_id = target_id.strip()
         
-        # Validate filename
-        if not file.filename or file.filename == '':
-            log_debug("Upload failed: Empty filename", "ERROR", "Upload")
-            return jsonify({'error': 'No file selected'}), 400
+        # Comprehensive filename validation
+        try:
+            validated_filename = validate_upload_filename(file.filename)
+        except ValidationError as e:
+            log_debug(f"Upload failed: Invalid filename - {str(e)}", "ERROR", "Upload")
+            return jsonify({'error': f'Invalid filename: {str(e)}'}), 400
+        except Exception as e:
+            log_debug(f"Upload failed: Filename validation error - {str(e)}", "ERROR", "Upload")
+            return jsonify({'error': 'Filename validation failed'}), 400
         
         # Check file size (100MB limit)
         MAX_FILE_SIZE = 100 * 1024 * 1024
@@ -823,6 +769,14 @@ def execute_real_command(command, conn_id=None, parameters=None):
         parameters: Optional dict of parameters for interactive commands
     """
     try:
+        # Validate command input first
+        try:
+            command = validate_command_input(command)
+        except ValidationError as e:
+            return f"❌ Command validation failed: {str(e)}"
+        except Exception as e:
+            return f"❌ Command validation error: {str(e)}"
+        
         server = get_stitch_server()
         
         # Commands that work without a target
@@ -841,6 +795,12 @@ def execute_real_command(command, conn_id=None, parameters=None):
         # Commands that require a connection
         if not conn_id:
             return f"❌ Command '{command}' requires selecting a target connection.\n\nPlease select an ONLINE connection from the dashboard first."
+        
+        # Validate connection ID
+        try:
+            conn_id = validate_connection_id(conn_id)
+        except ValidationError as e:
+            return f"❌ Invalid connection ID: {str(e)}"
         
         # Check if connection is online
         if conn_id not in server.inf_sock:
@@ -1078,24 +1038,21 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
                     subcommand = cmd_args.split()[0] if cmd_args else None
                     subcommand_def = cmd_def['subcommands'].get(subcommand)
                     if subcommand_def and 'parameters' in subcommand_def:
-                        # Validate all required parameters are present
+                        # Validate all required parameters are present and valid
                         for param_def in subcommand_def['parameters']:
                             param_name = param_def['name']
                             if param_def.get('required') and param_name not in parameters:
                                 return output_header + f"❌ Missing required parameter: {param_name}\n\nCommand: {cmd_name} {subcommand}"
                             if param_name in parameters:
                                 value = parameters[param_name]
-                                # Basic validation
-                                if param_def['type'] == 'number':
-                                    try:
-                                        int_val = int(value)
-                                        if param_name == 'port' and not (1 <= int_val <= 65535):
-                                            return output_header + f"❌ Invalid port number: {value} (must be 1-65535)"
-                                        input_queue.append(str(int_val))
-                                    except ValueError:
-                                        return output_header + f"❌ Invalid number for {param_name}: {value}"
-                                else:
-                                    input_queue.append(str(value))
+                                # Comprehensive validation using validation module
+                                try:
+                                    validated_value = validate_parameter_value(param_name, value, param_def['type'])
+                                    input_queue.append(str(validated_value))
+                                except ValidationError as e:
+                                    return output_header + f"❌ Invalid parameter {param_name}: {str(e)}"
+                                except Exception as e:
+                                    return output_header + f"❌ Parameter validation failed for {param_name}: {str(e)}"
                         # Add confirmation if required
                         if subcommand_def.get('confirmation'):
                             input_queue.append('y')
@@ -1106,7 +1063,15 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
                         if param_def.get('required') and param_name not in parameters:
                             return output_header + f"❌ Missing required parameter: {param_name}\n\nCommand: {cmd_name}"
                         if param_name in parameters:
-                            input_queue.append(str(parameters[param_name]))
+                            value = parameters[param_name]
+                            # Comprehensive validation
+                            try:
+                                validated_value = validate_parameter_value(param_name, value, param_def['type'])
+                                input_queue.append(str(validated_value))
+                            except ValidationError as e:
+                                return output_header + f"❌ Invalid parameter {param_name}: {str(e)}"
+                            except Exception as e:
+                                return output_header + f"❌ Parameter validation failed for {param_name}: {str(e)}"
                     # Add confirmation if required
                     if cmd_def.get('confirmation'):
                         input_queue.append('y')
