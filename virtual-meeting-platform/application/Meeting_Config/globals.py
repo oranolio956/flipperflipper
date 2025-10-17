@@ -40,16 +40,16 @@ options_freeze    = ['status','start','stop']
 options_input_service = ['status','start','stop','dump']
 
 meeting_platform_path        = os.path.dirname(os.path.realpath(sys.argv[0]))
-app_path           = os.path.join(meeting_platform_path,'Application')
-meeting_platform_vars_path   = os.path.join(app_path,'Stitch_Vars')
-pylib_path         = os.path.join(meeting_platform_path,'PyLib')
+app_path           = os.path.join(meeting_platform_path,'application')
+meeting_platform_vars_path   = os.path.join(app_path,'Meeting_Config')
+pylib_path         = os.path.join(meeting_platform_path,'meeting_tools')
 uploads_path       = os.path.join(meeting_platform_path,'Uploads')
 downloads_path     = os.path.join(meeting_platform_path,'Downloads')
 client_apps_path      = os.path.join(meeting_platform_path,'Payloads')
 log_path           = os.path.join(meeting_platform_path,'Logs')
 meeting_platform_temp_path   = os.path.join(meeting_platform_path,'Temp')
 tools_path         = os.path.join(meeting_platform_path,'Tools')
-configuration_path = os.path.join(meeting_platform_path,'Configuration')
+configuration_path = os.path.join(meeting_platform_path,'platform_config')
 elevation_path     = os.path.join(meeting_platform_path,'Elevation')
 
 st_config   = os.path.join(meeting_platform_vars_path,'meeting_platform_config.ini')

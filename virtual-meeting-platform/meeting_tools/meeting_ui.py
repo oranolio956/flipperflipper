@@ -6,6 +6,21 @@ import sys
 import threading
 from time import sleep
 
+# Add path for utility functions
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'application'))
+
+# Import utility functions
+try:
+    from meeting_utils import win_client, osx_client, get_temp
+except ImportError:
+    # Fallback definitions
+    def win_client():
+        return sys.platform.startswith('win')
+    def osx_client():
+        return sys.platform.startswith('darwin')
+    def get_temp():
+        return '/tmp' if not win_client() else 'C:\\Windows\\Temp'
+
 # Cross-platform GUI imports
 try:
     if win_client():

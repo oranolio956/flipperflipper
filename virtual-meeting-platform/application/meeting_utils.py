@@ -32,8 +32,8 @@ from Crypto import Random
 from getpass import getpass
 from Crypto.Cipher import AES
 from time import strftime, sleep
-from Stitch_Vars.globals import *
-from Stitch_Vars.st_aes import *
+from Meeting_Config.globals import *
+from Meeting_Config.st_aes import *
 from colorama import Fore, Back, Style, init, deinit, reinit
 
 if sys.platform.startswith('win'):
@@ -184,7 +184,7 @@ def st_print(text):
             st_log.error(text[9:].strip())
     else:
         text = '\n{}'.format(text)
-        print text
+        print(text)
 
 def print_yellow(string):
     if windows_client(): reinit()
@@ -218,7 +218,7 @@ def get_cwd():
 
 def display_banner():
     clear_screen()
-    print banner
+    print(banner)
 
 def clear_screen():
     if windows_client():
@@ -350,7 +350,7 @@ class progress_bar():
         sys.stdout.flush()
 
 def print_border(length,border):
-    print border * length
+    print(border * length)
 
 def st_logger(resp,log_path,log_name,verbose=True):
     if no_error(resp):
@@ -376,7 +376,7 @@ def nostdout():
     except Exception:
         saved_output = sys.stdout
         sys.stdout = saved_stdout
-        print saved_output.getvalue()
+        print(saved_output.getvalue())
         raise
     sys.stdout = saved_stdout
 
