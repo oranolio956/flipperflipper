@@ -6,7 +6,7 @@
     <title>Stitch Web Interface</title>
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script nonce="{{ g.csp_nonce }}" src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 <body>
     <div class="dashboard">
@@ -559,6 +559,6 @@
         </main>
     </div>
     
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script nonce="{{ g.csp_nonce }}" src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

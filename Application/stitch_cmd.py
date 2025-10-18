@@ -106,8 +106,10 @@ class stitch_server(cmd.Cmd):
             except Exception as e:
                 pass
             if client_socket:
-                self.inf_sock[addr[0]] = client_socket
-                self.inf_port[addr[0]] = addr[1]
+                # Use unique IP:Port key to avoid NAT overwrites
+                unique_id = f"{addr[0]}:{addr[1]}"
+                self.inf_sock[unique_id] = client_socket
+                self.inf_port[unique_id] = addr[1]
                 st_print('[+] New successful connection from {}\n'.format(addr))
                 client_socket = None
         server.close()

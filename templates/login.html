@@ -285,7 +285,7 @@
         </div>
     </div>
     
-    <script>
+    <script nonce="{{ g.csp_nonce }}">
         function togglePassword() {
             const passwordField = document.getElementById('password');
             const button = document.querySelector('.toggle-password');

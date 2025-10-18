@@ -7,7 +7,7 @@
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style_enhanced.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script nonce="{{ g.csp_nonce }}" src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 <body>
     <div class="dashboard">
@@ -560,6 +560,6 @@
         </main>
     </div>
     
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script nonce="{{ g.csp_nonce }}" src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>
