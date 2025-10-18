@@ -371,7 +371,10 @@
                             
                             <div class="form-actions">
                                 <button type="button" class="cmd-btn" id="generatePayloadBtn">
-                                    🚀 Generate Payload
+                                    🚀 Generate Python Payload
+                                </button>
+                                <button type="button" class="cmd-btn advanced-btn" id="generateAdvancedPayloadBtn">
+                                    ⚡ Advanced Generate (EXE)
                                 </button>
                                 <button type="button" class="clear-btn" id="resetPayloadBtn">
                                     Reset
@@ -454,6 +457,239 @@
     </div>
     
     <div id="toast-container"></div>
+
+    <!-- Advanced Payload Generation Modal -->
+    <div class="modal fade" id="advancedPayloadModal" tabindex="-1" aria-labelledby="advancedPayloadModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="advancedPayloadModalLabel">⚡ Advanced Payload Generation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Build Tools Status -->
+                    <div class="alert alert-info mb-4">
+                        <h6 class="alert-heading">🔧 Build Tools Status</h6>
+                        <div id="buildToolsStatus">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span><strong>PyInstaller:</strong></span>
+                                        <span id="pyinstallerStatus" class="badge bg-secondary">Checking...</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span><strong>py2exe:</strong></span>
+                                        <span id="py2exeStatus" class="badge bg-secondary">Checking...</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span><strong>NSIS:</strong></span>
+                                        <span id="nsisStatus" class="badge bg-secondary">Checking...</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span><strong>Makeself:</strong></span>
+                                        <span id="makeselfStatus" class="badge bg-secondary">Checking...</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="installMissingToolsBtn" style="display: none;">
+                                    <i class="fas fa-download"></i> Install Missing Tools
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshToolsStatusBtn">
+                                    <i class="fas fa-sync"></i> Refresh Status
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payload Configuration Form -->
+                    <form id="advancedPayloadForm">
+                        <div class="row">
+                            <!-- Connection Settings -->
+                            <div class="col-md-6">
+                                <h6 class="mb-3">🌐 Connection Settings</h6>
+                                
+                                <div class="mb-3">
+                                    <label for="advBindHost" class="form-label">Bind Host</label>
+                                    <input type="text" class="form-control" id="advBindHost" 
+                                           placeholder="0.0.0.0 (all interfaces)" 
+                                           title="IP address to bind to. Leave empty for all interfaces.">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="advBindPort" class="form-label">Bind Port</label>
+                                    <input type="number" class="form-control" id="advBindPort" 
+                                           value="4433" min="1" max="65535"
+                                           title="Port for targets to connect to">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="advListenHost" class="form-label">Listen Host</label>
+                                    <input type="text" class="form-control" id="advListenHost" 
+                                           placeholder="your-server.com"
+                                           title="Host for payload to connect back to">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="advListenPort" class="form-label">Listen Port</label>
+                                    <input type="number" class="form-control" id="advListenPort" 
+                                           value="4455" min="1" max="65535"
+                                           title="Port for payload to connect back on">
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="advEnableBind" checked>
+                                            <label class="form-check-label" for="advEnableBind">
+                                                Enable Bind Mode
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="advEnableListen" checked>
+                                            <label class="form-check-label" for="advEnableListen">
+                                                Enable Listen Mode
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Compilation Settings -->
+                            <div class="col-md-6">
+                                <h6 class="mb-3">⚙️ Compilation Settings</h6>
+                                
+                                <div class="mb-3">
+                                    <label for="outputFormat" class="form-label">Output Format</label>
+                                    <select class="form-select" id="outputFormat">
+                                        <option value="compiled">🔥 Compiled Executable (Recommended)</option>
+                                        <option value="python">🐍 Python Source File</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="targetOS" class="form-label">Target Operating System</label>
+                                    <select class="form-select" id="targetOS">
+                                        <option value="auto">🎯 Auto-detect Current Platform</option>
+                                        <option value="windows">🪟 Windows</option>
+                                        <option value="linux">🐧 Linux</option>
+                                        <option value="macos">🍎 macOS</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="payloadType" class="form-label">Payload Variant</label>
+                                    <select class="form-select" id="payloadType">
+                                        <option value="auto">⚡ Recommended (Single Best)</option>
+                                        <option value="all">📦 All Variants (Multiple Files)</option>
+                                        <option value="chrome">🌐 Chrome Browser Disguise</option>
+                                        <option value="drive">☁️ OneDrive Disguise</option>
+                                        <option value="SecEdit">🔒 Windows Security Tool</option>
+                                        <option value="WmiPrvSE">⚙️ WMI Provider Host</option>
+                                        <option value="stitch_lnx">🐧 Linux Service</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="createInstallers">
+                                        <label class="form-check-label" for="createInstallers">
+                                            📦 Create Installer Packages (NSIS/Makeself)
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="keyloggerBoot">
+                                        <label class="form-check-label" for="keyloggerBoot">
+                                            ⌨️ Start Keylogger on Boot
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Advanced Options (Collapsible) -->
+                        <div class="accordion mt-3" id="advancedOptionsAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="advancedOptionsHeading">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                            data-bs-target="#advancedOptionsCollapse" aria-expanded="false">
+                                        🔧 Advanced Options
+                                    </button>
+                                </h2>
+                                <div id="advancedOptionsCollapse" class="accordion-collapse collapse" 
+                                     data-bs-parent="#advancedOptionsAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="emailNotification" class="form-label">Email Notification</label>
+                                                    <input type="email" class="form-control" id="emailNotification" 
+                                                           placeholder="your-email@gmail.com"
+                                                           title="Email to receive notifications when payload runs">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="emailPassword" class="form-label">Email Password</label>
+                                                    <input type="password" class="form-control" id="emailPassword" 
+                                                           placeholder="Email password"
+                                                           title="Password for email notifications">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="generateAdvancedPayloadModalBtn">
+                        <i class="fas fa-rocket"></i> Generate Advanced Payload
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generation Progress Modal -->
+    <div class="modal fade" id="generationProgressModal" tabindex="-1" aria-labelledby="generationProgressModalLabel" 
+         aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="generationProgressModalLabel">🔄 Generating Payload...</h5>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div id="generationStatus">
+                        <p class="mb-2">Initializing payload generation...</p>
+                        <small class="text-muted">This may take a few minutes for compiled payloads</small>
+                    </div>
+                    <div class="progress mt-3">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             id="generationProgress" role="progressbar" 
+                             style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <script nonce="{{ g.csp_nonce }}" src="{{ url_for('static', filename='js/app_real.js') }}"></script>
 </body>

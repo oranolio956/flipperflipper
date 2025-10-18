@@ -1318,6 +1318,7 @@ function initializeCSPSafeHandlers() {
     wire('#uploadSubmitBtn', () => uploadFile());
     wire('#uploadCancelBtn', () => cancelUpload());
     wire('#generatePayloadBtn', () => generatePayload());
+    wire('#generateAdvancedPayloadBtn', () => showAdvancedPayloadModal());
     wire('#resetPayloadBtn', () => resetPayloadForm());
     wire('#downloadPayloadBtn', () => downloadPayload());
     wire('#copyPayloadInfoBtn', () => copyPayloadInfo());
@@ -1561,4 +1562,488 @@ function copyPayloadInfo() {
         document.body.removeChild(textArea);
         showToast('Payload info copied to clipboard', 'success');
     }
+}
+
+// ============================================================================
+// Advanced Payload Generation System
+// ============================================================================
+
+class AdvancedPayloadGenerator {
+    constructor() {
+        this.buildTools = {};
+        this.generationInProgress = false;
+        this.modal = null;
+        this.progressModal = null;
+        this.init();
+    }
+    
+    init() {
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.initializeModals());
+        } else {
+            this.initializeModals();
+        }
+    }
+    
+    initializeModals() {
+        // Initialize modals (check if Bootstrap is available)
+        if (typeof bootstrap !== 'undefined') {
+            const modalEl = document.getElementById('advancedPayloadModal');
+            const progressModalEl = document.getElementById('generationProgressModal');
+            
+            if (modalEl) this.modal = new bootstrap.Modal(modalEl);
+            if (progressModalEl) this.progressModal = new bootstrap.Modal(progressModalEl);
+        }
+        
+        // Setup event listeners
+        this.setupEventListeners();
+    }
+    
+    setupEventListeners() {
+        // Main generation button
+        const generateBtn = document.getElementById('generateAdvancedPayloadModalBtn');
+        if (generateBtn) {
+            generateBtn.addEventListener('click', () => this.generatePayload());
+        }
+        
+        // Tool management buttons
+        const refreshBtn = document.getElementById('refreshToolsStatusBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => this.checkBuildTools());
+        }
+        
+        const installBtn = document.getElementById('installMissingToolsBtn');
+        if (installBtn) {
+            installBtn.addEventListener('click', () => this.installMissingTools());
+        }
+        
+        // Output format change handler
+        const outputFormatSelect = document.getElementById('outputFormat');
+        if (outputFormatSelect) {
+            outputFormatSelect.addEventListener('change', (e) => {
+                this.updateUIForOutputFormat(e.target.value);
+            });
+        }
+        
+        // Form validation
+        const form = document.getElementById('advancedPayloadForm');
+        if (form) {
+            form.addEventListener('input', () => this.validateForm());
+        }
+        
+        // Modal show event
+        const modalEl = document.getElementById('advancedPayloadModal');
+        if (modalEl) {
+            modalEl.addEventListener('shown.bs.modal', () => {
+                this.checkBuildTools();
+            });
+        }
+    }
+    
+    async checkBuildTools() {
+        try {
+            showToast('Checking build tools...', 'info');
+            
+            const response = await fetch('/api/build-tools-status');
+            const data = await response.json();
+            
+            if (data.success) {
+                this.buildTools = data.tools;
+                this.updateBuildToolsDisplay();
+                this.updateInstallButton();
+            } else {
+                throw new Error(data.error || 'Failed to check build tools');
+            }
+        } catch (error) {
+            console.error('Build tools check failed:', error);
+            showToast('Failed to check build tools: ' + error.message, 'error');
+        }
+    }
+    
+    updateBuildToolsDisplay() {
+        const statusElements = {
+            'pyinstaller': 'pyinstallerStatus',
+            'py2exe': 'py2exeStatus', 
+            'nsis': 'nsisStatus',
+            'makeself': 'makeselfStatus'
+        };
+        
+        Object.entries(statusElements).forEach(([tool, elementId]) => {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            const toolInfo = this.buildTools[tool];
+            
+            if (toolInfo && toolInfo.available) {
+                element.textContent = '✅ Available';
+                element.className = 'badge bg-success';
+                if (toolInfo.version && toolInfo.version !== 'unknown') {
+                    element.title = `Version: ${toolInfo.version}`;
+                }
+            } else {
+                element.textContent = '❌ Missing';
+                element.className = 'badge bg-danger';
+                if (toolInfo && toolInfo.error) {
+                    element.title = toolInfo.error;
+                }
+            }
+        });
+    }
+    
+    updateInstallButton() {
+        const installBtn = document.getElementById('installMissingToolsBtn');
+        if (!installBtn) return;
+        
+        const missingTools = Object.entries(this.buildTools)
+            .filter(([name, info]) => !info.available && info.install_method === 'automatic')
+            .map(([name]) => name);
+        
+        if (missingTools.length > 0) {
+            installBtn.style.display = 'inline-block';
+            installBtn.textContent = `Install Missing Tools (${missingTools.length})`;
+        } else {
+            installBtn.style.display = 'none';
+        }
+    }
+    
+    async installMissingTools() {
+        const installBtn = document.getElementById('installMissingToolsBtn');
+        if (!installBtn) return;
+        
+        try {
+            installBtn.disabled = true;
+            installBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Installing...';
+            
+            showToast('Installing missing build tools...', 'info');
+            
+            const response = await fetch('/api/install-build-tools', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({
+                    tools: ['pyinstaller']  // Start with essential tool
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast(`Successfully installed ${data.summary.successful} tools`, 'success');
+                // Refresh build tools status
+                await this.checkBuildTools();
+            } else {
+                throw new Error(data.error || 'Installation failed');
+            }
+        } catch (error) {
+            console.error('Tool installation failed:', error);
+            showToast('Failed to install tools: ' + error.message, 'error');
+        } finally {
+            installBtn.disabled = false;
+            installBtn.innerHTML = '<i class="fas fa-download"></i> Install Missing Tools';
+        }
+    }
+    
+    updateUIForOutputFormat(format) {
+        const compilationElements = [
+            'targetOS', 'payloadType', 'createInstallers'
+        ];
+        
+        const isCompiled = format === 'compiled';
+        
+        compilationElements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.disabled = !isCompiled;
+                if (element.type === 'checkbox') {
+                    element.parentElement.style.opacity = isCompiled ? '1' : '0.5';
+                } else {
+                    element.style.opacity = isCompiled ? '1' : '0.5';
+                }
+            }
+        });
+    }
+    
+    validateForm() {
+        const bindPort = parseInt(document.getElementById('advBindPort').value);
+        const listenPort = parseInt(document.getElementById('advListenPort').value);
+        const generateBtn = document.getElementById('generateAdvancedPayloadModalBtn');
+        
+        if (!generateBtn) return false;
+        
+        let isValid = true;
+        let errorMessage = '';
+        
+        // Validate ports
+        if (!bindPort || bindPort < 1 || bindPort > 65535) {
+            isValid = false;
+            errorMessage = 'Invalid bind port (1-65535)';
+        }
+        
+        if (!listenPort || listenPort < 1 || listenPort > 65535) {
+            isValid = false;
+            errorMessage = 'Invalid listen port (1-65535)';
+        }
+        
+        // Check if at least one mode is enabled
+        const bindEnabled = document.getElementById('advEnableBind').checked;
+        const listenEnabled = document.getElementById('advEnableListen').checked;
+        
+        if (!bindEnabled && !listenEnabled) {
+            isValid = false;
+            errorMessage = 'At least one mode (Bind or Listen) must be enabled';
+        }
+        
+        generateBtn.disabled = !isValid;
+        if (errorMessage) {
+            generateBtn.title = errorMessage;
+        } else {
+            generateBtn.title = '';
+        }
+        
+        return isValid;
+    }
+    
+    async generatePayload() {
+        if (this.generationInProgress || !this.validateForm()) {
+            return;
+        }
+        
+        this.generationInProgress = true;
+        
+        try {
+            // Collect form data
+            const formData = this.collectFormData();
+            
+            // Validate compilation capability if needed
+            if (formData.compile_payload) {
+                const canCompile = this.checkCompilationCapability(formData.target_os);
+                if (!canCompile) {
+                    throw new Error(`Cannot compile for ${formData.target_os}. Missing required build tools.`);
+                }
+            }
+            
+            // Hide config modal, show progress modal
+            if (this.modal) this.modal.hide();
+            if (this.progressModal) this.progressModal.show();
+            
+            // Start generation process
+            const result = await this.performGeneration(formData);
+            
+            // Handle successful generation
+            this.handleGenerationSuccess(result);
+            
+        } catch (error) {
+            console.error('Payload generation failed:', error);
+            showToast('Payload generation failed: ' + error.message, 'error');
+        } finally {
+            this.generationInProgress = false;
+            if (this.progressModal) this.progressModal.hide();
+        }
+    }
+    
+    collectFormData() {
+        return {
+            bind_host: document.getElementById('advBindHost').value.trim(),
+            bind_port: parseInt(document.getElementById('advBindPort').value),
+            listen_host: document.getElementById('advListenHost').value.trim(),
+            listen_port: parseInt(document.getElementById('advListenPort').value),
+            enable_bind: document.getElementById('advEnableBind').checked,
+            enable_listen: document.getElementById('advEnableListen').checked,
+            compile_payload: document.getElementById('outputFormat').value === 'compiled',
+            target_os: document.getElementById('targetOS').value,
+            payload_type: document.getElementById('payloadType').value,
+            create_installers: document.getElementById('createInstallers').checked,
+            keylogger_boot: document.getElementById('keyloggerBoot').checked,
+            email: document.getElementById('emailNotification').value.trim() || 'None',
+            email_pwd: document.getElementById('emailPassword').value ? 
+                      btoa(document.getElementById('emailPassword').value) : '',
+            output_format: 'single'
+        };
+    }
+    
+    checkCompilationCapability(targetOS) {
+        const tools = this.buildTools;
+        
+        switch (targetOS) {
+            case 'windows':
+                return tools.pyinstaller?.available || tools.py2exe?.available;
+            case 'linux':
+            case 'macos':
+                return tools.pyinstaller?.available;
+            case 'auto':
+                return tools.pyinstaller?.available;
+            default:
+                return false;
+        }
+    }
+    
+    async performGeneration(formData) {
+        const statusElement = document.getElementById('generationStatus');
+        const progressBar = document.getElementById('generationProgress');
+        
+        // Step 1: Configuration
+        this.updateProgress(statusElement, progressBar, 20, 
+            '📝 Configuring payload settings...');
+        await this.delay(500);
+        
+        // Step 2: Source generation
+        this.updateProgress(statusElement, progressBar, 40, 
+            '🐍 Generating Python source files...');
+        await this.delay(500);
+        
+        // Step 3: Compilation (if enabled)
+        if (formData.compile_payload) {
+            this.updateProgress(statusElement, progressBar, 70, 
+                '🔥 Compiling to executable...<br><small class="text-muted">This may take several minutes...</small>');
+        }
+        
+        // Step 4: API call
+        const response = await fetch('/api/generate-payload-advanced', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        this.updateProgress(statusElement, progressBar, 90, 
+            '📦 Packaging payload...');
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        
+        if (!result.success) {
+            throw new Error(result.error || 'Unknown error occurred');
+        }
+        
+        // Step 5: Complete
+        this.updateProgress(statusElement, progressBar, 100, 
+            '✅ Payload generated successfully!');
+        
+        await this.delay(1000);
+        
+        return result;
+    }
+    
+    updateProgress(statusElement, progressBar, percentage, message) {
+        if (statusElement) {
+            statusElement.innerHTML = `<p class="mb-2">${message}</p>`;
+        }
+        if (progressBar) {
+            progressBar.style.width = `${percentage}%`;
+            progressBar.setAttribute('aria-valuenow', percentage);
+        }
+    }
+    
+    handleGenerationSuccess(result) {
+        // Show success message
+        const fileType = result.type === 'single_file' ? 'executable' : 'package';
+        const sizeText = this.formatFileSize(result.size);
+        
+        showToast(`✅ ${fileType} generated successfully! (${sizeText})`, 'success');
+        
+        // Auto-download the file
+        if (result.download_url) {
+            window.location.href = result.download_url;
+        }
+        
+        // Update payload output section
+        this.updatePayloadOutput(result);
+    }
+    
+    updatePayloadOutput(result) {
+        const outputDiv = document.getElementById('payloadOutput');
+        const infoDiv = document.getElementById('payloadInfo');
+        
+        if (outputDiv && infoDiv) {
+            let infoHTML = `
+                <div class="payload-details">
+                    <h4>📦 ${result.filename}</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="label">Type:</span>
+                            <span class="value">${result.type.replace('_', ' ').toUpperCase()}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Size:</span>
+                            <span class="value">${this.formatFileSize(result.size)}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Download:</span>
+                            <span class="value">
+                                <a href="${result.download_url}" class="download-link">
+                                    📥 Download Now
+                                </a>
+                            </span>
+                        </div>
+            `;
+            
+            if (result.contents) {
+                infoHTML += `
+                        <div class="detail-item">
+                            <span class="label">Contents:</span>
+                            <span class="value">${result.contents.total_files} files</span>
+                        </div>
+                `;
+            }
+            
+            infoHTML += `
+                    </div>
+                </div>
+            `;
+            
+            infoDiv.innerHTML = infoHTML;
+            outputDiv.style.display = 'block';
+            
+            // Scroll to output
+            outputDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+    
+    formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+}
+
+// Global functions for advanced payload generation
+function showAdvancedPayloadModal() {
+    if (!window.advancedPayloadGen) {
+        window.advancedPayloadGen = new AdvancedPayloadGenerator();
+    }
+    
+    // Fallback if Bootstrap modal is not available
+    if (window.advancedPayloadGen.modal) {
+        window.advancedPayloadGen.modal.show();
+    } else {
+        const modal = document.getElementById('advancedPayloadModal');
+        if (modal) {
+            modal.style.display = 'block';
+            modal.classList.add('show');
+        }
+    }
+}
+
+// Initialize advanced payload generator when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        window.advancedPayloadGen = new AdvancedPayloadGenerator();
+    });
+} else {
+    window.advancedPayloadGen = new AdvancedPayloadGenerator();
 }
