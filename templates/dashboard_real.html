@@ -9,6 +9,12 @@
     <script nonce="{{ g.csp_nonce }}" src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 <body>
+
+    <!-- Mobile Logout Button -->
+    <a href="{{ url_for('logout') }}" class="logout-btn mobile-only" style="display: none;">
+        <span style="font-size: 0.8rem;">Exit</span>
+    </a>
+
     <div class="dashboard">
         <nav class="sidebar">
             <div class="sidebar-header">

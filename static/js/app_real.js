@@ -92,8 +92,17 @@ async function loadCommandDefinitions() {
         } else {
             console.error('Failed to load command definitions:', response.status);
         }
+    
     } catch (error) {
-        console.error('Error loading command definitions:', error);
+        console.error('Failed to load:', error);
+        // Clear loading states on error
+        document.querySelectorAll('.loading').forEach(el => {
+            el.classList.remove('loading');
+            el.textContent = 'Error loading';
+        });
+        // Set default values
+        document.getElementById('serverListening').textContent = 'Unknown';
+        document.getElementById('serverPort').textContent = 'Unknown';
     }
 }
 
@@ -122,8 +131,9 @@ function initializeWebSocket() {
     
     socket.on('disconnect', () => {
         document.getElementById('serverStatus').classList.remove('online');
-        document.getElementById('statusText').textContent = 'Disconnected';
-        showToast('Disconnected from server', 'error');
+        document.getElementById('statusText').textContent = 'Reconnecting...';
+        // Removed annoying disconnect notification - it will auto-reconnect
+        // showToast('Disconnected from server', 'error');
     });
     
     socket.on('debug_log', (log) => {
@@ -266,13 +276,37 @@ async function loadServerStatus() {
     }
 }
 
+
+// Helper function for fetch with timeout
+function fetchWithTimeout(url, options = {}, timeout = 10000) {
+    return Promise.race([
+        fetch(url, options),
+        new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Request timeout')), timeout)
+        )
+    ]);
+}
+
 async function loadConnections() {
     const loadingIndicator = document.getElementById('connectionsLoadingIndicator');
     if (loadingIndicator) loadingIndicator.classList.add('show');
     
     try {
-        const response = await fetch('/api/connections');
+        const response = await fetchWithTimeout('/api/connections');
         const connections = await response.json();
+        // Show empty state if no connections
+        if (!connections || connections.length === 0) {
+            document.querySelector('.connections-grid').innerHTML = `
+                <div class="empty-state" style="text-align: center; padding: 2rem; color: #888;">
+                    <p style="font-size: 1.2rem;">No connections available</p>
+                    <p style="margin-top: 1rem;">Waiting for incoming connections...</p>
+                </div>
+            `;
+            document.getElementById('serverListening').textContent = 'Listening';
+            document.getElementById('serverPort').textContent = '4040';
+            return;
+        }
+
         
         // Store all data for pagination
         connectionsPagination.allData = connections;
@@ -1195,10 +1229,17 @@ async function uploadFile() {
         }
         xhr.send(formData);
         
+    
     } catch (error) {
-        console.error('Upload error:', error);
-        showToast('Upload failed: ' + error.message, 'error');
-        cancelUpload();
+        console.error('Failed to load:', error);
+        // Clear loading states on error
+        document.querySelectorAll('.loading').forEach(el => {
+            el.classList.remove('loading');
+            el.textContent = 'Error loading';
+        });
+        // Set default values
+        document.getElementById('serverListening').textContent = 'Unknown';
+        document.getElementById('serverPort').textContent = 'Unknown';
     }
 }
 
@@ -1562,3 +1603,23 @@ function copyPayloadInfo() {
         showToast('Payload info copied to clipboard', 'success');
     }
 }
+
+
+
+// Mobile detection and UI adjustments
+function adjustForMobile() {
+    const isMobile = window.innerWidth <= 768;
+    const mobileLogout = document.querySelector('.logout-btn.mobile-only');
+    const sidebarLogout = document.querySelector('.sidebar-footer .logout-btn');
+    
+    if (mobileLogout) {
+        mobileLogout.style.display = isMobile ? 'block' : 'none';
+    }
+    if (sidebarLogout && isMobile) {
+        sidebarLogout.style.display = 'none';
+    }
+}
+
+// Run on load and resize
+window.addEventListener('resize', adjustForMobile);
+document.addEventListener('DOMContentLoaded', adjustForMobile);

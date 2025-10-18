@@ -1162,11 +1162,120 @@ body {
 }
 
 /* Responsive pagination */
+
+/* Mobile Layout Fixes */
 @media (max-width: 768px) {
-    .pagination-controls {
-        flex-direction: column;
+    /* Hide text, show only icons in sidebar */
+    .sidebar {
+        width: 60px;
+        min-width: 60px;
+    }
+    
+    .sidebar-header h2 {
+        font-size: 1.2rem;
         text-align: center;
     }
+    
+    .sidebar-header .version {
+        display: none;
+    }
+    
+    .nav-menu li a span {
+        font-size: 1.5rem;
+    }
+    
+    .nav-menu li a {
+        padding: 1rem;
+        justify-content: center;
+    }
+    
+    .nav-menu li a::after {
+        display: none;
+    }
+    
+    /* Move logout button to top-right corner */
+    .logout-btn {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: #dc3545;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        z-index: 1000;
+        width: auto;
+        margin: 0;
+    }
+    
+    .sidebar-footer {
+        display: none;
+    }
+    
+    /* Fix main content */
+    .main-content {
+        margin-left: 60px;
+        padding: 1rem;
+    }
+    
+    /* Fix payload tab text overflow */
+    .payload-config label {
+        font-size: 0.9rem;
+    }
+    
+    .payload-config input,
+    .payload-config select {
+        width: 100%;
+        font-size: 0.9rem;
+        padding: 0.4rem;
+    }
+    
+    .btn {
+        font-size: 0.9rem;
+        padding: 0.6rem 1rem;
+    }
+    
+    /* Fix grid layouts for mobile */
+    .connections-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Fix table overflow */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    table {
+        min-width: 600px;
+    }
+    
+    /* Fix modals for mobile */
+    .modal-content {
+        width: 95%;
+        margin: 10px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+}
+
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .sidebar {
+        width: 200px;
+    }
+    
+    .logout-btn {
+        width: 100%;
+        margin-top: 1rem;
+        background: #dc3545;
+    }
+}
+
     
     .pagination-buttons {
         flex-wrap: wrap;
@@ -1628,12 +1737,120 @@ body {
 }
 
 /* Enhanced responsive design for modals */
+
+/* Mobile Layout Fixes */
 @media (max-width: 768px) {
+    /* Hide text, show only icons in sidebar */
+    .sidebar {
+        width: 60px;
+        min-width: 60px;
+    }
+    
+    .sidebar-header h2 {
+        font-size: 1.2rem;
+        text-align: center;
+    }
+    
+    .sidebar-header .version {
+        display: none;
+    }
+    
+    .nav-menu li a span {
+        font-size: 1.5rem;
+    }
+    
+    .nav-menu li a {
+        padding: 1rem;
+        justify-content: center;
+    }
+    
+    .nav-menu li a::after {
+        display: none;
+    }
+    
+    /* Move logout button to top-right corner */
+    .logout-btn {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: #dc3545;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        z-index: 1000;
+        width: auto;
+        margin: 0;
+    }
+    
+    .sidebar-footer {
+        display: none;
+    }
+    
+    /* Fix main content */
+    .main-content {
+        margin-left: 60px;
+        padding: 1rem;
+    }
+    
+    /* Fix payload tab text overflow */
+    .payload-config label {
+        font-size: 0.9rem;
+    }
+    
+    .payload-config input,
+    .payload-config select {
+        width: 100%;
+        font-size: 0.9rem;
+        padding: 0.4rem;
+    }
+    
+    .btn {
+        font-size: 0.9rem;
+        padding: 0.6rem 1rem;
+    }
+    
+    /* Fix grid layouts for mobile */
+    .connections-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Fix table overflow */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    table {
+        min-width: 600px;
+    }
+    
+    /* Fix modals for mobile */
     .modal-content {
         width: 95%;
+        margin: 10px;
         max-height: 90vh;
-        margin: 1rem;
+        overflow-y: auto;
     }
+}
+
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .sidebar {
+        width: 200px;
+    }
+    
+    .logout-btn {
+        width: 100%;
+        margin-top: 1rem;
+        background: #dc3545;
+    }
+}
+
     
     .modal-footer {
         flex-direction: column;
