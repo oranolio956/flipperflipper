@@ -15,7 +15,7 @@ class Config:
     # ============================================================================
     # Core Application Settings
     # ============================================================================
-    APP_NAME = "Stitch RAT"
+    APP_NAME = "Oranolio RAT"
     APP_VERSION = "1.1.0"
     
     # Base directories

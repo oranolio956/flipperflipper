@@ -512,6 +512,27 @@ body {
     font-size: 0.875rem;
 }
 
+/* Mobile improvements for cramped layouts */
+@media (max-width: 600px) {
+  .connections-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .command-group .command-buttons {
+    display: grid;
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem;
+  }
+
+  .cmd-btn {
+    width: 100%;
+    padding: 0.875rem;
+    font-size: 0.9rem;
+  }
+}
+
 .log-entry {
     padding: 0.5rem 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
