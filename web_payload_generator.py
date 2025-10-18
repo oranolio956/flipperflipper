@@ -65,19 +65,31 @@ class WebPayloadGenerator:
         target_platform = config.get('platform', 'linux').lower()
         payload_name = config.get('payload_name', 'stitch_payload')
         
-        # Validate ports
+        # Validate ports (only if provided and enabled)
         try:
-            bind_port = int(bind_port)
-            listen_port = int(listen_port)
-            if not (1 <= bind_port <= 65535) or not (1 <= listen_port <= 65535):
-                return {
-                    'success': False,
-                    'message': 'Invalid port range (must be 1-65535)'
-                }
+            if enable_bind and bind_port:
+                bind_port = int(bind_port)
+                if not (1 <= bind_port <= 65535):
+                    return {
+                        'success': False,
+                        'message': 'Invalid bind port range (must be 1-65535)'
+                    }
+            else:
+                bind_port = 0  # Default if not binding
+                
+            if enable_listen and listen_port:
+                listen_port = int(listen_port)
+                if not (1 <= listen_port <= 65535):
+                    return {
+                        'success': False,
+                        'message': 'Invalid listen port range (must be 1-65535)'
+                    }
+            else:
+                listen_port = 0  # Default if not listening
         except ValueError:
             return {
                 'success': False,
-                'message': 'Invalid port numbers'
+                'message': 'Invalid port numbers - must be integers'
             }
         
         # Backup existing config

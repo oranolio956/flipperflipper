@@ -167,12 +167,11 @@ exe = EXE(pyz,
             with open(spec_path, 'w') as f:
                 f.write(spec_content)
             
-            # Run PyInstaller via Wine
+            # Run PyInstaller via Wine (no --onefile/--noconsole with spec file)
             cmd = [
                 'wine', self.wine_python_path, '-m', 'PyInstaller',
-                '--onefile',
-                '--noconsole',
                 f'--distpath={output_dir}',
+                '--clean',
                 spec_path
             ]
             
@@ -267,12 +266,11 @@ exe = EXE(pyz,
             with open(spec_path, 'w') as f:
                 f.write(spec_content)
             
-            # Run PyInstaller
+            # Run PyInstaller (no --onefile/--noconsole with spec file)
             cmd = [
                 'pyinstaller',
-                '--onefile',
-                '--noconsole',
                 f'--distpath={output_dir}',
+                '--clean',
                 spec_path
             ]
             
