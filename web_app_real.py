@@ -209,7 +209,26 @@ def get_cors_origins():
 
 # Initialize SocketIO with configured CORS origins (single initialization)
 cors_origins = get_cors_origins()
-socketio = SocketIO(app, cors_allowed_origins=cors_origins, async_mode='gevent', ping_timeout=60, ping_interval=25)
+# Prefer gevent if available, but safely fall back to threading to avoid import/runtime errors
+try:
+    socketio = SocketIO(
+        app,
+        cors_allowed_origins=cors_origins,
+        async_mode='gevent',
+        ping_timeout=60,
+        ping_interval=25
+    )
+    print("✓ SocketIO async_mode: gevent")
+except Exception as _socketio_err:
+    # Fallback: pure threading mode is widely available and avoids external deps
+    socketio = SocketIO(
+        app,
+        cors_allowed_origins=cors_origins,
+        async_mode='threading',
+        ping_timeout=60,
+        ping_interval=25
+    )
+    print(f"⚠️  SocketIO gevent unavailable, using threading: {_socketio_err}")
 
 # Integrate all enhancements (must be after SocketIO initialization)
 app, socketio, limiter = integrate_enhancements(app, socketio, limiter)

@@ -66,11 +66,11 @@ class WebPayloadGenerator:
                 - message: Success/error message
         """
         
-        # Validate configuration
-        bind_host = config.get('bind_host', '')
-        bind_port = config.get('bind_port', '4433')
-        listen_host = config.get('listen_host', 'localhost')
-        listen_port = config.get('listen_port', '4455')
+        # Validate configuration (support legacy keys: host/port)
+        bind_host = config.get('bind_host', config.get('host', ''))
+        bind_port = config.get('bind_port', config.get('port', '4433'))
+        listen_host = config.get('listen_host', config.get('host', 'localhost'))
+        listen_port = config.get('listen_port', config.get('port', '4455'))
         enable_bind = config.get('enable_bind', True)
         enable_listen = config.get('enable_listen', True)
         target_platform = config.get('platform', 'linux').lower()

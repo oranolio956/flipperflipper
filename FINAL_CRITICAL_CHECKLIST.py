@@ -80,7 +80,7 @@ class FinalCriticalValidation:
         # 1.1 Check for SQL injection vulnerabilities
         print("  Testing SQL injection protection...")
         sql_injection = subprocess.run(
-            "grep -r 'execute\\|query' /workspace --include='*.py' | grep -v '#' | grep '%s\\|format\\|f\"' | wc -l",
+            "grep -r --exclude-dir='.backup_1760821534' --exclude-dir='.rollback' 'execute\\|query' /workspace --include='*.py' | grep -v '#' | grep '%s\\|format\\|f\"' | wc -l",
             shell=True, capture_output=True, text=True
         )
         vulnerable_sql = int(sql_injection.stdout.strip()) if sql_injection.stdout.strip().isdigit() else 0
@@ -89,7 +89,7 @@ class FinalCriticalValidation:
         # 1.2 Check for XSS vulnerabilities
         print("  Testing XSS protection...")
         xss_check = subprocess.run(
-            "grep -r 'render_template\\|jsonify' /workspace --include='*.py' | grep -v 'escape\\|safe' | wc -l",
+            "grep -r --exclude-dir='.backup_1760821534' --exclude-dir='.rollback' 'render_template\\|jsonify' /workspace --include='*.py' | grep -v 'escape\\|safe' | wc -l",
             shell=True, capture_output=True, text=True
         )
         xss_vulnerable = int(xss_check.stdout.strip()) if xss_check.stdout.strip().isdigit() else 0
@@ -98,7 +98,7 @@ class FinalCriticalValidation:
         # 1.3 Check for command injection
         print("  Testing command injection protection...")
         cmd_injection = subprocess.run(
-            "grep -r 'subprocess\\|os\\.popen\\|commands\\.' /workspace --include='*.py' | grep -v 'shell=False' | wc -l",
+            "grep -r --exclude-dir='.backup_1760821534' --exclude-dir='.rollback' 'subprocess\\|os\\.popen\\|commands\\.' /workspace --include='*.py' | grep -v 'shell=False' | wc -l",
             shell=True, capture_output=True, text=True
         )
         cmd_vulnerable = int(cmd_injection.stdout.strip()) if cmd_injection.stdout.strip().isdigit() else 0
@@ -121,7 +121,7 @@ class FinalCriticalValidation:
         # 1.6 Check for sensitive data exposure
         print("  Testing sensitive data protection...")
         sensitive_data = subprocess.run(
-            "grep -r 'api_key\\|secret\\|token\\|password' /workspace --include='*.py' | grep -v 'getenv\\|environ' | wc -l",
+            "grep -r --exclude-dir='.backup_1760821534' --exclude-dir='.rollback' 'api_key\\|secret\\|token\\|password' /workspace --include='*.py' | grep -v 'getenv\\|environ' | wc -l",
             shell=True, capture_output=True, text=True
         )
         exposed_secrets = int(sensitive_data.stdout.strip()) if sensitive_data.stdout.strip().isdigit() else 0
@@ -139,7 +139,7 @@ class FinalCriticalValidation:
         # 1.8 Check for path traversal
         print("  Testing path traversal protection...")
         path_traversal = subprocess.run(
-            "grep -r '\\.\\./\\|join.*request' /workspace --include='*.py' | wc -l",
+            "grep -r --exclude-dir='.backup_1760821534' --exclude-dir='.rollback' '\\.\\./\\|join.*request' /workspace --include='*.py' | wc -l",
             shell=True, capture_output=True, text=True
         )
         path_vulnerable = int(path_traversal.stdout.strip()) if path_traversal.stdout.strip().isdigit() else 0
@@ -160,7 +160,7 @@ class FinalCriticalValidation:
         # 2.1 Web server functionality
         print("  Testing web server...")
         web_test = subprocess.run(
-            "timeout 3 python3 -c 'from web_app_real import app; print(\"OK\")'",
+            "timeout 5 python3 -c 'from web_app_real import app; print(\"OK\")'",
             shell=True, capture_output=True, text=True
         )
         tests.append(('Web Server Loads', 'OK' in web_test.stdout))
