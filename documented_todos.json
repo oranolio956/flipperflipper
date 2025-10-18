@@ -1,0 +1,32 @@
+[
+  {
+    "file": "fix_connection_research.py",
+    "line": 91,
+    "type": "TODO",
+    "message": "Replace wildcard import with specific imports"
+  },
+  {
+    "file": "main.py",
+    "line": 5,
+    "type": "TODO",
+    "message": "Replace wildcard import with specific imports"
+  },
+  {
+    "file": "deep_integration_research.py",
+    "line": 279,
+    "type": "TODO",
+    "message": "Replace wildcard import with specific imports"
+  },
+  {
+    "file": "fix_payload_generation.py",
+    "line": 88,
+    "type": "TODO",
+    "message": "Replace wildcard import with specific imports"
+  },
+  {
+    "file": "fix_payload_generation.py",
+    "line": 94,
+    "type": "TODO",
+    "message": "Replace wildcard import with specific imports"
+  }
+]

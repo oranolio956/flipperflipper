@@ -235,7 +235,7 @@ class WebPayloadGenerator:
         try:
             if not os.path.exists(payloads_path):
                 return  # No payloads directory
-        except:
+        except Exception:
             pass
                 
         # Use fixed generator as primary method
@@ -262,21 +262,6 @@ class WebPayloadGenerator:
             logger.warning(f"Fixed generator failed: {e}")
             
         return
-            
-            # Get all config directories
-            config_dirs = []
-            for item in os.listdir(payloads_path):
-                if item.startswith('config') and os.path.isdir(os.path.join(payloads_path, item)):
-                    full_path = os.path.join(payloads_path, item)
-                    mtime = os.path.getmtime(full_path)
-                    config_dirs.append((full_path, mtime))
-            
-            # Sort by modification time (newest first)
-            config_dirs.sort(key=lambda x: x[1], reverse=True)
-            
-            # Remove old directories
-            for path, _ in config_dirs[keep_last:]:
-                st_print(f"[*] Removing old payload directory: {path}")
                 shutil.rmtree(path, ignore_errors=True)
         
         except Exception as e:
