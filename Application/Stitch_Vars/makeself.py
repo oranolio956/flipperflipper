@@ -5,6 +5,7 @@
 import os
 import shutil
 import subprocess
+import shlex
 # TODO: Replace wildcard import with specific imports
 # TODO: Replace wildcard import with specific imports
 from .globals import *
@@ -16,17 +17,25 @@ mkself_path = os.path.join(tools_path,'makeself')
 mkself_exe = os.path.join(mkself_path,'makeself.sh')
 
 def run_command(command):
+    """Run a command safely without invoking a shell.
+
+    Accepts a list of arguments or a string (tokenized safely).
+    Returns stdout on success or an error string on failure.
+    """
     try:
-        subp = subprocess.Popen(command,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        subp_output, errors = subp.communicate()
-        if not errors:
-            if subp_output == '':
-                return '[+] Command successfully executed.\n'
-            else:
-                return subp_output
-        return "[!] {}\n".format(errors)
+        if isinstance(command, str):
+            args = shlex.split(command)
+        else:
+            args = list(command)
+
+        result = subprocess.run(args, shell=False, capture_output=True, text=True)
+        if result.returncode == 0:
+            return result.stdout if result.stdout else '[+] Command successfully executed.\n'
+        return "[!] {}\n".format((result.stderr or result.stdout or '').strip())
     except KeyboardInterrupt:
-        print("Terminated command.")
+        return "[!] Command interrupted\n"
+    except Exception as e:
+        return "[!] {}\n".format(str(e))
 
 def no_error(cmd_output):
     if cmd_output.startswith("ERROR:") or cmd_output.startswith("[!]"):
@@ -207,21 +216,45 @@ def gen_makeself(conf_dir,alias):
     if sys.platform.startswith('darwin'):
         alias_app = os.path.join(conf_dir,'{}.app'.format(alias))
         if os.path.exists(alias_app):
-            run_command('cp -R {} {}'.format(alias_app,mkself_tmp))
+            # Copy app bundle safely
+            dest_app = os.path.join(mkself_tmp, os.path.basename(alias_app))
+            if os.path.isdir(alias_app):
+                shutil.copytree(alias_app, dest_app, dirs_exist_ok=True)
+            else:
+                shutil.copy2(alias_app, mkself_tmp)
             gen_osx_plist(alias,mkself_tmp)
             gen_st_setup(alias,mkself_tmp)
-            mkself_installer = 'bash "{}" "{}" "{}/{}_Installer" "Stitch" bash st_setup.sh'.format(mkself_exe, mkself_tmp, conf_mkself,alias)
-            st_log.info(mkself_installer)
+            mkself_installer = [
+                'bash', mkself_exe, mkself_tmp,
+                os.path.join(conf_mkself, f'{alias}_Installer'),
+                'Stitch', 'bash', 'st_setup.sh'
+            ]
+            try:
+                st_log.info(' '.join(mkself_installer))
+            except Exception:
+                pass
             st_log.info(run_command(mkself_installer))
             shutil.rmtree(mkself_tmp)
     else:
         binry_dir = os.path.join(conf_dir,'Binaries')
         alias_dir = os.path.join(binry_dir, alias)
         if os.path.exists(alias_dir):
-            run_command('cp -R {} {}'.format(alias_dir,mkself_tmp))
+            # Copy binary directory safely
+            dest_dir = os.path.join(mkself_tmp, os.path.basename(alias_dir))
+            if os.path.isdir(alias_dir):
+                shutil.copytree(alias_dir, dest_dir, dirs_exist_ok=True)
+            else:
+                shutil.copy2(alias_dir, mkself_tmp)
             gen_lnx_daemon(alias,mkself_tmp)
             gen_st_setup(alias,mkself_tmp)
-            mkself_installer = 'bash "{}" "{}" "{}/{}_Installer" "Stitch" bash st_setup.sh'.format(mkself_exe, mkself_tmp, conf_mkself,alias)
-            st_log.info(mkself_installer)
+            mkself_installer = [
+                'bash', mkself_exe, mkself_tmp,
+                os.path.join(conf_mkself, f'{alias}_Installer'),
+                'Stitch', 'bash', 'st_setup.sh'
+            ]
+            try:
+                st_log.info(' '.join(mkself_installer))
+            except Exception:
+                pass
             st_log.info(run_command(mkself_installer))
             shutil.rmtree(mkself_tmp)

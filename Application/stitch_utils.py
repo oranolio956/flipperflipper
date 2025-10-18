@@ -20,6 +20,7 @@ import threading
 from io import StringIO, BytesIO
 import contextlib
 import subprocess
+import shlex
 import configparser as ConfigParser
 from time import sleep
 from Crypto import Random
@@ -67,25 +68,60 @@ if aes_abbrev not in aes_lib.sections():
 
 def run_command(command):
     try:
-        subp = subprocess.Popen(command,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        subp_output, errors = subp.communicate()
-        if isinstance(subp_output, bytes):
-            subp_output = subp_output.decode('utf-8', errors='replace')
-        if isinstance(errors, bytes):
-            errors = errors.decode('utf-8', errors='replace')
-        if not errors:
-            if subp_output == '':
-                return '[+] Command successfully executed.\n'
+        # Normalize to list of args; never use a shell
+        if isinstance(command, str):
+            if windows_client():
+                args = shlex.split(command, posix=False)
+                cmd_list = ['cmd', '/c'] + args if args else ['cmd', '/c']
             else:
-                return subp_output
-        return "[!] {}".format(errors)
+                cmd_list = shlex.split(command)
+        else:
+            cmd_list = list(command)
+
+        result = subprocess.run(
+            cmd_list,
+            shell=False,
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
+
+        if result.returncode == 0:
+            return result.stdout if result.stdout else '[+] Command successfully executed.\n'
+        error_text = result.stderr if result.stderr else result.stdout
+        return "[!] {}".format((error_text or '').strip())
+    except subprocess.TimeoutExpired:
+        return "[!] Command timed out"
     except KeyboardInterrupt:
-        print("Terminated command.")
+        return "[!] Command interrupted"
+    except Exception as e:
+        return "[!] {}".format(str(e))
 
 def start_command(command):
     try:
-        subp = subprocess.Popen(command, shell=True,
-             stdin=None, stdout=None, stderr=None, close_fds=True)
+        if isinstance(command, str):
+            if windows_client():
+                args = shlex.split(command, posix=False)
+                cmd_list = ['cmd', '/c'] + args if args else ['cmd', '/c']
+            else:
+                # Drop background token if present
+                args = [tok for tok in shlex.split(command) if tok != '&']
+                cmd_list = args
+        else:
+            args = [tok for tok in list(command) if tok != '&']
+            if windows_client():
+                cmd_list = ['cmd', '/c'] + args
+            else:
+                cmd_list = args
+
+        subprocess.Popen(
+            cmd_list,
+            stdin=None,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            close_fds=True,
+            shell=False
+        )
         return '[+] Command successfully started.\n'
     except Exception as e:
         return '[!] {}\n'.format(str(e))
@@ -231,9 +267,9 @@ def display_banner():
     print(banner)
 def clear_screen():
     if windows_client():
-        subprocess.run("cls", shell=True, capture_output=True)
+        subprocess.run(['cmd', '/c', 'cls'], shell=False, capture_output=True)
     else:
-        subprocess.run("clear", shell=True, capture_output=True)
+        subprocess.run(['clear'], shell=False, capture_output=True)
 
 def check_int(val):
     try:

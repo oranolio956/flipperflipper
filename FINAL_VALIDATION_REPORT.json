@@ -1,8 +1,8 @@
 {
-  "timestamp": "2025-10-18 21:19:28",
+  "timestamp": "2025-10-18 22:38:02",
   "total_checks": 61,
-  "passed_checks": 50,
-  "success_rate": 81.9672131147541,
+  "passed_checks": 49,
+  "success_rate": 80.32786885245902,
   "results": {
     "security": {
       "SQL Injection Protected": false,
@@ -15,7 +15,7 @@
       "Path Traversal Protected": false
     },
     "functionality": {
-      "Web Server Loads": true,
+      "Web Server Loads": false,
       "Payload Generation": false,
       "C2 Server Loads": true,
       "Database Ready": true,
@@ -66,11 +66,11 @@
       "flask installed": true,
       "flask-socketio installed": true,
       "requests installed": true,
-      "cryptography installed": false,
+      "cryptography installed": true,
       "pycryptodome installed": false,
       "colorama installed": true,
       "pyinstaller installed": false,
-      "wine available": true,
+      "wine available": false,
       "upx available": false,
       "nsis available": false
     },
@@ -92,12 +92,13 @@
     "security: Command Injection Protected",
     "security: Secrets Protected",
     "security: Path Traversal Protected",
+    "functionality: Web Server Loads",
     "functionality: Payload Generation"
   ],
   "warnings": [
-    "dependencies: cryptography installed",
     "dependencies: pycryptodome installed",
     "dependencies: pyinstaller installed",
+    "dependencies: wine available",
     "dependencies: upx available",
     "dependencies: nsis available"
   ],

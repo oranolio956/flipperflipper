@@ -233,8 +233,16 @@ T = False
 {6} = sys.platform
 
 def run_command({4}):
-    subp = sp.Popen({4},shell=True,stdout=sp.PIPE,stderr=sp.PIPE)
-    {0}, {5} = subp.communicate()
+    try:
+        import shlex as _shlex
+        if isinstance({4}, str):
+            _args = _shlex.split({4})
+        else:
+            _args = list({4})
+        subp = sp.Popen(_args, shell=False, stdout=sp.PIPE, stderr=sp.PIPE, text=True)
+        {0}, {5} = subp.communicate()
+    except Exception as e:
+        return "[!] {{}}".format(str(e))
     if not {5}:
         if {0} == '':
             return "[+] Command successfully executed.\\n"
@@ -244,8 +252,12 @@ def run_command({4}):
 
 def start_command(command):
     try:
-        subp = sp.Popen(command, shell=True,
-             stdin=None, stdout=None, stderr=None, close_fds=True)
+        import shlex as _shlex
+        if isinstance(command, str):
+            _args = [tok for tok in _shlex.split(command) if tok != '&']
+        else:
+            _args = [tok for tok in list(command) if tok != '&']
+        sp.Popen(_args, stdin=None, stdout=None, stderr=None, close_fds=True, shell=False)
         return '[+] Command successfully started.\\n'
     except Exception as e:
         return '[!] {{}}\\n'.format(str(e))

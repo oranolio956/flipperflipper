@@ -5,6 +5,7 @@
 import os
 import shutil
 import subprocess
+import shlex
 
 ################################################################################
 #                         NSIS Installer Variables                             #
@@ -78,17 +79,25 @@ nsis_InternalName={'chrome':'stGoogle NSIS Library',
 ################################################################################
 
 def run_command(command):
+    """Run a command safely without invoking a shell.
+
+    Accepts a list or a string; strings are tokenized safely.
+    Returns stdout on success or an error string on failure.
+    """
     try:
-        subp = subprocess.Popen(command,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        subp_output, errors = subp.communicate()
-        if not errors:
-            if subp_output == '':
-                return '[+] Command successfully executed.\n'
-            else:
-                return subp_output
-        return "[!] {}\n".format(errors)
+        if isinstance(command, str):
+            args = shlex.split(command)
+        else:
+            args = list(command)
+
+        result = subprocess.run(args, shell=False, capture_output=True, text=True)
+        if result.returncode == 0:
+            return result.stdout if result.stdout else '[+] Command successfully executed.\n'
+        return "[!] {}\n".format((result.stderr or result.stdout or '').strip())
     except KeyboardInterrupt:
-        print("Terminated command.")
+        return "[!] Command interrupted\n"
+    except Exception as e:
+        return "[!] {}\n".format(str(e))
 
 def no_error(cmd_output):
     if cmd_output.startswith("ERROR:") or cmd_output.startswith("[!]"):
@@ -161,7 +170,7 @@ SectionEnd'''.format(nsis_Version[name],nsis_ProductName[name],nsis_CompanyName[
     shutil.copy(exe_path, insts_dir)
     shutil.copy(elevate, insts_dir)
 
-    nsis_payload = run_command('"C:\\Program Files (x86)\\NSIS\\makensis.exe" "{}"'.format(nsis_script))
+    nsis_payload = run_command(['C:\\Program Files (x86)\\NSIS\\makensis.exe', nsis_script])
     if no_error(nsis_payload):
         instllr_path = os.path.join(conf_dir,outfile)
         nsis_instllr_path = os.path.join(installer_dir,outfile)
