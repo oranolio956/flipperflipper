@@ -12,8 +12,6 @@ import tempfile
 import base64
 from pathlib import Path
 from datetime import datetime
-import payload_obfuscator
-
 
 # Add Application directory to path
 sys.path.insert(0, os.path.dirname(__file__))
@@ -204,16 +202,6 @@ class WebPayloadGenerator:
         
         except Exception as e:
             st_log.error(f"Payload generation error: {e}")
-            
-            # Obfuscate if requested
-            if config.get('obfuscate', False):
-                try:
-                    import payload_obfuscator
-                    payload_obfuscator.obfuscate_file(payload_path, payload_path)
-                    logger.info("Payload obfuscated")
-                except Exception as e:
-                    logger.warning(f"Obfuscation failed: {e}")
-
             return {
                 'success': False,
                 'message': f'Payload generation failed: {str(e)}'

