@@ -1,9 +1,14 @@
+import os
 #!/usr/bin/env python
 # Copyright (c) 2017, Nathan Lopez
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 
 from . import stitch_lib
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from .stitch_help import *
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from .stitch_utils import *
 
 class st_winshell(cmd.Cmd):

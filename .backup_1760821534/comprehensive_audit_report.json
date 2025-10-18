@@ -1,0 +1,992 @@
+{
+  "timestamp": "Sat Oct 18 06:43:26 PM UTC 2025",
+  "statistics": {
+    "files_audited": 281,
+    "total_issues": 217,
+    "critical": 0,
+    "high": 0,
+    "medium": 1,
+    "low": 3
+  },
+  "issues": {
+    "broken_features": [],
+    "logic_issues": [],
+    "missing_dependencies": [],
+    "security_concerns": [],
+    "performance_issues": [],
+    "code_quality": [],
+    "integration_problems": [],
+    "documentation_gaps": [],
+    "web_routes": [
+      {
+        "route": "/api/health",
+        "issue": "Missing recommended endpoint",
+        "severity": "low"
+      },
+      {
+        "route": "/api/status",
+        "issue": "Missing recommended endpoint",
+        "severity": "low"
+      },
+      {
+        "route": "/api/version",
+        "issue": "Missing recommended endpoint",
+        "severity": "low"
+      }
+    ],
+    "configuration": [
+      {
+        "file": "/workspace/Application/stitch_config.ini",
+        "issue": "Configuration file missing",
+        "severity": "medium"
+      }
+    ],
+    "payload_generation": [],
+    "security": [],
+    "database": []
+  },
+  "file_issues": {
+    "fixed_payload_generator.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 96
+      }
+    ],
+    "test_live_web.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 41
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 189
+      }
+    ],
+    "live_test_suite.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 138
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 147
+      }
+    ],
+    "test_real_connection.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 100
+      }
+    ],
+    "FINAL_USER_TEST.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 197
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 182
+      },
+      {
+        "type": "dependency",
+        "issue": "Missing import: sys,",
+        "line": "imports"
+      },
+      {
+        "type": "dependency",
+        "issue": "Missing import: socket,",
+        "line": "imports"
+      }
+    ],
+    "phase6_final_integration.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 242
+      }
+    ],
+    "web_payload_generator.py": [
+      {
+        "type": "broken",
+        "issue": "Syntax error: expected an indented block after 'if' statement on line 236 (<unknown>, line 239)",
+        "line": 239
+      }
+    ],
+    "web_app_enhancements.py": [
+      {
+        "type": "logic",
+        "issue": "Potential infinite loop without break",
+        "line": 435
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 257
+      }
+    ],
+    "full_system_test.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 48
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 293
+      }
+    ],
+    "complete_integration_test.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 320
+      }
+    ],
+    "correct_payload_protocol.py": [
+      {
+        "type": "logic",
+        "issue": "Potential infinite loop without break",
+        "line": 151
+      }
+    ],
+    "config.py": [
+      {
+        "type": "security",
+        "issue": "Hardcoded credential: SECRET_KEY",
+        "line": 85
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 73
+      }
+    ],
+    "test_real_payload.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 152
+      },
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: expected an indented block after 'if' statement on line 236 (web_payload_generator.py, line 239)",
+        "line": "file"
+      }
+    ],
+    "debug_api_issues.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 341
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 157
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 163
+      }
+    ],
+    "test_complete_working.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 44
+      }
+    ],
+    "actual_verification_test.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 297
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 43
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 131
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 157
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 277
+      }
+    ],
+    "fix_csrf_api.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 351
+      }
+    ],
+    "auth_utils.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 57
+      }
+    ],
+    "create_working_system.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 268
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 353
+      }
+    ],
+    "phase2_testing_infrastructure.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 176
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 389
+      }
+    ],
+    "phase1_architecture_research.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 131
+      }
+    ],
+    "create_working_payload.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 109
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 122
+      }
+    ],
+    "test_payload_execution.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 238
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 245
+      }
+    ],
+    "backup_utils.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 294
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 284
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 248
+      }
+    ],
+    "START_SYSTEM.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 128
+      },
+      {
+        "type": "logic",
+        "issue": "Potential infinite loop without break",
+        "line": 237
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 302
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 263
+      }
+    ],
+    "final_complete_test.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 47
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 300
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 307
+      }
+    ],
+    "test_payload_simple.py": [
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: expected an indented block after 'if' statement on line 236 (web_payload_generator.py, line 239)",
+        "line": "file"
+      }
+    ],
+    "fix_payload_generation.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: requirements",
+        "line": "imports"
+      }
+    ],
+    "setup_real_environment.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 189
+      },
+      {
+        "type": "logic",
+        "issue": "Potential infinite loop without break",
+        "line": 568
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 481
+      }
+    ],
+    "web_app_real.py": [
+      {
+        "type": "logic",
+        "issue": "Potential infinite loop without break",
+        "line": 1788
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 332
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 1801
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 827
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 1027
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 1606
+      }
+    ],
+    "test_full_c2.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 54
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 103
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 291
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 299
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 307
+      }
+    ],
+    "test_web_login_fix.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 37
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 227
+      }
+    ],
+    "comprehensive_codebase_audit.py": [
+      {
+        "type": "code_quality",
+        "issue": "Deprecated: os.popen should use subprocess.run",
+        "line": "deprecated"
+      },
+      {
+        "type": "code_quality",
+        "issue": "Deprecated: urllib.urlopen should use urllib.request.urlopen",
+        "line": "deprecated"
+      },
+      {
+        "type": "code_quality",
+        "issue": "Deprecated: threading.Thread.setDaemon should use daemon parameter",
+        "line": "deprecated"
+      }
+    ],
+    "phase5_complete_testing.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 144
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 456
+      }
+    ],
+    "Elevation/elevatepy2exe.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: py2exe",
+        "line": "imports"
+      }
+    ],
+    "Elevation/elevate.py": [
+      {
+        "type": "broken",
+        "issue": "Syntax error: Missing parentheses in call to 'print'. Did you mean print(...)? (<unknown>, line 18)",
+        "line": 18
+      },
+      {
+        "type": "dependency",
+        "issue": "Missing import: subprocess,",
+        "line": "imports"
+      }
+    ],
+    "Application/stitch_utils.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 91
+      },
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: Empty module name",
+        "line": "file"
+      }
+    ],
+    "Application/stitch_help.py": [
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: Empty module name",
+        "line": "file"
+      }
+    ],
+    "Application/stitch_pyld_config.py": [
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: Empty module name",
+        "line": "file"
+      }
+    ],
+    "Application/stitch_cmd.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 39
+      },
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 52
+      },
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: Empty module name",
+        "line": "file"
+      }
+    ],
+    "Application/stitch_lnxshell.py": [
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: Empty module name",
+        "line": "file"
+      }
+    ],
+    "Application/stitch_cross_compile.py": [
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: Empty module name",
+        "line": "file"
+      }
+    ],
+    "Application/stitch_osxshell.py": [
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: Empty module name",
+        "line": "file"
+      }
+    ],
+    "Application/stitch_lib.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 33
+      },
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: Empty module name",
+        "line": "file"
+      }
+    ],
+    "Application/stitch_winshell.py": [
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: Empty module name",
+        "line": "file"
+      }
+    ],
+    "Application/stitch_gen.py": [
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: Empty module name",
+        "line": "file"
+      }
+    ],
+    "Application/Stitch_Vars/payload_code.py": [
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: Empty module name",
+        "line": "file"
+      }
+    ],
+    "Application/Stitch_Vars/makeself.py": [
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: Empty module name",
+        "line": "file"
+      }
+    ],
+    "test_infrastructure/c2_server.py": [
+      {
+        "type": "logic",
+        "issue": "Potential infinite loop without break",
+        "line": 17
+      }
+    ],
+    "Payloads/config4/Binaries/stitch_payload.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: requirements",
+        "line": "imports"
+      }
+    ],
+    "Payloads/config3/Binaries/stitch_payload.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: requirements",
+        "line": "imports"
+      }
+    ],
+    "Payloads/config10/Binaries/stitch_payload.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: requirements",
+        "line": "imports"
+      }
+    ],
+    "Payloads/config8/Binaries/test_connect.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: requirements",
+        "line": "imports"
+      }
+    ],
+    "Payloads/config5/Binaries/stitch_payload.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: requirements",
+        "line": "imports"
+      }
+    ],
+    "Payloads/config9/Binaries/stitch_payload.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: requirements",
+        "line": "imports"
+      }
+    ],
+    "Cleaner/st_cleaner.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: subprocess,os,sys,shutil",
+        "line": "imports"
+      }
+    ],
+    "PyLib/depscan.py": [
+      {
+        "type": "broken",
+        "issue": "Syntax error: Missing parentheses in call to 'print'. Did you mean print(...)? (<unknown>, line 22)",
+        "line": 22
+      },
+      {
+        "type": "dependency",
+        "issue": "Missing import: _winreg",
+        "line": "imports"
+      }
+    ],
+    "PyLib/enableWinDef.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 26
+      },
+      {
+        "type": "dependency",
+        "issue": "Missing import: _winreg",
+        "line": "imports"
+      }
+    ],
+    "PyLib/disableUAC.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: _winreg",
+        "line": "imports"
+      }
+    ],
+    "PyLib/uascan.py": [
+      {
+        "type": "broken",
+        "issue": "Syntax error: Missing parentheses in call to 'print'. Did you mean print(...)? (<unknown>, line 15)",
+        "line": 15
+      },
+      {
+        "type": "dependency",
+        "issue": "Missing import: _winreg",
+        "line": "imports"
+      }
+    ],
+    "PyLib/enableRDP.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: _winreg",
+        "line": "imports"
+      }
+    ],
+    "PyLib/avscan_win.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 271
+      },
+      {
+        "type": "dependency",
+        "issue": "Missing import: _winreg",
+        "line": "imports"
+      }
+    ],
+    "PyLib/fwscan.py": [
+      {
+        "type": "broken",
+        "issue": "Syntax error: Missing parentheses in call to 'print'. Did you mean print(...)? (<unknown>, line 16)",
+        "line": 16
+      },
+      {
+        "type": "dependency",
+        "issue": "Missing import: _winreg",
+        "line": "imports"
+      }
+    ],
+    "PyLib/disableRDP.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: _winreg",
+        "line": "imports"
+      }
+    ],
+    "PyLib/scanReg.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 28
+      },
+      {
+        "type": "dependency",
+        "issue": "Missing import: _winreg",
+        "line": "imports"
+      }
+    ],
+    "PyLib/enableUAC.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: _winreg",
+        "line": "imports"
+      }
+    ],
+    "PyLib/avkiller.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: _winreg",
+        "line": "imports"
+      }
+    ],
+    "PyLib/disableWinDef.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 26
+      },
+      {
+        "type": "dependency",
+        "issue": "Missing import: _winreg",
+        "line": "imports"
+      }
+    ],
+    "PyLib/fwallow.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: _winreg",
+        "line": "imports"
+      }
+    ],
+    "PyLib/chromedump.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: os,sys",
+        "line": "imports"
+      }
+    ],
+    "Configuration/requirements.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: st_utils",
+        "line": "imports"
+      },
+      {
+        "type": "dependency",
+        "issue": "Missing import: st_protocol",
+        "line": "imports"
+      },
+      {
+        "type": "dependency",
+        "issue": "Missing import: st_encryption",
+        "line": "imports"
+      },
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: Missing parentheses in call to 'print'. Did you mean print(...)? (pyxhook.py, line 122)",
+        "line": "file"
+      }
+    ],
+    "Configuration/st_protocol.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: requirements",
+        "line": "imports"
+      }
+    ],
+    "Configuration/st_main.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: requirements",
+        "line": "imports"
+      }
+    ],
+    "Configuration/st_lnx_keylogger.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: requirements",
+        "line": "imports"
+      }
+    ],
+    "Configuration/st_utils.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: requirements",
+        "line": "imports"
+      }
+    ],
+    "Configuration/pyxhook.py": [
+      {
+        "type": "broken",
+        "issue": "Syntax error: Missing parentheses in call to 'print'. Did you mean print(...)? (<unknown>, line 122)",
+        "line": 122
+      }
+    ],
+    "Configuration/st_win_keylogger.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: requirements",
+        "line": "imports"
+      }
+    ],
+    "Configuration/st_osx_keylogger.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: requirements",
+        "line": "imports"
+      }
+    ],
+    "Configuration/st_encryption.py": [
+      {
+        "type": "dependency",
+        "issue": "Missing import: requirements",
+        "line": "imports"
+      }
+    ],
+    "Configuration/creddump/hashdump.py": [
+      {
+        "type": "security",
+        "issue": "Hardcoded credential: antpassword",
+        "line": 54
+      },
+      {
+        "type": "security",
+        "issue": "Hardcoded credential: almpassword",
+        "line": 55
+      },
+      {
+        "type": "dependency",
+        "issue": "Missing import: rawreg",
+        "line": "imports"
+      },
+      {
+        "type": "dependency",
+        "issue": "Missing import: addrspace",
+        "line": "imports"
+      }
+    ],
+    "Configuration/creddump/rawreg.py": [
+      {
+        "type": "broken",
+        "issue": "Syntax error: Missing parentheses in call to 'print'. Did you mean print(...)? (<unknown>, line 41)",
+        "line": 41
+      },
+      {
+        "type": "dependency",
+        "issue": "Missing import: newobj",
+        "line": "imports"
+      }
+    ],
+    "Configuration/creddump/addrspace.py": [
+      {
+        "type": "broken",
+        "issue": "Syntax error: inconsistent use of tabs and spaces in indentation (<unknown>, line 38)",
+        "line": 38
+      }
+    ],
+    "Configuration/creddump/newobj.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 84
+      },
+      {
+        "type": "dependency",
+        "issue": "Missing import: obj",
+        "line": "imports"
+      }
+    ],
+    "Configuration/creddump/obj.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 96
+      }
+    ],
+    "Configuration/mss/linux.py": [
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: Empty module name",
+        "line": "file"
+      }
+    ],
+    "Configuration/mss/windows.py": [
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: Empty module name",
+        "line": "file"
+      }
+    ],
+    "Configuration/mss/base.py": [
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: Empty module name",
+        "line": "file"
+      }
+    ],
+    "Configuration/mss/darwin.py": [
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: Empty module name",
+        "line": "file"
+      }
+    ],
+    "Configuration/mss/factory.py": [
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: Empty module name",
+        "line": "file"
+      }
+    ],
+    "Configuration/mss/__init__.py": [
+      {
+        "type": "broken",
+        "issue": "Cannot analyze file: Empty module name",
+        "line": "file"
+      }
+    ],
+    "binary_compilation_test/test_payload.py": [
+      {
+        "type": "code_quality",
+        "issue": "Bare except clause (catches all exceptions)",
+        "line": 21
+      }
+    ]
+  }
+}

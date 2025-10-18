@@ -1,3 +1,4 @@
+import os
 # This file is part of creddump.
 #
 # creddump is free software: you can redistribute it and/or modify
@@ -39,8 +40,7 @@ def open_key(root, key):
         if s.Name.upper() == keyname.upper():
             return open_key(s, key)
     print("ERR: Couldn't find subkey %s of %s") % (keyname, root.Name)
-    return None
-
+    return
 def subkeys(key,stable=True):
     if stable: k = 0
     else: k = 1

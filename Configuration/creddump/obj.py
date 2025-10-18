@@ -1,3 +1,4 @@
+import os
 # Volatools Basic
 # Copyright (C) 2007 Komoku, Inc.
 #
@@ -42,13 +43,13 @@ builtin_types = { \
 
 
 def obj_size(types, objname):
-    if not types.has_key(objname):
+    if not types in objname:
         raise Exception('Invalid type %s not in types' % (objname))
 
     return types[objname][0]
 
 def builtin_size(builtin):
-    if not builtin_types.has_key(builtin):
+    if not builtin_types in builtin:
         raise Exception('Invalid built-in type %s' % (builtin))
 
     return builtin_types[builtin][0]
@@ -58,7 +59,7 @@ def read_value(addr_space, value_type, vaddr):
     Read the low-level value for a built-in type.
     """
 
-    if not builtin_types.has_key(value_type):
+    if not builtin_types in value_type:
         raise Exception('Invalid built-in type %s' % (value_type))
 
     type_unpack_char = builtin_types[value_type][1]
@@ -66,7 +67,7 @@ def read_value(addr_space, value_type, vaddr):
 
     buf = addr_space.read(vaddr, type_size)
     if buf is None:
-        return None
+        return
     (val, ) = struct.unpack(type_unpack_char, buf)
 
     return val
@@ -84,18 +85,15 @@ def read_unicode_string(addr_space, types, member_list, vaddr):
         return ""
 
     if buf is None or length is None:
-        return None
-
+        return
     readBuf = read_string(addr_space, types, ['char'], buf, length)
 
     if readBuf is None:
-        return None
-
+        return
     try:
         readBuf = readBuf.decode('UTF-16').encode('ascii')
-    except:
-        return None
-
+    except Exception:
+        return
     return readBuf
 
 def read_string(addr_space, types, member_list, vaddr, max_length=256):
@@ -112,8 +110,7 @@ def read_null_string(addr_space, types, member_list, vaddr, max_length=256):
     string = read_string(addr_space, types, member_list, vaddr, max_length)
 
     if string is None:
-        return None
-
+        return
     if (string.find('\0') == -1):
         return string
     (string, none) = string.split('\0', 1)
@@ -141,13 +138,13 @@ def get_obj_offset(types, member_list):
             offset += index * current_type_size
             continue
 
-        elif not types.has_key(current_type):
+        elif not types in current_type:
             raise Exception('Invalid type ' + current_type)
 
         member_dict = types[current_type][1]
 
         current_member = member_list.pop()
-        if not member_dict.has_key(current_member):
+        if not member_dict in current_member:
             raise Exception('Invalid member %s in type %s' % (current_member, current_type))
 
         offset += member_dict[current_member][0]

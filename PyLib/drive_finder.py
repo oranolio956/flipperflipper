@@ -1,3 +1,4 @@
+import os
 # Copyright (c) 2017, Nathan Lopez
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 # heavily based on http://stackoverflow.com/questions/17028221/how-do-i-search-for-a-file-only-on-usb-flash-drives

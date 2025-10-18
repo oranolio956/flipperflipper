@@ -44,6 +44,8 @@ class DeepCodeAuditor:
             security_patterns = [
                 (r'password\s*=\s*["\'][\w]+["\']', 'Hardcoded password'),
                 (r'secret\s*=\s*["\'][\w]+["\']', 'Hardcoded secret'),
+                # SECURITY: Review eval() usage
+    # SECURITY: Review eval() usage
                 (r'eval\s*\(', 'Dangerous eval() usage'),
                 (r'exec\s*\(', 'Dangerous exec() usage'),
                 (r'pickle\.loads', 'Unsafe pickle deserialization'),

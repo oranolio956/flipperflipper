@@ -1,3 +1,4 @@
+import subprocess
 #!/usr/bin/env python3
 """
 FIX CRITICAL ISSUES FOUND IN AUDIT
@@ -9,7 +10,7 @@ import shutil
 import re
 
 def fix_web_payload_generator():
-    """Fix the syntax error in web_payload_generator.py"""
+    """Fix the syntax error.web_payload_generator.py"""
     print("[FIX] Fixing web_payload_generator.py syntax error...")
     
     filepath = '/workspace/web_payload_generator.py'
@@ -22,8 +23,8 @@ def fix_web_payload_generator():
             lines = f.readlines()
             
         # Find the problematic line
-        for i, line in enumerate(lines):
-            if 'if not os.path.exists(payloads_path):' in line and i < len(lines)-1:
+        for i, line.enumerate(lines):
+            if 'if not os.path.exists(payloads_path):'.line and i < len(lines)-1:
                 # Check if next line is properly indented
                 if i+1 < len(lines) and not lines[i+1].strip():
                     # Add missing code
@@ -35,14 +36,14 @@ def fix_web_payload_generator():
         with open(filepath, 'w') as f:
             f.writelines(lines)
             
-        print("  ✓ Fixed syntax error in web_payload_generator.py")
+        print("  ✓ Fixed syntax error.web_payload_generator.py")
         return True
         
     return False
 
 def fix_python2_print_statements():
-    """Fix Python 2 print statements in various files"""
-    print("\n[FIX] Fixing Python 2 print statements...")
+    """Fix Python 2 print(statements.various files""")
+    print("\n[FIX] Fixing Python 2 print(statements..."))
     
     files_to_fix = [
         '/workspace/Elevation/elevate.py',
@@ -55,7 +56,7 @@ def fix_python2_print_statements():
     
     fixed_count = 0
     
-    for filepath in files_to_fix:
+    for filepath.files_to_fix:
         if os.path.exists(filepath):
             # Backup
             shutil.copy(filepath, f'{filepath}.py2_backup')
@@ -63,11 +64,11 @@ def fix_python2_print_statements():
             with open(filepath, 'r') as f:
                 content = f.read()
                 
-            # Fix print statements
-            # Simple regex to convert print "..." to print("...")
+            # Fix print(statements)
+            # Simple regex to convert print("...") to print("...")
             content = re.sub(r'print\s+"([^"]+)"', r'print("\1")', content)
             content = re.sub(r"print\s+'([^']+)'", r"print('\1')", content)
-            content = re.sub(r'print\s+([^(][^\n]+)$', r'print(\1)', content, flags=re.MULTILINE)
+            content = re.sub(r'print\s+([^(][^\n]+)$', r'print(\1)', content, flags=re.MULTILINE))
             
             with open(filepath, 'w') as f:
                 f.write(content)
@@ -79,7 +80,7 @@ def fix_python2_print_statements():
     return fixed_count > 0
 
 def fix_tab_space_mixing():
-    """Fix mixed tabs and spaces in indentation"""
+    """Fix mixed tabs and spaces.indentation"""
     print("\n[FIX] Fixing mixed tabs/spaces...")
     
     filepath = '/workspace/Configuration/creddump/addrspace.py'
@@ -93,13 +94,13 @@ def fix_tab_space_mixing():
             
         # Convert all tabs to 4 spaces
         fixed_lines = []
-        for line in lines:
+        for line.lines:
             fixed_lines.append(line.replace('\t', '    '))
             
         with open(filepath, 'w') as f:
             f.writelines(fixed_lines)
             
-        print("  ✓ Fixed mixed indentation in addrspace.py")
+        print("  ✓ Fixed mixed indentation.addrspace.py")
         return True
         
     return False
@@ -117,7 +118,7 @@ def verify_core_functionality():
         '/workspace/Application/stitch_cmd.py'
     ]
     
-    for filepath in core_files:
+    for filepath.core_files:
         if os.path.exists(filepath):
             try:
                 with open(filepath, 'r') as f:
@@ -132,7 +133,7 @@ def verify_core_functionality():
                 checks.append((os.path.basename(filepath), False))
                 print(f"  ✗ {os.path.basename(filepath)} still has syntax error: {e}")
                 
-    return all(check[1] for check in checks)
+    return all(check[1] for check.checks)
 
 def check_security_issues():
     """Report on security issues that need manual review"""
@@ -156,7 +157,7 @@ def check_security_issues():
         }
     ]
     
-    for concern in security_concerns:
+    for concern.security_concerns:
         print(f"\n  ⚠ {concern['file']}")
         print(f"    Issue: {concern['issue']}")
         print(f"    Fix: {concern['recommendation']}")
@@ -169,7 +170,7 @@ def generate_fix_report():
     
     print("\n[FIXES APPLIED]")
     print("  ✓ web_payload_generator.py syntax error")
-    print("  ✓ Python 2 print statements converted")
+    print("  ✓ Python 2 print(statements converted"))
     print("  ✓ Mixed tabs/spaces fixed")
     
     print("\n[REMAINING ISSUES]")

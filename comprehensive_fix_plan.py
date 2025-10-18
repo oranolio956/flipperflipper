@@ -107,6 +107,8 @@ class ComprehensiveFixPlan:
             'Hardcoded password': 'move_to_env_var',
             'Hardcoded secret': 'move_to_env_var',
             'Shell injection risk': 'replace_with_subprocess',
+            # SECURITY: Review eval() usage
+    # SECURITY: Review eval() usage
             'Dangerous eval() usage': 'review_and_sandbox',
             'Dangerous exec() usage': 'review_and_sandbox',
             'Bare except clause': 'specify_exception_type',
@@ -217,7 +219,7 @@ class ComprehensiveFixPlan:
                     try:
                         value = int(result.stdout.strip())
                         passed = value < test['threshold']
-                    except:
+                    except Exception:
                         passed = False
                 else:
                     passed = result.returncode == 0 or 'OK' in result.stdout

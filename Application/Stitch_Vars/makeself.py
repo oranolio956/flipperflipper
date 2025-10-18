@@ -5,7 +5,11 @@
 import os
 import shutil
 import subprocess
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from .globals import *
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from .payload_setup import *
 
 mkself_path = os.path.join(tools_path,'makeself')

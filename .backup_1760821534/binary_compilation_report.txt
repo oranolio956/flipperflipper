@@ -1,0 +1,6 @@
+BINARY COMPILATION FIXES
+==================================================
+
+- Created working spec template
+- Successfully compiled test_binary
+- Web payload generator updated

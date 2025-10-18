@@ -262,10 +262,6 @@ class WebPayloadGenerator:
             logger.warning(f"Fixed generator failed: {e}")
             
         return
-                shutil.rmtree(path, ignore_errors=True)
-        
-        except Exception as e:
-            st_log.error(f"Error cleaning up old payloads: {e}")
 
 
 # Global instance

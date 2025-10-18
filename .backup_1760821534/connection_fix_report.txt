@@ -1,0 +1,11 @@
+CONNECTION FIX RESEARCH
+==================================================
+
+Findings:
+- Server expects size header with struct.pack
+- Server sends size header
+- Created protocol-compliant payload
+
+Test Results:
+- client_running: PASS
+- c2_connection: FAIL

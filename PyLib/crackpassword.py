@@ -7,6 +7,7 @@ import socket
 import pexpect
 import subprocess
 
+    # TODO: Ensure loop has proper exit condition
 while True:
     cmd = 'echo password_cracked'
     child = pexpect.spawn('sudo {}'.format(cmd))

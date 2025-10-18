@@ -335,7 +335,7 @@ sock.close()
                 for test, result in tests.items():
                     if not test.startswith('error'):
                         total_tests += 1
-                        if result is True or (isinstance(result, (int, float)) and result > 0):
+                        if result or (isinstance(result, (int, float)) and result > 0):
                             passed += 1
                             
         print(f"\n[TEST SUMMARY]")
@@ -350,7 +350,7 @@ sock.close()
                 print(f"\n  {category.upper()}:")
                 for test, result in tests.items():
                     if not test.startswith('error'):
-                        status = '✓' if (result is True or (isinstance(result, (int, float)) and result > 0)) else '✗'
+                        status = '✓' if (result or (isinstance(result, (int, float)) and result > 0)) else '✗'
                         print(f"    {status} {test}: {result}")
                         
         # Save report

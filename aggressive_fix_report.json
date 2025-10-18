@@ -1,0 +1,17 @@
+{
+  "timestamp": "2025-10-18 21:05:36",
+  "files_fixed": [
+    "/workspace/.backup_1760821534/Application/stitch_utils.py",
+    "/workspace/.backup_1760821534/Application/stitch_lib.py",
+    "/workspace/.backup_1760821534/aggressive_fix_all.py",
+    "/workspace/Application/stitch_lib.py",
+    "/workspace/.backup_1760821534/Configuration/creddump/obj.py",
+    "/workspace/Configuration/creddump/obj.py",
+    "/workspace/Application/stitch_utils.py",
+    "/workspace/fix_critical_issues.py",
+    "/workspace/.backup_1760821534/fix_critical_issues.py",
+    "/workspace/aggressive_fix_all.py"
+  ],
+  "fixes_applied": 211,
+  "remaining_syntax_errors": 14
+}

@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python
 # coding: utf-8
 ''' This is part of the MSS Python's module.

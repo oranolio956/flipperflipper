@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-10-18 21:13:17",
+  "statistics": {
+    "files_processed": 192,
+    "fixes_applied": 103,
+    "security_fixes": 6,
+    "error_handling_fixes": 51,
+    "quality_fixes": 73,
+    "optimization_fixes": 8
+  },
+  "validation": {
+    "syntax_check": true,
+    "imports_work": true,
+    "web_starts": false,
+    "payload_gen": false,
+    "security_improved": false,
+    "error_handling_improved": false
+  },
+  "estimated_fixed": 138,
+  "original_issues": 748,
+  "fix_percentage": 18.449197860962567
+}

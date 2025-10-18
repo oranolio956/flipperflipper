@@ -1,0 +1,38 @@
+{
+  "passed": 1,
+  "failed": 13,
+  "tests": [
+    {
+      "name": "Import: Web App",
+      "passed": false
+    },
+    {
+      "name": "Import: Payload Generator",
+      "passed": false
+    },
+    {
+      "name": "Import: C2 Server",
+      "passed": false
+    },
+    {
+      "name": "Import: Payload Config",
+      "passed": false
+    },
+    {
+      "name": "Import: Cross Compile",
+      "passed": false
+    },
+    {
+      "name": "Import: Auth Utils",
+      "passed": false
+    },
+    {
+      "name": "Import: SSL Utils",
+      "passed": false
+    },
+    {
+      "name": "Import: Config",
+      "passed": true
+    }
+  ]
+}

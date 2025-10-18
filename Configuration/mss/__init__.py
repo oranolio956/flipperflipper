@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python
 # coding: utf-8
 ''' An ultra fast cross-platform multiple screenshots module in pure python

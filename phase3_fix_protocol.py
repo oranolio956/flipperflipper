@@ -305,6 +305,7 @@ class CompatiblePayload:
         
     def connect(self):
         """Connect with proper handshake"""
+    # TODO: Ensure loop has proper exit condition
         while True:
             try:
                 self.sock = socket.socket()

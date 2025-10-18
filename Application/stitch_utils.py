@@ -27,7 +27,11 @@ from getpass import getpass
 from Crypto.Cipher import AES
 from time import strftime, sleep
 # TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from .Stitch_Vars.globals import *
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 # TODO: Replace wildcard import with specific imports
 from .Stitch_Vars.st_aes import *
 from colorama import Fore, Back, Style, init, deinit, reinit
@@ -90,7 +94,7 @@ def no_error(cmd_output):
     if isinstance(cmd_output, bytes):
         try:
             cmd_output = cmd_output.decode('utf-8')
-        except:
+        except Exception:
             cmd_output = cmd_output.decode('latin-1')
     if cmd_output.startswith("ERROR:") or cmd_output.startswith("[!]"):
         return False
@@ -227,9 +231,9 @@ def display_banner():
     print(banner)
 def clear_screen():
     if windows_client():
-        os.system("cls")
+        subprocess.run("cls", shell=True, capture_output=True)
     else:
-        os.system("clear")
+        subprocess.run("clear", shell=True, capture_output=True)
 
 def check_int(val):
     try:

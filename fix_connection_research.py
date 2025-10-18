@@ -89,6 +89,8 @@ import time
 sys.path.insert(0, '/workspace')
 
 # TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from Application.stitch_lib import *
 
 # Create server socket
@@ -318,6 +320,7 @@ server = stitch_server()
 server.do_listen('4040')
 
 import time
+    # TODO: Review - infinite loop may need exit condition
 while True:
     time.sleep(2)
     if hasattr(server, 'inf_sock') and server.inf_sock:

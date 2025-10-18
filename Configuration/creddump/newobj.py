@@ -1,3 +1,4 @@
+import os
 # This file is part of creddump.
 #
 # creddump is free software: you can redistribute it and/or modify
@@ -19,6 +20,8 @@
 @contact:      bdolangavitt@wesleyan.edu
 """
 
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from obj import *
 from types import regtypes as types
 from operator import itemgetter
@@ -81,7 +84,7 @@ class Obj(object):
 
         try:
             off, tp = get_obj_offset(types, [self.name, attr])
-        except:
+        except Exception:
             raise AttributeError("'%s' has no attribute '%s'" % (self.name, attr))
 
         if tp == 'array':

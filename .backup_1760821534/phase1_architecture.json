@@ -1,0 +1,69 @@
+{
+  "components": {
+    "Server Core": {
+      "lines": 548,
+      "size": 20595,
+      "purpose": "Main C2 server"
+    },
+    "Protocol Handler": {
+      "lines": 931,
+      "size": 35245,
+      "purpose": "Command execution and protocol"
+    },
+    "Web Interface": {
+      "lines": 2004,
+      "size": 84994,
+      "purpose": "Web API and UI"
+    },
+    "Payload Generator": {
+      "lines": 350,
+      "size": 14263,
+      "purpose": "Payload creation and compilation"
+    },
+    "Cross Compiler": {
+      "lines": 414,
+      "size": 16002,
+      "purpose": "Cross-platform compilation"
+    }
+  },
+  "data_flow": [
+    [
+      "payload_gen",
+      [
+        "1. Web API receives request",
+        "2. web_payload_generator.generate_payload() called",
+        "3. stitch_gen.assemble_stitch() creates modules",
+        "4. stitch_cross_compile compiles (or falls back)",
+        "5. Binary/script returned to user"
+      ]
+    ],
+    [
+      "command_exec",
+      [
+        "1. Web API receives command request",
+        "2. execute_real_command() called",
+        "3. _perform_handshake() establishes AES",
+        "4. execute_on_target() sends command",
+        "5. stitch_lib processes on target",
+        "6. Response encrypted and returned"
+      ]
+    ]
+  ],
+  "dependencies": {
+    "installed": [
+      "flask==3.1.2",
+      "flask-socketio==5.5.1",
+      "pyinstaller==6.16.0",
+      "pycryptodome==3.23.0",
+      "requests==2.32.3",
+      "colorama==0.4.6",
+      "mss==10.1.0",
+      "pexpect==4.9.0"
+    ],
+    "missing": []
+  },
+  "issues": [
+    "Complex handshake: 76 lines",
+    "Wine not installed for Windows compilation"
+  ]
+}

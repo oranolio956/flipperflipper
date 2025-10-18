@@ -1,3 +1,4 @@
+import os
 __author__ = "Stitch626"
 __version__ = "1.6"
 

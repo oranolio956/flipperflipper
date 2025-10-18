@@ -1,0 +1,924 @@
+[2025-10-18 17:17:44,271] INFO in web_app_enhancements: Enhanced logging initialized at 20 level
+[2025-10-18 17:17:44,273] INFO in web_app_enhancements: All enhancements integrated successfully
+======================================================================
+VERIFYING SYSTEM INTEGRITY
+======================================================================
+[CHECK] Testing Python imports...
+⚠️  Configuration warnings:
+   - STITCH_ADMIN_USER and STITCH_ADMIN_PASSWORD must be set
+ℹ️  ProxyFix disabled - set STITCH_BEHIND_PROXY=true if behind reverse proxy
+===========================================================================
+Oranolio Web Interface 1.1.0 - Enhanced Security Edition
+===========================================================================
+✓ Persistent secret key: Loaded from file
+✓ HTTPS: Disabled
+✓ API Keys: Disabled
+✓ Metrics: Disabled
+✓ Failed Login Alerts: Disabled
+✓ WebSocket Update Interval: 5 seconds
+===========================================================================
+⚠️  Rate limiting: Using memory backend (not shared across instances)
+   For production with multiple workers, set STITCH_REDIS_URL=redis://localhost:6379
+⚠️  CORS: Using default localhost-only policy (development mode)
+   For production, set STITCH_ALLOWED_ORIGINS=https://yourdomain.com
+ERROR: 
+===========================================================================
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+🔐 SECURITY ERROR: Missing credentials!
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+Authentication credentials must be explicitly configured.
+No default credentials allowed for security.
+
+Please set environment variables:
+  STITCH_ADMIN_USER='your_username'
+  STITCH_ADMIN_PASSWORD='your_secure_password'
+
+In Replit: Add these to Secrets tab (🔒 icon)
+=
+  ✓ web_app_real imports successfully
+  ✓ Application.stitch_cmd imports successfully
+  ✓ Application.stitch_gen imports successfully
+  ✓ Application.stitch_lib imports successfully
+  ✓ web_payload_generator imports successfully
+  ✓ Application.stitch_cross_compile imports successfully
+
+[CHECK] Testing original functions...
+===============================================================
+
+       ...             s      .        s
+   .x888888hx    :    :8     @88>     :8              .uef^"
+  d88888888888hxx    .88     %8P     .88            :d88E
+ 8" ... `"*8888%`   :888ooo   .     :888ooo      .  `888E
+!  "   ` .xnxx.  -*8888888  .@88u -*8888888 .udR88N  888E .z8k
+X X   .H8888888%:   8888   ''888E`  8888   <888'888k 888E~?888L
+X 'hn8888888*"   >  8888     888E   8888   9888 'Y"  888E  888E
+X: `*88888%`     !  8888     888E   8888   9888      888E  888E
+'8h.. ``     ..x8> .8888Lu=  888E  .8888Lu=9888      888E  888E
+ `88888888888888f  ^%888*    888&  ^%888*  ?8888u../ 888E  888E
+  '%8888888888*"     'Y"     R888"   'Y"    "8888P' m888N= 888>
+     ^"****""`                ""              "P'    `Y"   888
+                                                          J88"
+Version 1.0                                               @%
+https://github.com/nathanlopez/Stitch                    :"
+===============================================================
+
+  ✓ stitch_server instantiates
+  ✓ assemble_stitch exists
+  ✓ Route /login exists
+  ✓ Route /api/generate-payload exists
+  ✓ Route /api/execute exists
+
+[CHECK] Verifying modified files...
+  ✓ web_app_real.py intact
+  ✓ web_payload_generator.py intact
+  ⚠ st_encryption.py missing: ['encrypt', 'decrypt']
+  ✓ style_real.css intact
+  ✓ dashboard_real.html intact
+  ✓ app_real.js intact
+
+[CHECK] Testing payload generation...
+  ✓ Payload generator has generate_payload method
+
+[CHECK] Checking configuration integrity...
+  ✓ st_aes_lib.ini: 1 sections
+  ⚠ Config not found: /workspace/Application/stitch_config.ini
+
+======================================================================
+VERIFICATION REPORT
+======================================================================
+
+[WORKING FEATURES] (18)
+  ✓ Import: web_app_real
+  ✓ Import: Application.stitch_cmd
+  ✓ Import: Application.stitch_gen
+  ✓ Import: Application.stitch_lib
+  ✓ Import: web_payload_generator
+  ✓ Import: Application.stitch_cross_compile
+  ✓ stitch_server creation
+  ✓ assemble_stitch function
+  ✓ Route: /login
+  ✓ Route: /api/generate-payload
+  ... and 8 more
+
+[BROKEN FEATURES] (0)
+  None! All features intact
+
+[WARNINGS] (2)
+  ⚠ /workspace/Configuration/st_encryption.py: missing ['encrypt', 'decrypt']
+  ⚠ Missing config: /workspace/Application/stitch_config.ini
+
+[INTEGRITY SCORE] 100.0%
+✅ System integrity maintained - No critical breakage

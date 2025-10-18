@@ -1,0 +1,30 @@
+{
+  "timestamp": "2025-10-18T16:18:11.525977",
+  "tests": {
+    "c2_server": {
+      "status": "SUCCESS",
+      "port": 4040,
+      "pid": 11148
+    },
+    "web_interface": {
+      "status": "SUCCESS",
+      "port": 5000,
+      "pid": 11155
+    },
+    "web_login": {
+      "status": "FAILED",
+      "response_code": 200
+    },
+    "payload_generation": {
+      "status": "SKIPPED"
+    },
+    "payload_execution": {
+      "status": "SKIPPED"
+    },
+    "command_execution": {
+      "status": "SKIPPED"
+    }
+  },
+  "errors": [],
+  "warnings": []
+}

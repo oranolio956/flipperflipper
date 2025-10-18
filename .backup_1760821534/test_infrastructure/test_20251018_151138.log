@@ -1,0 +1,700 @@
+2025-10-18 15:11:38,663 [INFO] TestInfra: Testing infrastructure initialized
+2025-10-18 15:11:38,663 [INFO] TestInfra: ======================================================================
+2025-10-18 15:11:38,664 [INFO] TestInfra: COMPREHENSIVE SYSTEM TEST
+2025-10-18 15:11:38,664 [INFO] TestInfra: ======================================================================
+2025-10-18 15:11:38,664 [INFO] TestInfra: Starting C2 server...
+2025-10-18 15:11:38,665 [INFO] TestInfra: Monitoring c2_server (PID: 7230)
+2025-10-18 15:11:41,666 [INFO] TestInfra: C2 server started successfully
+2025-10-18 15:11:41,666 [INFO] TestInfra: Starting web interface...
+2025-10-18 15:11:41,668 [INFO] TestInfra: Monitoring web_interface (PID: 7236)
+2025-10-18 15:11:42,234 [DEBUG] TestInfra: [web_interface] [2025-10-18 15:11:42,234] INFO in web_app_enhancements: Enhanced logging initialized at 20 level
+2025-10-18 15:11:42,237 [DEBUG] TestInfra: [web_interface] [2025-10-18 15:11:42,236] INFO in web_app_enhancements: All enhancements integrated successfully
+2025-10-18 15:11:42,446 [DEBUG] TestInfra: [web_interface] [Web] Starting web interface...
+2025-10-18 15:11:42,446 [DEBUG] TestInfra: [web_interface] ℹ️  ProxyFix disabled - set STITCH_BEHIND_PROXY=true if behind reverse proxy
+2025-10-18 15:11:42,446 [DEBUG] TestInfra: [web_interface] ===========================================================================
+2025-10-18 15:11:42,446 [DEBUG] TestInfra: [web_interface] Oranolio Web Interface 1.1.0 - Enhanced Security Edition
+2025-10-18 15:11:42,446 [DEBUG] TestInfra: [web_interface] ===========================================================================
+2025-10-18 15:11:42,446 [DEBUG] TestInfra: [web_interface] ✓ Persistent secret key: Loaded from file
+2025-10-18 15:11:42,446 [DEBUG] TestInfra: [web_interface] ✓ HTTPS: Disabled
+2025-10-18 15:11:42,446 [DEBUG] TestInfra: [web_interface] ✓ API Keys: Disabled
+2025-10-18 15:11:42,446 [DEBUG] TestInfra: [web_interface] ✓ Metrics: Disabled
+2025-10-18 15:11:42,446 [DEBUG] TestInfra: [web_interface] ✓ Failed Login Alerts: Disabled
+2025-10-18 15:11:42,446 [ERROR] TestInfra: [web_interface] ERROR: ✓ Failed Login Alerts: Disabled
+2025-10-18 15:11:42,446 [DEBUG] TestInfra: [web_interface] ✓ WebSocket Update Interval: 5 seconds
+2025-10-18 15:11:42,446 [DEBUG] TestInfra: [web_interface] ===========================================================================
+2025-10-18 15:11:42,446 [DEBUG] TestInfra: [web_interface] ⚠️  Rate limiting: Using memory backend (not shared across instances)
+2025-10-18 15:11:42,446 [DEBUG] TestInfra: [web_interface] For production with multiple workers, set STITCH_REDIS_URL=redis://localhost:6379
+2025-10-18 15:11:42,446 [DEBUG] TestInfra: [web_interface] ⚠️  CORS: Using default localhost-only policy (development mode)
+2025-10-18 15:11:42,446 [DEBUG] TestInfra: [web_interface] For production, set STITCH_ALLOWED_ORIGINS=https://yourdomain.com
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] ✓ Credentials loaded: testadmin (15 characters)
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] ✓ Credentials loaded from environment variables
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] [INFO] Initializing Stitch RAT server
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] [Web] Web interface starting on port 5000...
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] ===============================================================
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] ...             s      .        s
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] .x888888hx    :    :8     @88>     :8              .uef^"
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] d88888888888hxx    .88     %8P     .88            :d88E
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] 8" ... `"*8888%`   :888ooo   .     :888ooo      .  `888E
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] !  "   ` .xnxx.  -*8888888  .@88u -*8888888 .udR88N  888E .z8k
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] X X   .H8888888%:   8888   ''888E`  8888   <888'888k 888E~?888L
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] X 'hn8888888*"   >  8888     888E   8888   9888 'Y"  888E  888E
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] X: `*88888%`     !  8888     888E   8888   9888      888E  888E
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] '8h.. ``     ..x8> .8888Lu=  888E  .8888Lu=9888      888E  888E
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] `88888888888888f  ^%888*    888&  ^%888*  ?8888u../ 888E  888E
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] '%8888888888*"     'Y"     R888"   'Y"    "8888P' m888N= 888>
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] ^"****""`                ""              "P'    `Y"   888
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] J88"
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] Version 1.0                                               @%
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] https://github.com/nathanlopez/Stitch                    :"
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] ===============================================================
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] [31m[1m
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] [!] Unable to listen on port 4040
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] [0m
+2025-10-18 15:11:42,447 [DEBUG] TestInfra: [web_interface] [INFO] Stitch server listening on port 4040
+2025-10-18 15:11:42,448 [DEBUG] TestInfra: [web_interface] Traceback (most recent call last):
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] File "/workspace/test_infrastructure/web_server.py", line 20, in <module>
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] socketio.run(app, host='0.0.0.0', port=5000, debug=False, use_reloader=False)
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] File "/home/ubuntu/.local/lib/python3.13/site-packages/flask_socketio/__init__.py", line 726, in run
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] self.wsgi_server.serve_forever()
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] File "/home/ubuntu/.local/lib/python3.13/site-packages/gevent/baseserver.py", line 401, in serve_forever
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] self.start()
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] ~~~~~~~~~~^^
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] File "/home/ubuntu/.local/lib/python3.13/site-packages/gevent/baseserver.py", line 339, in start
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] self.init_socket()
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] ~~~~~~~~~~~~~~~~^^
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] File "/home/ubuntu/.local/lib/python3.13/site-packages/gevent/pywsgi.py", line 1672, in init_socket
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] StreamServer.init_socket(self)
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] File "/home/ubuntu/.local/lib/python3.13/site-packages/gevent/server.py", line 173, in init_socket
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] self.socket = self.get_listener(self.address, self.backlog, self.family)
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] File "/home/ubuntu/.local/lib/python3.13/site-packages/gevent/server.py", line 185, in get_listener
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] return _tcp_listener(address, backlog=backlog, reuse_addr=cls.reuse_addr, family=family)
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] File "/home/ubuntu/.local/lib/python3.13/site-packages/gevent/server.py", line 264, in _tcp_listener
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] sock.bind(address)
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] ~~~~~~~~~^^^^^^^^^
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] File "/home/ubuntu/.local/lib/python3.13/site-packages/gevent/_socketcommon.py", line 543, in bind
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] return self._sock.bind(address)
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] ~~~~~~~~~~~~~~~^^^^^^^^^
+2025-10-18 15:11:42,449 [DEBUG] TestInfra: [web_interface] OSError: [Errno 98] Address already in use: ('0.0.0.0', 5000)
+2025-10-18 15:11:42,450 [ERROR] TestInfra: [web_interface] ERROR: OSError: [Errno 98] Address already in use: ('0.0.0.0', 5000)
+2025-10-18 15:11:43,671 [DEBUG] urllib3.connectionpool: Starting new HTTP connection (1): localhost:5000
+2025-10-18 15:33:23,816 [DEBUG] TestInfra: [c2_server] [C2] Starting Stitch server...
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] ===============================================================
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] ...             s      .        s
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] .x888888hx    :    :8     @88>     :8              .uef^"
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] d88888888888hxx    .88     %8P     .88            :d88E
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] 8" ... `"*8888%`   :888ooo   .     :888ooo      .  `888E
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] !  "   ` .xnxx.  -*8888888  .@88u -*8888888 .udR88N  888E .z8k
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] X X   .H8888888%:   8888   ''888E`  8888   <888'888k 888E~?888L
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] X 'hn8888888*"   >  8888     888E   8888   9888 'Y"  888E  888E
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] X: `*88888%`     !  8888     888E   8888   9888      888E  888E
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] '8h.. ``     ..x8> .8888Lu=  888E  .8888Lu=9888      888E  888E
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] `88888888888888f  ^%888*    888&  ^%888*  ?8888u../ 888E  888E
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] '%8888888888*"     'Y"     R888"   'Y"    "8888P' m888N= 888>
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] ^"****""`                ""              "P'    `Y"   888
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] J88"
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] Version 1.0                                               @%
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] https://github.com/nathanlopez/Stitch                    :"
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] ===============================================================
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] [31m[1m
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] [!] Unable to listen on port 4040
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] [0m
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] [C2] Server listening on port 4040
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,817 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,818 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,819 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,820 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,821 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,822 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,823 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,823 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,823 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:33:23,823 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,899 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,899 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,899 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,899 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,899 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,899 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,899 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,899 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,900 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,901 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,902 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,903 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,904 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,905 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 15:58:43,906 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 16:12:25,527 [DEBUG] urllib3.connectionpool: Starting new HTTP connection (1): localhost:5000
+2025-10-18 16:12:27,531 [DEBUG] urllib3.connectionpool: Starting new HTTP connection (1): localhost:5000
+2025-10-18 16:12:29,534 [DEBUG] urllib3.connectionpool: Starting new HTTP connection (1): localhost:5000
+2025-10-18 16:12:31,536 [DEBUG] urllib3.connectionpool: Starting new HTTP connection (1): localhost:5000
+2025-10-18 16:12:33,538 [DEBUG] urllib3.connectionpool: Starting new HTTP connection (1): localhost:5000
+2025-10-18 16:12:35,540 [DEBUG] urllib3.connectionpool: Starting new HTTP connection (1): localhost:5000
+2025-10-18 16:12:37,543 [DEBUG] urllib3.connectionpool: Starting new HTTP connection (1): localhost:5000
+2025-10-18 16:12:39,545 [DEBUG] urllib3.connectionpool: Starting new HTTP connection (1): localhost:5000
+2025-10-18 16:12:41,547 [DEBUG] urllib3.connectionpool: Starting new HTTP connection (1): localhost:5000
+2025-10-18 16:12:41,548 [ERROR] TestInfra: Web interface failed to start
+2025-10-18 16:12:41,548 [INFO] TestInfra: Creating test payload: test_payload
+2025-10-18 16:12:41,549 [INFO] TestInfra: Test payload created: /workspace/test_infrastructure/test_payload.py
+2025-10-18 16:12:41,549 [INFO] TestInfra: Executing payload: /workspace/test_infrastructure/test_payload.py
+2025-10-18 16:12:41,550 [INFO] TestInfra: Monitoring payload_7645 (PID: 7645)
+2025-10-18 16:12:46,551 [INFO] TestInfra: Testing web API...
+2025-10-18 16:12:46,552 [DEBUG] urllib3.connectionpool: Starting new HTTP connection (1): localhost:5000
+2025-10-18 16:12:46,553 [ERROR] TestInfra: API test error: HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f96a916f130>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2025-10-18 16:12:46,553 [INFO] TestInfra: 
+======================================================================
+2025-10-18 16:12:46,553 [INFO] TestInfra: TEST RESULTS
+2025-10-18 16:12:46,553 [INFO] TestInfra: ======================================================================
+2025-10-18 16:12:46,553 [INFO] TestInfra: ✓ c2_server: True
+2025-10-18 16:12:46,553 [INFO] TestInfra: ✗ web_interface: False
+2025-10-18 16:12:46,553 [INFO] TestInfra: ✓ payload_started: True
+2025-10-18 16:12:46,553 [INFO] TestInfra: ✓ api: {'error': "HTTPConnectionPool(host='localhost', port=5000): Max retries exceeded with url: /login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f96a916f130>: Failed to establish a new connection: [Errno 111] Connection refused'))"}
+2025-10-18 16:12:46,554 [INFO] TestInfra: 
+Results saved to: /workspace/test_infrastructure/test_results.json
+2025-10-18 16:12:46,554 [INFO] TestInfra: Cleaning up...
+2025-10-18 16:12:46,554 [INFO] TestInfra: Terminating c2_server
+2025-10-18 16:12:46,555 [DEBUG] TestInfra: [c2_server] [C2] No active connections
+2025-10-18 16:12:46,557 [INFO] TestInfra: Terminating payload_7645

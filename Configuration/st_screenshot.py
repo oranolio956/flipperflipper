@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 Screenshot capture module
@@ -56,8 +57,7 @@ def take_screenshot():
         except ImportError:
             pass
             
-        return None
-        
+        return
     except Exception as e:
         return f"Screenshot error: {e}"
 

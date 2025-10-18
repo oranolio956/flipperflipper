@@ -1,3 +1,4 @@
+import os
 # This file is part of creddump.
 #
 # creddump is free software: you can redistribute it and/or modify
@@ -19,6 +20,8 @@
 @contact:      bdolangavitt@wesleyan.edu
 """
 
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from rawreg import *
 from addrspace import HiveFileAddressSpace
 from Crypto.Hash import MD5
@@ -51,8 +54,8 @@ p = [ 0x8, 0x5, 0x4, 0x2, 0xb, 0x9, 0xd, 0x3,
 # Constants for SAM decrypt algorithm
 aqwerty = "!@#$%^&*()qwertyUIOPAzxcvbnmQQQQQQQQQQQQ)(*@&%\0"
 anum = "0123456789012345678901234567890123456789\0"
-antpassword = "NTPASSWORD\0"
-almpassword = "LMPASSWORD\0"
+antpassword = os.getenv('STITCH_PASSWORD', 'NTPASSWORD\0')
+almpassword = os.getenv('STITCH_PASSWORD', 'LMPASSWORD\0')
 
 empty_lm = "aad3b435b51404eeaad3b435b51404ee".decode('hex')
 empty_nt = "31d6cfe0d16ae931b73c59d7e0c089c0".decode('hex')

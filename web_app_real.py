@@ -35,10 +35,16 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 sys.path.insert(0, os.path.dirname(__file__))
 # TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from Application.Stitch_Vars.globals import *
 from Application import stitch_cmd, stitch_lib
 # TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from Application.stitch_utils import *
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 # TODO: Replace wildcard import with specific imports
 from Application.stitch_gen import *
 from ssl_utils import get_ssl_context
@@ -332,7 +338,7 @@ def log_debug(message, level="INFO", category="System"):
     # Only emit if socket.io is running
     try:
         socketio.emit('debug_log', log_entry, namespace='/')
-    except:
+    except Exception:
         pass
     
     print(f"[{level}] {message}")
@@ -827,7 +833,7 @@ def generate_payload():
             # Clean up old payloads (keep last 10)
             try:
                 web_payload_gen.cleanup_old_payloads(keep_last=10)
-            except:
+            except Exception:
                 pass  # Don't fail if cleanup fails
             
             response_data = {
@@ -1027,7 +1033,7 @@ def upload_file():
             # Clean up temp file
             try:
                 os.unlink(temp_path)
-            except:
+            except Exception:
                 pass
         
     except Exception as e:
@@ -1606,7 +1612,7 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
             try:
                 if original_timeout is not None:
                     socket_conn.settimeout(original_timeout)
-            except:
+            except Exception:
                 pass  # Socket may be closed
         
     except Exception as e:
@@ -1617,8 +1623,7 @@ def get_connection_aes_key(target_ip):
     ctx = connection_context.get(target_ip)
     if ctx:
         return ctx.get('aes_key')
-    return None
-
+    return
 def get_sessions_output():
     """Get active sessions output"""
     server = get_stitch_server()
@@ -1788,6 +1793,7 @@ def handle_ping():
 # ============================================================================
 def monitor_connections():
     """Monitor and broadcast connection changes"""
+    # TODO: Review - infinite loop may need exit condition
     while True:
         try:
             server = get_stitch_server()
@@ -1801,7 +1807,7 @@ def monitor_connections():
                 'active_connections': active_count,
                 'timestamp': datetime.now().isoformat()
             }, namespace='/')
-        except:
+        except Exception:
             pass
         time.sleep(SERVER_RETRY_DELAY_SECONDS)
 

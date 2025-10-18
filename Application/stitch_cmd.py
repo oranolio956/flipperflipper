@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python
 # Copyright (c) 2017, Nathan Lopez
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
@@ -7,9 +8,15 @@ from . import stitch_winshell
 from . import stitch_osxshell
 from . import stitch_lnxshell
 # TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from .stitch_gen import *
 # TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 from .stitch_help import *
+# TODO: Replace wildcard import with specific imports
+# TODO: Replace wildcard import with specific imports
 # TODO: Replace wildcard import with specific imports
 from .stitch_utils import *
 
@@ -39,7 +46,7 @@ class stitch_server(cmd.Cmd):
                 dict1[option] = self.Config.get(section, option)
                 if dict1[option] == -1:
                     pass
-            except:
+            except Exception:
                 print("exception on {}!".format(option))
                 dict1[option] = None
         return dict1
@@ -52,7 +59,7 @@ class stitch_server(cmd.Cmd):
                 dict1[option] = self.aes_lib.get(section, option)
                 if dict1[option] == -1:
                     pass
-            except:
+            except Exception:
                 print("exception on {}!".format(option))
                 dict1[option] = None
         return dict1
@@ -106,7 +113,7 @@ class stitch_server(cmd.Cmd):
             try:
                 server.settimeout(2)
                 client_socket, addr = server.accept()
-            except Exception as e:
+            except Exception:
                 pass
             if client_socket:
                 # Use unique IP:Port key to avoid NAT overwrites

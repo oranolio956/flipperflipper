@@ -1,0 +1,81 @@
+# Stitch RAT - Web Interface Requirements
+# Core dependencies for web interface and RAT functionality
+
+# ==============================================================================
+# Core Web Framework (Required)
+# Python 3.13 compatible versions - Updated for 2025
+# ==============================================================================
+Flask>=3.0.0,<4.0.0
+Flask-SocketIO>=5.4.0
+Flask-Limiter>=3.8.0
+python-socketio>=5.11.0
+gevent>=24.2.1
+Werkzeug>=3.0.0,<4.0.0
+
+# ==============================================================================
+# Security & Authentication (Required)
+# ==============================================================================
+Flask-WTF>=1.2.0
+pycryptodome>=3.19.0
+python-dotenv>=1.0.0
+
+# ==============================================================================
+# Core RAT Functionality (Required)
+# ==============================================================================
+colorama==0.4.6
+requests==2.32.3
+
+# ==============================================================================
+# Optional Dependencies (Platform-Specific)
+# ==============================================================================
+# Screenshot functionality (cross-platform)
+mss>=1.10.1
+
+# PIL/Pillow for image processing
+Pillow>=10.0.0
+
+# SSH automation (Linux/macOS)
+pexpect>=4.9.0; sys_platform != 'win32'
+
+# Date/time utilities
+python-dateutil>=2.8.2
+
+# Linux-specific dependencies
+python-xlib>=0.33; sys_platform == 'linux'
+pyudev>=0.24.1; sys_platform == 'linux'
+
+# Windows-specific dependencies (uncomment if building Windows payloads)
+# pywin32>=306; sys_platform == 'win32'
+# pyHook>=1.5.1; sys_platform == 'win32'
+
+# macOS-specific dependencies (uncomment if on macOS)
+# pyobjc-framework-Cocoa>=10.0; sys_platform == 'darwin'
+
+# ==============================================================================
+# Development & Build Tools (Optional)
+# ==============================================================================
+# PyInstaller for creating standalone executables
+# PyInstaller>=6.0.0
+
+# py2exe for Windows executables (Windows only)
+# py2exe>=0.13.0; sys_platform == 'win32'
+
+# ==============================================================================
+# Additional Security Tools (Optional)
+# ==============================================================================
+# Fuzzy hashing for file analysis
+# ssdeep>=3.4
+
+# Redis for distributed rate limiting (optional)
+redis>=5.0.0
+
+# ==============================================================================
+# Notes
+# ==============================================================================
+# - Minimum Python version: 3.8+
+# - For production deployment, consider using a virtual environment
+# - Some dependencies are platform-specific (marked with sys_platform)
+# - Optional dependencies are commented out - uncomment as needed
+# - Run: pip install -r requirements.txt
+psutil
+pytest>=8.0.0
