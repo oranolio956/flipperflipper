@@ -1,0 +1,83 @@
+2025-10-18 16:11:47,037 [INFO] TestInfra: Testing infrastructure initialized
+2025-10-18 16:11:47,038 [INFO] TestInfra: ======================================================================
+2025-10-18 16:11:47,038 [INFO] TestInfra: COMPREHENSIVE SYSTEM TEST
+2025-10-18 16:11:47,038 [INFO] TestInfra: ======================================================================
+2025-10-18 16:11:47,038 [INFO] TestInfra: Starting C2 server...
+2025-10-18 16:11:47,040 [INFO] TestInfra: Monitoring c2_server (PID: 7585)
+2025-10-18 16:11:50,040 [INFO] TestInfra: C2 server started successfully
+2025-10-18 16:11:50,041 [INFO] TestInfra: Starting web interface...
+2025-10-18 16:11:50,042 [INFO] TestInfra: Monitoring web_interface (PID: 7591)
+2025-10-18 16:11:50,592 [DEBUG] TestInfra: [web_interface] [2025-10-18 16:11:50,591] INFO in web_app_enhancements: Enhanced logging initialized at 20 level
+2025-10-18 16:11:50,594 [DEBUG] TestInfra: [web_interface] [2025-10-18 16:11:50,594] INFO in web_app_enhancements: All enhancements integrated successfully
+2025-10-18 16:11:50,831 [DEBUG] TestInfra: [web_interface] [Web] Starting web interface...
+2025-10-18 16:11:50,831 [DEBUG] TestInfra: [web_interface] ℹ️  ProxyFix disabled - set STITCH_BEHIND_PROXY=true if behind reverse proxy
+2025-10-18 16:11:50,831 [DEBUG] TestInfra: [web_interface] ===========================================================================
+2025-10-18 16:11:50,831 [DEBUG] TestInfra: [web_interface] Oranolio Web Interface 1.1.0 - Enhanced Security Edition
+2025-10-18 16:11:50,831 [DEBUG] TestInfra: [web_interface] ===========================================================================
+2025-10-18 16:11:50,831 [DEBUG] TestInfra: [web_interface] ✓ Persistent secret key: Loaded from file
+2025-10-18 16:11:50,831 [DEBUG] TestInfra: [web_interface] ✓ HTTPS: Disabled
+2025-10-18 16:11:50,831 [DEBUG] TestInfra: [web_interface] ✓ API Keys: Disabled
+2025-10-18 16:11:50,831 [DEBUG] TestInfra: [web_interface] ✓ Metrics: Disabled
+2025-10-18 16:11:50,831 [DEBUG] TestInfra: [web_interface] ✓ Failed Login Alerts: Disabled
+2025-10-18 16:11:50,831 [ERROR] TestInfra: [web_interface] ERROR: ✓ Failed Login Alerts: Disabled
+2025-10-18 16:11:50,831 [DEBUG] TestInfra: [web_interface] ✓ WebSocket Update Interval: 5 seconds
+2025-10-18 16:11:50,831 [DEBUG] TestInfra: [web_interface] ===========================================================================
+2025-10-18 16:11:50,831 [DEBUG] TestInfra: [web_interface] ⚠️  Rate limiting: Using memory backend (not shared across instances)
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] For production with multiple workers, set STITCH_REDIS_URL=redis://localhost:6379
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] ⚠️  CORS: Using default localhost-only policy (development mode)
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] For production, set STITCH_ALLOWED_ORIGINS=https://yourdomain.com
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] ✓ Credentials loaded: testadmin (15 characters)
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] ✓ Credentials loaded from environment variables
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] [INFO] Initializing Stitch RAT server
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] [Web] Web interface starting on port 5000...
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] ===============================================================
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] ...             s      .        s
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] .x888888hx    :    :8     @88>     :8              .uef^"
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] d88888888888hxx    .88     %8P     .88            :d88E
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] 8" ... `"*8888%`   :888ooo   .     :888ooo      .  `888E
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] !  "   ` .xnxx.  -*8888888  .@88u -*8888888 .udR88N  888E .z8k
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] X X   .H8888888%:   8888   ''888E`  8888   <888'888k 888E~?888L
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] X 'hn8888888*"   >  8888     888E   8888   9888 'Y"  888E  888E
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] X: `*88888%`     !  8888     888E   8888   9888      888E  888E
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] '8h.. ``     ..x8> .8888Lu=  888E  .8888Lu=9888      888E  888E
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] `88888888888888f  ^%888*    888&  ^%888*  ?8888u../ 888E  888E
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] '%8888888888*"     'Y"     R888"   'Y"    "8888P' m888N= 888>
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] ^"****""`                ""              "P'    `Y"   888
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] J88"
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] Version 1.0                                               @%
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] https://github.com/nathanlopez/Stitch                    :"
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] ===============================================================
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] [31m[1m
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] [!] Unable to listen on port 4040
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] [0m
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] [INFO] Stitch server listening on port 4040
+2025-10-18 16:11:50,832 [DEBUG] TestInfra: [web_interface] Traceback (most recent call last):
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] File "/workspace/test_infrastructure/web_server.py", line 20, in <module>
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] socketio.run(app, host='0.0.0.0', port=5000, debug=False, use_reloader=False)
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] File "/home/ubuntu/.local/lib/python3.13/site-packages/flask_socketio/__init__.py", line 726, in run
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] self.wsgi_server.serve_forever()
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] File "/home/ubuntu/.local/lib/python3.13/site-packages/gevent/baseserver.py", line 401, in serve_forever
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] self.start()
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] ~~~~~~~~~~^^
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] File "/home/ubuntu/.local/lib/python3.13/site-packages/gevent/baseserver.py", line 339, in start
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] self.init_socket()
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] ~~~~~~~~~~~~~~~~^^
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] File "/home/ubuntu/.local/lib/python3.13/site-packages/gevent/pywsgi.py", line 1672, in init_socket
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] StreamServer.init_socket(self)
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] File "/home/ubuntu/.local/lib/python3.13/site-packages/gevent/server.py", line 173, in init_socket
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] self.socket = self.get_listener(self.address, self.backlog, self.family)
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] File "/home/ubuntu/.local/lib/python3.13/site-packages/gevent/server.py", line 185, in get_listener
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] return _tcp_listener(address, backlog=backlog, reuse_addr=cls.reuse_addr, family=family)
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] File "/home/ubuntu/.local/lib/python3.13/site-packages/gevent/server.py", line 264, in _tcp_listener
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] sock.bind(address)
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] ~~~~~~~~~^^^^^^^^^
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] File "/home/ubuntu/.local/lib/python3.13/site-packages/gevent/_socketcommon.py", line 543, in bind
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] return self._sock.bind(address)
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] ~~~~~~~~~~~~~~~^^^^^^^^^
+2025-10-18 16:11:50,834 [DEBUG] TestInfra: [web_interface] OSError: [Errno 98] Address already in use: ('0.0.0.0', 5000)
+2025-10-18 16:11:50,834 [ERROR] TestInfra: [web_interface] ERROR: OSError: [Errno 98] Address already in use: ('0.0.0.0', 5000)
+2025-10-18 16:11:52,045 [DEBUG] urllib3.connectionpool: Starting new HTTP connection (1): localhost:5000
