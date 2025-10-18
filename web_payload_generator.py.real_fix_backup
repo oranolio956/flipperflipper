@@ -13,8 +13,6 @@ import base64
 from pathlib import Path
 from datetime import datetime
 import payload_obfuscator
-import fixed_payload_generator
-
 
 
 # Add Application directory to path
@@ -234,31 +232,7 @@ class WebPayloadGenerator:
         """Clean up old payload directories, keeping the most recent ones"""
         try:
             if not os.path.exists(payloads_path):
-                
-        # Use fixed generator as primary method
-        try:
-            import fixed_payload_generator
-            fixed_path = fixed_payload_generator.generate_working_payload(config)
-            if fixed_path and os.path.exists(fixed_path):
-                # Copy to payload directory
-                import shutil
-                final_path = os.path.join(conf_dir, os.path.basename(fixed_path))
-                shutil.copy(fixed_path, final_path)
-                
-                session['payload_path'] = final_path
-                session['payload_type'] = 'executable' if not final_path.endswith('.py') else 'python'
-                
-                return {
-                    'success': True,
-                    'payload_path': final_path,
-                    'type': session['payload_type'],
-                    'size': os.path.getsize(final_path),
-                    'download_url': '/api/download-payload'
-                }
-        except Exception as e:
-            logger.warning(f"Fixed generator failed: {e}")
-            
-        return
+                return
             
             # Get all config directories
             config_dirs = []
