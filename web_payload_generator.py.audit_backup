@@ -234,9 +234,6 @@ class WebPayloadGenerator:
         """Clean up old payload directories, keeping the most recent ones"""
         try:
             if not os.path.exists(payloads_path):
-                return  # No payloads directory
-        except:
-            pass
                 
         # Use fixed generator as primary method
         try:

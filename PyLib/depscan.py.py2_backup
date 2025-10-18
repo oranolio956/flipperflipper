@@ -19,4 +19,4 @@ def check_dep():
     else:
         return errors
 
-print(check_dep())
+print check_dep()

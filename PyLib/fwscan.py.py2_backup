@@ -13,4 +13,4 @@ def checklocalfw():
     else:
         return errros
 
-print(checklocalfw())
+print checklocalfw()

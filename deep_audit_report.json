@@ -1,0 +1,3304 @@
+{
+  "statistics": {
+    "files": 240,
+    "issues": 748,
+    "critical": 8,
+    "high": 162,
+    "medium": 183,
+    "low": 160
+  },
+  "findings": {
+    "fixed_payload_generator.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 40: except:",
+        "file": "fixed_payload_generator.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 65: except:",
+        "file": "fixed_payload_generator.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 70: except:",
+        "file": "fixed_payload_generator.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 96: except:",
+        "file": "fixed_payload_generator.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 35",
+        "file": "fixed_payload_generator.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 52",
+        "file": "fixed_payload_generator.py"
+      }
+    ],
+    "payload_obfuscator.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 28: exec(",
+        "file": "payload_obfuscator.py"
+      }
+    ],
+    "check_credentials.py": [
+      {
+        "severity": "HIGH",
+        "type": "Hardcoded password",
+        "detail": "Line 28: PASSWORD='your_password'",
+        "file": "check_credentials.py"
+      }
+    ],
+    "test_live_web.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 41: except:",
+        "file": "test_live_web.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 189: except:",
+        "file": "test_live_web.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 49",
+        "file": "test_live_web.py"
+      }
+    ],
+    "live_test_suite.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 138: except:",
+        "file": "live_test_suite.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 147: except:",
+        "file": "live_test_suite.py"
+      }
+    ],
+    "fix_connection_research.py": [
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 432: os.system(",
+        "file": "fix_connection_research.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 433: os.system(",
+        "file": "fix_connection_research.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 91: from Application.stitch_lib import *",
+        "file": "fix_connection_research.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 236",
+        "file": "fix_connection_research.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 320",
+        "file": "fix_connection_research.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 202",
+        "file": "fix_connection_research.py"
+      }
+    ],
+    "metrics.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Too broad exception",
+        "detail": "Line 102: except Exception:",
+        "file": "metrics.py"
+      }
+    ],
+    "test_real_connection.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 100: except:",
+        "file": "test_real_connection.py"
+      }
+    ],
+    "phase3_fix_protocol.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 190: exec(",
+        "file": "phase3_fix_protocol.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 254: except:",
+        "file": "phase3_fix_protocol.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 308",
+        "file": "phase3_fix_protocol.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 330",
+        "file": "phase3_fix_protocol.py"
+      }
+    ],
+    "FINAL_USER_TEST.py": [
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 21: os.system(",
+        "file": "FINAL_USER_TEST.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 128: except:",
+        "file": "FINAL_USER_TEST.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 182: except:",
+        "file": "FINAL_USER_TEST.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 197: except:",
+        "file": "FINAL_USER_TEST.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 121",
+        "file": "FINAL_USER_TEST.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 132",
+        "file": "FINAL_USER_TEST.py"
+      }
+    ],
+    "phase6_final_integration.py": [
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 216: os.system(",
+        "file": "phase6_final_integration.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 332: os.system(",
+        "file": "phase6_final_integration.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 333: os.system(",
+        "file": "phase6_final_integration.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 334: os.system(",
+        "file": "phase6_final_integration.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 413: os.system(",
+        "file": "phase6_final_integration.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 414: os.system(",
+        "file": "phase6_final_integration.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 139: except:",
+        "file": "phase6_final_integration.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 242: except:",
+        "file": "phase6_final_integration.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 113",
+        "file": "phase6_final_integration.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 120",
+        "file": "phase6_final_integration.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 192",
+        "file": "phase6_final_integration.py"
+      }
+    ],
+    "web_payload_generator.py": [
+      {
+        "severity": "CRITICAL",
+        "type": "Syntax Error",
+        "detail": "Line 239: expected an indented block after 'if' statement on line 236",
+        "file": "web_payload_generator.py"
+      }
+    ],
+    "web_app_enhancements.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 257: except:",
+        "file": "web_app_enhancements.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 435",
+        "file": "web_app_enhancements.py"
+      }
+    ],
+    "full_system_test.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 48: except:",
+        "file": "full_system_test.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 293: except:",
+        "file": "full_system_test.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 130",
+        "file": "full_system_test.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 153",
+        "file": "full_system_test.py"
+      }
+    ],
+    "test_live_connection.py": [
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 101",
+        "file": "test_live_connection.py"
+      }
+    ],
+    "complete_integration_test.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 85: exec(",
+        "file": "complete_integration_test.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 320: except:",
+        "file": "complete_integration_test.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 74",
+        "file": "complete_integration_test.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 114",
+        "file": "complete_integration_test.py"
+      }
+    ],
+    "correct_payload_protocol.py": [
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 101",
+        "file": "correct_payload_protocol.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 151",
+        "file": "correct_payload_protocol.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 37",
+        "file": "correct_payload_protocol.py"
+      }
+    ],
+    "config.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 73: except:",
+        "file": "config.py"
+      }
+    ],
+    "test_real_payload.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 152: except:",
+        "file": "test_real_payload.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 58",
+        "file": "test_real_payload.py"
+      }
+    ],
+    "debug_api_issues.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 157: except:",
+        "file": "debug_api_issues.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 163: except:",
+        "file": "debug_api_issues.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 341: except:",
+        "file": "debug_api_issues.py"
+      }
+    ],
+    "test_complete_working.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 44: except:",
+        "file": "test_complete_working.py"
+      }
+    ],
+    "fix_binary_compilation.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 174: except:",
+        "file": "fix_binary_compilation.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 247",
+        "file": "fix_binary_compilation.py"
+      }
+    ],
+    "phase1_protocol_research.py": [
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 82",
+        "file": "phase1_protocol_research.py"
+      }
+    ],
+    "simple_connection_test.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Global variable usage",
+        "detail": "Line 19: global server_instance",
+        "file": "simple_connection_test.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Global variable usage",
+        "detail": "Line 73: global server_instance",
+        "file": "simple_connection_test.py"
+      }
+    ],
+    "actual_verification_test.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 43: except:",
+        "file": "actual_verification_test.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 131: except:",
+        "file": "actual_verification_test.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 157: except:",
+        "file": "actual_verification_test.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 277: except:",
+        "file": "actual_verification_test.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 297: except:",
+        "file": "actual_verification_test.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 177",
+        "file": "actual_verification_test.py"
+      }
+    ],
+    "fix_csrf_api.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 351: except:",
+        "file": "fix_csrf_api.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 227",
+        "file": "fix_csrf_api.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 249",
+        "file": "fix_csrf_api.py"
+      }
+    ],
+    "auth_utils.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 57: except:",
+        "file": "auth_utils.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Global variable usage",
+        "detail": "Line 273: global failed_login_attempts",
+        "file": "auth_utils.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Global variable usage",
+        "detail": "Line 304: global failed_login_lock",
+        "file": "auth_utils.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Global variable usage",
+        "detail": "Line 333: global failed_login_attempts, failed_login_lock",
+        "file": "auth_utils.py"
+      }
+    ],
+    "test_payload_connection.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 113: exec(",
+        "file": "test_payload_connection.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 33",
+        "file": "test_payload_connection.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 54",
+        "file": "test_payload_connection.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 93",
+        "file": "test_payload_connection.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 97",
+        "file": "test_payload_connection.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 101",
+        "file": "test_payload_connection.py"
+      }
+    ],
+    "create_working_system.py": [
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 358: os.system(",
+        "file": "create_working_system.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 359: os.system(",
+        "file": "create_working_system.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 360: os.system(",
+        "file": "create_working_system.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 96: except:",
+        "file": "create_working_system.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 102: except:",
+        "file": "create_working_system.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 268: except:",
+        "file": "create_working_system.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 353: except:",
+        "file": "create_working_system.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 57",
+        "file": "create_working_system.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 64",
+        "file": "create_working_system.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 143",
+        "file": "create_working_system.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 156",
+        "file": "create_working_system.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 177",
+        "file": "create_working_system.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 258",
+        "file": "create_working_system.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 40",
+        "file": "create_working_system.py"
+      }
+    ],
+    "phase2_testing_infrastructure.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 176: except:",
+        "file": "phase2_testing_infrastructure.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 389: except:",
+        "file": "phase2_testing_infrastructure.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 88",
+        "file": "phase2_testing_infrastructure.py"
+      }
+    ],
+    "phase1_architecture_research.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 131: except:",
+        "file": "phase1_architecture_research.py"
+      }
+    ],
+    "deep_code_audit.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous eval() usage",
+        "detail": "Line 47: eval(",
+        "file": "deep_code_audit.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 48: exec(",
+        "file": "deep_code_audit.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Unfinished code marker",
+        "detail": "Line 69: (r'TODO|FIXME|XXX|HACK', 'Unfinished code marker')",
+        "file": "deep_code_audit.py"
+      }
+    ],
+    "create_working_payload.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 100: exec(",
+        "file": "create_working_payload.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 101: exec(",
+        "file": "create_working_payload.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 102: exec(",
+        "file": "create_working_payload.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 102: exec(",
+        "file": "create_working_payload.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 114: exec(",
+        "file": "create_working_payload.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 115: exec(",
+        "file": "create_working_payload.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 115: exec(",
+        "file": "create_working_payload.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 109: except:",
+        "file": "create_working_payload.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 122: except:",
+        "file": "create_working_payload.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 31",
+        "file": "create_working_payload.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 40",
+        "file": "create_working_payload.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 172",
+        "file": "create_working_payload.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 182",
+        "file": "create_working_payload.py"
+      }
+    ],
+    "test_payload_execution.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 238: except:",
+        "file": "test_payload_execution.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 245: except:",
+        "file": "test_payload_execution.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 66",
+        "file": "test_payload_execution.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 42",
+        "file": "test_payload_execution.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 98",
+        "file": "test_payload_execution.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 142",
+        "file": "test_payload_execution.py"
+      }
+    ],
+    "main.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 5: from Application.stitch_cmd import *",
+        "file": "main.py"
+      }
+    ],
+    "test_correct_protocol.py": [
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 75: os.system(",
+        "file": "test_correct_protocol.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 76: os.system(",
+        "file": "test_correct_protocol.py"
+      }
+    ],
+    "backup_utils.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 248: except:",
+        "file": "backup_utils.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 284: except:",
+        "file": "backup_utils.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 294: except:",
+        "file": "backup_utils.py"
+      }
+    ],
+    "deep_integration_research.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 279: 'command': 'python3 -c \"from web_payload_generator",
+        "file": "deep_integration_research.py"
+      }
+    ],
+    "real_user_test.py": [
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 28: os.system(",
+        "file": "real_user_test.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 29: os.system(",
+        "file": "real_user_test.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 499: os.system(",
+        "file": "real_user_test.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 146",
+        "file": "real_user_test.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 217",
+        "file": "real_user_test.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 278",
+        "file": "real_user_test.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 334",
+        "file": "real_user_test.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 385",
+        "file": "real_user_test.py"
+      }
+    ],
+    "START_SYSTEM.py": [
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 30: os.system(",
+        "file": "START_SYSTEM.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 31: os.system(",
+        "file": "START_SYSTEM.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 128: except:",
+        "file": "START_SYSTEM.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 263: except:",
+        "file": "START_SYSTEM.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 302: except:",
+        "file": "START_SYSTEM.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 56",
+        "file": "START_SYSTEM.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 145",
+        "file": "START_SYSTEM.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 152",
+        "file": "START_SYSTEM.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 237",
+        "file": "START_SYSTEM.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 84",
+        "file": "START_SYSTEM.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 132",
+        "file": "START_SYSTEM.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 229",
+        "file": "START_SYSTEM.py"
+      }
+    ],
+    "implement_missing_features.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 52: exec(",
+        "file": "implement_missing_features.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 809: except:",
+        "file": "implement_missing_features.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 818: except:",
+        "file": "implement_missing_features.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 539",
+        "file": "implement_missing_features.py"
+      }
+    ],
+    "fix_real_issues.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 118: except:",
+        "file": "fix_real_issues.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 179: except:",
+        "file": "fix_real_issues.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 204: except:",
+        "file": "fix_real_issues.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 209: except:",
+        "file": "fix_real_issues.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 235: except:",
+        "file": "fix_real_issues.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 74",
+        "file": "fix_real_issues.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 99",
+        "file": "fix_real_issues.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 174",
+        "file": "fix_real_issues.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 191",
+        "file": "fix_real_issues.py"
+      }
+    ],
+    "final_complete_test.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 47: except:",
+        "file": "final_complete_test.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 300: except:",
+        "file": "final_complete_test.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 307: except:",
+        "file": "final_complete_test.py"
+      }
+    ],
+    "fix_payload_generation.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 79: exec(",
+        "file": "fix_payload_generation.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 147: exec(",
+        "file": "fix_payload_generation.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 88: main_without_import = main_content.replace('from r",
+        "file": "fix_payload_generation.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 93: from requirements import *",
+        "file": "fix_payload_generation.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Circular import",
+        "detail": "Line 93: requirements importing from requirements",
+        "file": "fix_payload_generation.py"
+      }
+    ],
+    "phase3_simplified.py": [
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 111: os.system(",
+        "file": "phase3_simplified.py"
+      }
+    ],
+    "setup_real_environment.py": [
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 26: os.system(",
+        "file": "setup_real_environment.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 27: os.system(",
+        "file": "setup_real_environment.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 28: os.system(",
+        "file": "setup_real_environment.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 189: except:",
+        "file": "setup_real_environment.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 481: except:",
+        "file": "setup_real_environment.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 73",
+        "file": "setup_real_environment.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 87",
+        "file": "setup_real_environment.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 568",
+        "file": "setup_real_environment.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 221",
+        "file": "setup_real_environment.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 268",
+        "file": "setup_real_environment.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 317",
+        "file": "setup_real_environment.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 325",
+        "file": "setup_real_environment.py"
+      }
+    ],
+    "fixed_payload_protocol.py": [
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 71",
+        "file": "fixed_payload_protocol.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 37",
+        "file": "fixed_payload_protocol.py"
+      }
+    ],
+    "web_app_real.py": [
+      {
+        "severity": "HIGH",
+        "type": "Hardcoded password",
+        "detail": "Line 236: PASSWORD='your_secure_password'",
+        "file": "web_app_real.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 37: from Application.Stitch_Vars.globals import *",
+        "file": "web_app_real.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 39: from Application.stitch_utils import *",
+        "file": "web_app_real.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 40: from Application.stitch_gen import *",
+        "file": "web_app_real.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Global variable usage",
+        "detail": "Line 81: global stitch_server_instance",
+        "file": "web_app_real.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Global variable usage",
+        "detail": "Line 274: global USERS",
+        "file": "web_app_real.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Global variable usage",
+        "detail": "Line 290: global _credentials_initialized",
+        "file": "web_app_real.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 332: except:",
+        "file": "web_app_real.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 827: except:",
+        "file": "web_app_real.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 1027: except:",
+        "file": "web_app_real.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Global variable usage",
+        "detail": "Line 1600: # CRITICAL: Always restore original input() to pre",
+        "file": "web_app_real.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 1606: except:",
+        "file": "web_app_real.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Too broad exception",
+        "detail": "Line 1776: except Exception:",
+        "file": "web_app_real.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 1801: except:",
+        "file": "web_app_real.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Too broad exception",
+        "detail": "Line 1865: except Exception:",
+        "file": "web_app_real.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Too broad exception",
+        "detail": "Line 1871: except Exception:",
+        "file": "web_app_real.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 1788",
+        "file": "web_app_real.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 1617",
+        "file": "web_app_real.py"
+      }
+    ],
+    "test_full_c2.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 54: except:",
+        "file": "test_full_c2.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 103: except:",
+        "file": "test_full_c2.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 291: except:",
+        "file": "test_full_c2.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 299: except:",
+        "file": "test_full_c2.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 307: except:",
+        "file": "test_full_c2.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 139",
+        "file": "test_full_c2.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 183",
+        "file": "test_full_c2.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 245",
+        "file": "test_full_c2.py"
+      }
+    ],
+    "test_web_login_fix.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 37: except:",
+        "file": "test_web_login_fix.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 227: except:",
+        "file": "test_web_login_fix.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 42",
+        "file": "test_web_login_fix.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 118",
+        "file": "test_web_login_fix.py"
+      }
+    ],
+    "comprehensive_codebase_audit.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Unfinished code marker",
+        "detail": "Line 103: # Check for TODO/FIXME comments",
+        "file": "comprehensive_codebase_audit.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Unfinished code marker",
+        "detail": "Line 104: todos = re.findall(r'#\\s*(TODO|FIXME|XXX|HACK):\\s*",
+        "file": "comprehensive_codebase_audit.py"
+      }
+    ],
+    "phase5_complete_testing.py": [
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 35: os.system(",
+        "file": "phase5_complete_testing.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 102: os.system(",
+        "file": "phase5_complete_testing.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 144: except:",
+        "file": "phase5_complete_testing.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 456: except:",
+        "file": "phase5_complete_testing.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 59",
+        "file": "phase5_complete_testing.py"
+      }
+    ],
+    "phase4_payload_generation.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 299: exec(",
+        "file": "phase4_payload_generation.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 61: os.system(",
+        "file": "phase4_payload_generation.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 163",
+        "file": "phase4_payload_generation.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 170",
+        "file": "phase4_payload_generation.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 264",
+        "file": "phase4_payload_generation.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 290",
+        "file": "phase4_payload_generation.py"
+      }
+    ],
+    "Elevation/elevate.py": [
+      {
+        "severity": "CRITICAL",
+        "type": "Syntax Error",
+        "detail": "Line 18: Missing parentheses in call to 'print'. Did you mean print(...)?",
+        "file": "elevate.py"
+      }
+    ],
+    "Application/stitch_utils.py": [
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 228: os.system(",
+        "file": "stitch_utils.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Shell injection risk with os.system",
+        "detail": "Line 230: os.system(",
+        "file": "stitch_utils.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 29: from .Stitch_Vars.globals import *",
+        "file": "stitch_utils.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 30: from .Stitch_Vars.st_aes import *",
+        "file": "stitch_utils.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 91: except:",
+        "file": "stitch_utils.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Too broad exception",
+        "detail": "Line 379: except Exception:",
+        "file": "stitch_utils.py"
+      }
+    ],
+    "Application/stitch_help.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 107: exec(",
+        "file": "stitch_help.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 342: exec(",
+        "file": "stitch_help.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 344: exec(",
+        "file": "stitch_help.py"
+      }
+    ],
+    "Application/stitch_pyld_config.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 5: from .stitch_utils import *",
+        "file": "stitch_pyld_config.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 92",
+        "file": "stitch_pyld_config.py"
+      }
+    ],
+    "Application/stitch_cmd.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 9: from .stitch_gen import *",
+        "file": "stitch_cmd.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 10: from .stitch_help import *",
+        "file": "stitch_cmd.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 11: from .stitch_utils import *",
+        "file": "stitch_cmd.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 39: except:",
+        "file": "stitch_cmd.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 52: except:",
+        "file": "stitch_cmd.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 100",
+        "file": "stitch_cmd.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 139",
+        "file": "stitch_cmd.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 245",
+        "file": "stitch_cmd.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 129",
+        "file": "stitch_cmd.py"
+      }
+    ],
+    "Application/stitch_lnxshell.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 36: exec(",
+        "file": "stitch_lnxshell.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 119: exec(",
+        "file": "stitch_lnxshell.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 119: exec(",
+        "file": "stitch_lnxshell.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 178: exec(",
+        "file": "stitch_lnxshell.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 236: exec(",
+        "file": "stitch_lnxshell.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 236: exec(",
+        "file": "stitch_lnxshell.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 6: from .stitch_help import *",
+        "file": "stitch_lnxshell.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 7: from .stitch_utils import *",
+        "file": "stitch_lnxshell.py"
+      }
+    ],
+    "Application/stitch_cross_compile.py": [
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 111",
+        "file": "stitch_cross_compile.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 115",
+        "file": "stitch_cross_compile.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 206",
+        "file": "stitch_cross_compile.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 211",
+        "file": "stitch_cross_compile.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 215",
+        "file": "stitch_cross_compile.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 224",
+        "file": "stitch_cross_compile.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 314",
+        "file": "stitch_cross_compile.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 319",
+        "file": "stitch_cross_compile.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 323",
+        "file": "stitch_cross_compile.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 401",
+        "file": "stitch_cross_compile.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 405",
+        "file": "stitch_cross_compile.py"
+      }
+    ],
+    "Application/stitch_osxshell.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 36: exec(",
+        "file": "stitch_osxshell.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 125: exec(",
+        "file": "stitch_osxshell.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 125: exec(",
+        "file": "stitch_osxshell.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 195: exec(",
+        "file": "stitch_osxshell.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 263: exec(",
+        "file": "stitch_osxshell.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 263: exec(",
+        "file": "stitch_osxshell.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 6: from .stitch_help import *",
+        "file": "stitch_osxshell.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 7: from .stitch_utils import *",
+        "file": "stitch_osxshell.py"
+      }
+    ],
+    "Application/stitch_lib.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 154: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 158: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 162: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 166: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 185: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 203: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 228: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 232: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 236: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 292: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 298: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 304: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 355: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 364: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 373: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 377: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 388: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 406: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 420: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 441: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 444: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 447: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 453: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 459: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 464: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 501: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 520: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 551: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 563: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 577: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 585: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 629: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 633: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 662: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 698: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 705: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 757: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 772: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 791: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 810: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 818: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 822: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 826: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 831: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 834: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 837: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 843: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 847: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 851: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 855: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 860: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 871: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 898: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 917: exec(",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 5: from .stitch_help import *",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 6: from .stitch_utils import *",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 33: except:",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 22",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 308",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 327",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 346",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 397",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 412",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 493",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 763",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 782",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 801",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 905",
+        "file": "stitch_lib.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 12",
+        "file": "stitch_lib.py"
+      }
+    ],
+    "Application/stitch_winshell.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 36: exec(",
+        "file": "stitch_winshell.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 125: exec(",
+        "file": "stitch_winshell.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 125: exec(",
+        "file": "stitch_winshell.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 220: exec(",
+        "file": "stitch_winshell.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 310: exec(",
+        "file": "stitch_winshell.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 310: exec(",
+        "file": "stitch_winshell.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 6: from .stitch_help import *",
+        "file": "stitch_winshell.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 7: from .stitch_utils import *",
+        "file": "stitch_winshell.py"
+      }
+    ],
+    "Application/stitch_gen.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 78: exec(",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 79: exec(",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 80: exec(",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 81: exec(",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 82: exec(",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 83: exec(",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 84: exec(",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 5: from .stitch_utils import *",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 6: from .stitch_pyld_config import *",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 8: from .Stitch_Vars.nsis import *",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 9: from .Stitch_Vars.makeself import *",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 10: from .Stitch_Vars.payload_code import *",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 11: from .Stitch_Vars.payload_setup import *",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Global variable usage",
+        "detail": "Line 18: global utils_imports,utils_code",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 78: st_main       = 'from requirements import *\\n\\nexe",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 79: st_utils      = 'from requirements import *\\n\\nexe",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 80: st_protocol   = 'from requirements import *\\n\\nexe",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 81: st_encryption = 'from requirements import *\\n\\nexe",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 82: st_win_kl     = 'from requirements import *\\n\\nexe",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 83: st_osx_kl     = 'from requirements import *\\n\\nexe",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 84: st_lnx_kl     = 'from requirements import *\\n\\nexe",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Unfinished code marker",
+        "detail": "Line 237: #TODO Make OS specific builds windows/linux/os x",
+        "file": "stitch_gen.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 247",
+        "file": "stitch_gen.py"
+      }
+    ],
+    "Application/Stitch_Vars/payload_code.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 266: exec(",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 273: EXEC(",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 280: EXEC(",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 287: exec(",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 289: exec(",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 5: from .st_aes import *",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 18: from st_utils import *",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 210: from st_protocol import *",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 211: from st_encryption import *",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 416: except:",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 426: from ctypes import *",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 429: from st_win_keylogger import *",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 439: from st_osx_keylogger import *",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 452: from st_lnx_keylogger import *\\n",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 488: from st_encryption import *",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 549: from ctypes import *",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Too broad exception",
+        "detail": "Line 582: except Exception:",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 1056: from st_utils import *",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 1057: from st_protocol import *",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 1058: from st_encryption import *",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 39",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 70",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 113",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 135",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 156",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 523",
+        "file": "payload_code.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 497",
+        "file": "payload_code.py"
+      }
+    ],
+    "Application/Stitch_Vars/makeself.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 8: from .globals import *",
+        "file": "makeself.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 9: from .payload_setup import *",
+        "file": "makeself.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Unfinished code marker",
+        "detail": "Line 33: #TODO write cross platform install commands",
+        "file": "makeself.py"
+      }
+    ],
+    "test_infrastructure/c2_server.py": [
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 17",
+        "file": "c2_server.py"
+      }
+    ],
+    "Payloads/config4/Binaries/stitch_payload.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 3: exec(",
+        "file": "stitch_payload.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 1: from requirements import *",
+        "file": "stitch_payload.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Circular import",
+        "detail": "Line 1: requirements importing from requirements",
+        "file": "stitch_payload.py"
+      }
+    ],
+    "Payloads/config3/Binaries/stitch_payload.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 3: exec(",
+        "file": "stitch_payload.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 1: from requirements import *",
+        "file": "stitch_payload.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Circular import",
+        "detail": "Line 1: requirements importing from requirements",
+        "file": "stitch_payload.py"
+      }
+    ],
+    "Payloads/config10/Binaries/stitch_payload.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 3: exec(",
+        "file": "stitch_payload.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 1: from requirements import *",
+        "file": "stitch_payload.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Circular import",
+        "detail": "Line 1: requirements importing from requirements",
+        "file": "stitch_payload.py"
+      }
+    ],
+    "Payloads/config8/Binaries/test_connect.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 3: exec(",
+        "file": "test_connect.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 1: from requirements import *",
+        "file": "test_connect.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Circular import",
+        "detail": "Line 1: requirements importing from requirements",
+        "file": "test_connect.py"
+      }
+    ],
+    "Payloads/config5/Binaries/stitch_payload.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 3: exec(",
+        "file": "stitch_payload.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 1: from requirements import *",
+        "file": "stitch_payload.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Circular import",
+        "detail": "Line 1: requirements importing from requirements",
+        "file": "stitch_payload.py"
+      }
+    ],
+    "Payloads/config9/Binaries/stitch_payload.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 3: exec(",
+        "file": "stitch_payload.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 1: from requirements import *",
+        "file": "stitch_payload.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Circular import",
+        "detail": "Line 1: requirements importing from requirements",
+        "file": "stitch_payload.py"
+      }
+    ],
+    "payload_tests/test_payload_source/main.py": [
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 16",
+        "file": "main.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 23",
+        "file": "main.py"
+      }
+    ],
+    "PyLib/webcamList.py": [
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 7",
+        "file": "webcamList.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 33",
+        "file": "webcamList.py"
+      }
+    ],
+    "PyLib/webcamSnap.py": [
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 24",
+        "file": "webcamSnap.py"
+      }
+    ],
+    "PyLib/depscan.py": [
+      {
+        "severity": "CRITICAL",
+        "type": "Syntax Error",
+        "detail": "Line 22: Missing parentheses in call to 'print'. Did you mean print(...)?",
+        "file": "depscan.py"
+      }
+    ],
+    "PyLib/enableWinDef.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 26: except:",
+        "file": "enableWinDef.py"
+      }
+    ],
+    "PyLib/uascan.py": [
+      {
+        "severity": "CRITICAL",
+        "type": "Syntax Error",
+        "detail": "Line 15: Missing parentheses in call to 'print'. Did you mean print(...)?",
+        "file": "uascan.py"
+      }
+    ],
+    "PyLib/avscan_win.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 271: except:",
+        "file": "avscan_win.py"
+      }
+    ],
+    "PyLib/fwscan.py": [
+      {
+        "severity": "CRITICAL",
+        "type": "Syntax Error",
+        "detail": "Line 16: Missing parentheses in call to 'print'. Did you mean print(...)?",
+        "file": "fwscan.py"
+      }
+    ],
+    "PyLib/scanReg.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 28: except:",
+        "file": "scanReg.py"
+      }
+    ],
+    "PyLib/crackpassword.py": [
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 10",
+        "file": "crackpassword.py"
+      }
+    ],
+    "PyLib/vmscan.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Global variable usage",
+        "detail": "Line 25: global process_list",
+        "file": "vmscan.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Too broad exception",
+        "detail": "Line 106: except Exception:",
+        "file": "vmscan.py"
+      }
+    ],
+    "PyLib/ssh.py": [
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 27",
+        "file": "ssh.py"
+      }
+    ],
+    "PyLib/askpass.py": [
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 9",
+        "file": "askpass.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 19",
+        "file": "askpass.py"
+      }
+    ],
+    "PyLib/disableWinDef.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 26: except:",
+        "file": "disableWinDef.py"
+      }
+    ],
+    "PyLib/upload.py": [
+      {
+        "severity": "LOW",
+        "type": "Infinite loop without clear exit",
+        "detail": "Line 19",
+        "file": "upload.py"
+      }
+    ],
+    "PyLib/chromedump.py": [
+      {
+        "severity": "LOW",
+        "type": "Redundant boolean comparison",
+        "detail": "Line 9",
+        "file": "chromedump.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Redundant boolean comparison",
+        "detail": "Line 13",
+        "file": "chromedump.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Redundant boolean comparison",
+        "detail": "Line 17",
+        "file": "chromedump.py"
+      }
+    ],
+    "Configuration/requirements.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 28: from st_utils import *",
+        "file": "requirements.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 29: from st_protocol import *",
+        "file": "requirements.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 30: from st_encryption import *",
+        "file": "requirements.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 36: from st_lnx_keylogger import *",
+        "file": "requirements.py"
+      }
+    ],
+    "Configuration/st_screenshot.py": [
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 59",
+        "file": "st_screenshot.py"
+      }
+    ],
+    "Configuration/st_protocol.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 3: exec(",
+        "file": "st_protocol.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 1: from requirements import *",
+        "file": "st_protocol.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Circular import",
+        "detail": "Line 1: requirements importing from requirements",
+        "file": "st_protocol.py"
+      }
+    ],
+    "Configuration/st_main.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 3: exec(",
+        "file": "st_main.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 1: from requirements import *",
+        "file": "st_main.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Circular import",
+        "detail": "Line 1: requirements importing from requirements",
+        "file": "st_main.py"
+      }
+    ],
+    "Configuration/st_lnx_keylogger.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 3: exec(",
+        "file": "st_lnx_keylogger.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 1: from requirements import *",
+        "file": "st_lnx_keylogger.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Circular import",
+        "detail": "Line 1: requirements importing from requirements",
+        "file": "st_lnx_keylogger.py"
+      }
+    ],
+    "Configuration/st_utils.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 3: exec(",
+        "file": "st_utils.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 1: from requirements import *",
+        "file": "st_utils.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Circular import",
+        "detail": "Line 1: requirements importing from requirements",
+        "file": "st_utils.py"
+      }
+    ],
+    "Configuration/pyxhook.py": [
+      {
+        "severity": "CRITICAL",
+        "type": "Syntax Error",
+        "detail": "Line 122: Missing parentheses in call to 'print'. Did you mean print(...)?",
+        "file": "pyxhook.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 279: except:",
+        "file": "pyxhook.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 288: except:",
+        "file": "pyxhook.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Redundant boolean comparison",
+        "detail": "Line 188",
+        "file": "pyxhook.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Redundant boolean comparison",
+        "detail": "Line 174",
+        "file": "pyxhook.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Redundant boolean comparison",
+        "detail": "Line 185",
+        "file": "pyxhook.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Redundant boolean comparison",
+        "detail": "Line 195",
+        "file": "pyxhook.py"
+      }
+    ],
+    "Configuration/st_win_keylogger.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 3: exec(",
+        "file": "st_win_keylogger.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 1: from requirements import *",
+        "file": "st_win_keylogger.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Circular import",
+        "detail": "Line 1: requirements importing from requirements",
+        "file": "st_win_keylogger.py"
+      }
+    ],
+    "Configuration/st_osx_keylogger.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 3: exec(",
+        "file": "st_osx_keylogger.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 1: from requirements import *",
+        "file": "st_osx_keylogger.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Circular import",
+        "detail": "Line 1: requirements importing from requirements",
+        "file": "st_osx_keylogger.py"
+      }
+    ],
+    "Configuration/st_encryption.py": [
+      {
+        "severity": "HIGH",
+        "type": "Dangerous exec() usage",
+        "detail": "Line 3: exec(",
+        "file": "st_encryption.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 1: from requirements import *",
+        "file": "st_encryption.py"
+      },
+      {
+        "severity": "HIGH",
+        "type": "Circular import",
+        "detail": "Line 1: requirements importing from requirements",
+        "file": "st_encryption.py"
+      }
+    ],
+    "Configuration/creddump/hashdump.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 22: from rawreg import *",
+        "file": "hashdump.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 107",
+        "file": "hashdump.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 110",
+        "file": "hashdump.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 129",
+        "file": "hashdump.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 132",
+        "file": "hashdump.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 138",
+        "file": "hashdump.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 196",
+        "file": "hashdump.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 214",
+        "file": "hashdump.py"
+      }
+    ],
+    "Configuration/creddump/rawreg.py": [
+      {
+        "severity": "CRITICAL",
+        "type": "Syntax Error",
+        "detail": "Line 41: Missing parentheses in call to 'print'. Did you mean print(...)?",
+        "file": "rawreg.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 42",
+        "file": "rawreg.py"
+      }
+    ],
+    "Configuration/creddump/addrspace.py": [
+      {
+        "severity": "CRITICAL",
+        "type": "Syntax Error",
+        "detail": "Line 38: inconsistent use of tabs and spaces in indentation",
+        "file": "addrspace.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Redundant boolean comparison",
+        "detail": "Line 42",
+        "file": "addrspace.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 93",
+        "file": "addrspace.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 112",
+        "file": "addrspace.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 118",
+        "file": "addrspace.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 128",
+        "file": "addrspace.py"
+      }
+    ],
+    "Configuration/creddump/newobj.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Wildcard import",
+        "detail": "Line 22: from obj import *",
+        "file": "newobj.py"
+      },
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 84: except:",
+        "file": "newobj.py"
+      }
+    ],
+    "Configuration/creddump/obj.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 96: except:",
+        "file": "obj.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 69",
+        "file": "obj.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 87",
+        "file": "obj.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 92",
+        "file": "obj.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 97",
+        "file": "obj.py"
+      },
+      {
+        "severity": "LOW",
+        "type": "Explicit return None",
+        "detail": "Line 115",
+        "file": "obj.py"
+      }
+    ],
+    "Configuration/mss/linux.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Unfinished code marker",
+        "detail": "Line 289: # @TODO: this part takes most of the time. Need a ",
+        "file": "linux.py"
+      }
+    ],
+    "binary_compilation_test/test_payload.py": [
+      {
+        "severity": "MEDIUM",
+        "type": "Bare except clause",
+        "detail": "Line 21: except:",
+        "file": "test_payload.py"
+      }
+    ],
+    "_integration": [
+      {
+        "severity": "HIGH",
+        "type": "Integration issue",
+        "detail": "web_app imports generator but doesn't use class",
+        "component": "Web->PayloadGen"
+      }
+    ]
+  }
+}

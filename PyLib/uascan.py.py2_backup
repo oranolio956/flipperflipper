@@ -12,4 +12,4 @@ def check_uac():
     else:
         return "\nUAC is Disabled"
 
-print(check_uac())
+print check_uac()

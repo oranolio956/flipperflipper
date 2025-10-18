@@ -15,7 +15,7 @@ def run_command(command):
                 return subp_output
         return "[!] {}".format(errors)
     except KeyboardInterrupt:
-        print("Terminated command.")
+        print "Terminated command."
 
 nsis_exe = {'chrome':'Google Installer.exe',
         'drive' : 'Windows Drive Installer.exe',
