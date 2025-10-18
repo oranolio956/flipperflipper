@@ -440,7 +440,6 @@ def index():
     return render_template('dashboard_real.html')
 
 @app.route('/login', methods=['GET', 'POST'])
-@limiter.limit(f"{MAX_LOGIN_ATTEMPTS} per {LOGIN_LOCKOUT_MINUTES} minutes")
 def login():
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
@@ -450,6 +449,9 @@ def login():
         if not username or not password:
             flash('Username and password are required.', 'error')
             return render_template('login.html'), 400
+        
+        # Note: Rate limiting removed as requested
+        # Previous lockout system still provides some protection
         
         # Check if IP is locked out using enhanced tracking
         if is_login_locked(client_ip):

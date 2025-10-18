@@ -111,20 +111,68 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeCSPSafeHandlers();
 });
 
-// WebSocket
+// WebSocket with improved connection handling
 function initializeWebSocket() {
-    socket = io();
+    // Disconnect existing socket if any
+    if (socket) {
+        socket.disconnect();
+    }
     
-    socket.on('connect', () => {
-        document.getElementById('serverStatus').classList.add('online');
-        document.getElementById('statusText').textContent = 'Connected';
-        showToast('Connected to server', 'success');
+    socket = io({
+        // Improved connection options
+        transports: ['websocket', 'polling'],  // Fallback to polling if websocket fails
+        upgrade: true,
+        rememberUpgrade: true,
+        timeout: 20000,  // 20 second timeout
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        maxReconnectionAttempts: 5,
+        randomizationFactor: 0.5
     });
     
-    socket.on('disconnect', () => {
+    socket.on('connect', () => {
+        console.log('WebSocket connected successfully');
+        document.getElementById('serverStatus').classList.add('online');
+        document.getElementById('statusText').textContent = 'Connected';
+        // Only show connection toast on reconnection, not initial connection
+        if (socket.recovered) {
+            showToast('Reconnected to server', 'success');
+        }
+        
+        // Clear any previous disconnection warnings
+        clearDisconnectionWarnings();
+    });
+    
+    socket.on('disconnect', (reason) => {
+        console.log('WebSocket disconnected:', reason);
         document.getElementById('serverStatus').classList.remove('online');
         document.getElementById('statusText').textContent = 'Disconnected';
-        showToast('Disconnected from server', 'error');
+        
+        // Only show disconnect toast for unexpected disconnections
+        if (reason !== 'io client disconnect' && reason !== 'io server disconnect') {
+            showToast('Connection lost - attempting reconnection...', 'warning', 5000);
+        }
+    });
+    
+    socket.on('connect_error', (error) => {
+        console.error('WebSocket connection error:', error);
+        // Don't show error toast for every connection attempt
+    });
+    
+    socket.on('reconnect', (attemptNumber) => {
+        console.log('WebSocket reconnected after', attemptNumber, 'attempts');
+        showToast('Connection restored', 'success');
+    });
+    
+    socket.on('reconnect_error', (error) => {
+        console.error('WebSocket reconnection failed:', error);
+    });
+    
+    socket.on('reconnect_failed', () => {
+        console.error('WebSocket failed to reconnect');
+        showToast('Unable to reconnect to server', 'error', 10000);
     });
     
     socket.on('debug_log', (log) => {
@@ -142,6 +190,16 @@ function initializeWebSocket() {
     socket.on('connection_update', (data) => {
         document.getElementById('activeCount').textContent = data.active_connections;
         loadConnections(); // Refresh connections
+    });
+}
+
+function clearDisconnectionWarnings() {
+    // Remove any existing disconnect warnings
+    const toasts = document.querySelectorAll('.toast.warning, .toast.error');
+    toasts.forEach(toast => {
+        if (toast.textContent.includes('Disconnected') || toast.textContent.includes('Connection lost')) {
+            toast.remove();
+        }
     });
 }
 
@@ -253,22 +311,91 @@ async function loadServerStatus() {
     if (loadingIndicator) loadingIndicator.classList.add('show');
     
     try {
-        const response = await fetch('/api/server/status');
-        const status = await response.json();
+        const response = await fetch('/api/server/status', {
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
         
-        document.getElementById('serverListening').textContent = 
-            status.listening ? '✅ Listening' : '⚠️ Not Listening';
-        document.getElementById('serverPort').textContent = status.port;
-        document.getElementById('activeCount').textContent = status.active_connections;
+        if (response.ok) {
+            const status = await response.json();
+            
+            document.getElementById('serverListening').textContent = 
+                status.listening ? '✅ Listening' : '⚠️ Not Listening';
+            document.getElementById('serverPort').textContent = status.port;
+            document.getElementById('activeCount').textContent = status.active_connections;
+        } else {
+            // Handle API error gracefully
+            document.getElementById('serverListening').textContent = '❌ Error';
+            document.getElementById('serverPort').textContent = 'Unknown';
+            document.getElementById('activeCount').textContent = '0';
+            console.error('Failed to load server status:', response.status);
+        }
     } catch (error) {
-        showToast('Error loading server status', 'error');
+        // Handle network error gracefully
+        document.getElementById('serverListening').textContent = '🔌 Offline';
+        document.getElementById('serverPort').textContent = 'N/A';
+        document.getElementById('activeCount').textContent = '0';
+        console.error('Server status network error:', error);
     } finally {
-        if (loadingIndicator) loadingIndicator.classList.remove('show');
+        // Always hide loading indicator
+        if (loadingIndicator) {
+            setTimeout(() => {
+                loadingIndicator.classList.remove('show');
+            }, 100);
+        }
     }
 }
 
 async function loadConnections() {
     const loadingIndicator = document.getElementById('connectionsLoadingIndicator');
+    const connectionsGrid = document.getElementById('connectionsGrid');
+    const connectionsContainer = document.getElementById('connectionsContainer');
+    
+    if (loadingIndicator) loadingIndicator.classList.add('show');
+    
+    try {
+        const response = await fetch('/api/connections', {
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+        
+        if (response.ok) {
+            const connections = await response.json();
+            connectionsPagination.allData = connections;
+            connectionsPagination.totalItems = connections.length;
+            
+            displayConnections();
+            
+            // Update connection count
+            const activeConnections = connections.filter(conn => conn.status === 'online').length;
+            const activeCountElement = document.getElementById('activeCount');
+            if (activeCountElement) {
+                activeCountElement.textContent = activeConnections;
+            }
+        } else {
+            // Handle API error
+            console.error('Failed to load connections:', response.status);
+            if (connectionsGrid) {
+                connectionsGrid.innerHTML = '<div class="empty-state">❌ Failed to load connections</div>';
+            }
+        }
+    } catch (error) {
+        // Handle network error
+        console.error('Connections network error:', error);
+        if (connectionsGrid) {
+            connectionsGrid.innerHTML = '<div class="empty-state">🔌 Connection error - check network</div>';
+        }
+    } finally {
+        // Always hide loading indicator
+        if (loadingIndicator) {
+            setTimeout(() => {
+                loadingIndicator.classList.remove('show');
+            }, 100);
+        }
+    }
+}
     if (loadingIndicator) loadingIndicator.classList.add('show');
     
     try {
@@ -745,7 +872,48 @@ function fallbackCopyToClipboard(text) {
 
 async function loadFiles() {
     const loadingIndicator = document.getElementById('filesLoadingIndicator');
+    const filesGrid = document.getElementById('filesGrid');
+    
     if (loadingIndicator) loadingIndicator.classList.add('show');
+    
+    try {
+        const response = await fetch('/api/files/downloads', {
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+        
+        if (response.ok) {
+            const files = await response.json();
+            
+            // Store all data for pagination
+            filesPagination.allData = files;
+            filesPagination.totalItems = files.length;
+            
+            // Display files
+            displayFiles();
+        } else {
+            // Handle API error
+            console.error('Failed to load files:', response.status);
+            if (filesGrid) {
+                filesGrid.innerHTML = '<div class="empty-state">❌ Failed to load files</div>';
+            }
+        }
+    } catch (error) {
+        // Handle network error
+        console.error('Files network error:', error);
+        if (filesGrid) {
+            filesGrid.innerHTML = '<div class="empty-state">🔌 Connection error - check network</div>';
+        }
+    } finally {
+        // Always hide loading indicator
+        if (loadingIndicator) {
+            setTimeout(() => {
+                loadingIndicator.classList.remove('show');
+            }, 100);
+        }
+    }
+}
     
     try {
         const response = await fetch('/api/files/downloads');
