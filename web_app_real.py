@@ -124,8 +124,8 @@ app.config['WTF_CSRF_SSL_STRICT'] = Config.WTF_CSRF_SSL_STRICT
 csrf = CSRFProtect(app)
 
 # Print configuration status
-    print("=" * 75)
-    print(f"Oranolio Web Interface {Config.APP_VERSION} - Enhanced Security Edition")
+print("=" * 75)
+print(f"Oranolio Web Interface {Config.APP_VERSION} - Enhanced Security Edition")
 print("=" * 75)
 print(f"✓ Persistent secret key: {'Loaded from file' if Config.SECRET_KEY_FILE.exists() else 'Generated'}")
 print(f"✓ HTTPS: {'Enabled' if Config.ENABLE_HTTPS else 'Disabled'}")
