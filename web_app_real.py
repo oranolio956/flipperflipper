@@ -142,6 +142,7 @@ print(f"✓ API Keys: {'Enabled' if Config.ENABLE_API_KEYS else 'Disabled'}")
 print(f"✓ Metrics: {'Enabled' if Config.ENABLE_METRICS else 'Disabled'}")
 print(f"✓ Failed Login Alerts: {'Enabled' if Config.ENABLE_FAILED_LOGIN_ALERTS else 'Disabled'}")
 print(f"✓ WebSocket Update Interval: {Config.WEBSOCKET_UPDATE_INTERVAL} seconds")
+print(f"✓ SAFE_DEMO Mode: {'Enabled' if getattr(Config, 'SAFE_DEMO', False) else 'Disabled'}")
 print("=" * 75)
 
 # Rate Limiting Configuration
@@ -521,6 +522,24 @@ def get_connections():
     """Get REAL-TIME connections from Stitch server"""
     try:
         metrics_collector.increment_counter('api_requests')
+        # Demo mode: return simulated connections without touching server
+        if getattr(Config, 'SAFE_DEMO', False):
+            now = datetime.now().isoformat()
+            demo_connections = [
+                {
+                    'id': 'demo-127.0.0.1',
+                    'target': '127.0.0.1',
+                    'port': '4040',
+                    'os': 'DemoOS',
+                    'hostname': 'demo-host',
+                    'user': 'demo',
+                    'status': 'online',
+                    'connected_at': now,
+                    'last_seen': now,
+                }
+            ]
+            log_debug(f"[DEMO] Returning {len(demo_connections)} simulated connection(s)", "INFO", "Connection")
+            return jsonify(demo_connections)
         server = get_stitch_server()
         connections = []
         
@@ -619,6 +638,13 @@ def server_status():
     """Get Stitch server status"""
     try:
         metrics_collector.increment_counter('api_requests')
+        if getattr(Config, 'SAFE_DEMO', False):
+            return jsonify({
+                'listening': False,
+                'port': 'Disabled (SAFE_DEMO)',
+                'active_connections': 1,
+                'server_running': False
+            })
         server = get_stitch_server()
         status = {
             'listening': server.listen_port is not None,
@@ -653,6 +679,14 @@ def execute_command():
     try:
         metrics_collector.increment_counter('api_requests')
         data = request.json
+        if getattr(Config, 'SAFE_DEMO', False):
+            command = (data or {}).get('command', '')
+            return jsonify({
+                'success': True,
+                'output': f"[SAFE_DEMO] Simulated execution. Command '{sanitize_for_log(command, 'command')}' not actually run.",
+                'command': command,
+                'timestamp': datetime.now().isoformat()
+            })
         conn_id = data.get('connection_id')
         command = data.get('command')
         parameters = data.get('parameters', None)  # Optional parameters for interactive commands
@@ -800,6 +834,31 @@ def generate_payload():
     try:
         metrics_collector.increment_counter('api_requests')
         data = request.json or {}
+        # Block real payload generation in demo mode
+        if getattr(Config, 'SAFE_DEMO', False):
+            # Create a harmless demo file to demonstrate download flow
+            demo_dir = str(Config.TEMP_DIR)
+            os.makedirs(demo_dir, exist_ok=True)
+            payload_filename = f"demo_payload_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+            payload_path = os.path.join(demo_dir, payload_filename)
+            with open(payload_path, 'w') as f:
+                f.write("This is a SAFE_DEMO placeholder file. No executable content.\n")
+
+            session['payload_path'] = payload_path
+            session['payload_filename'] = payload_filename
+            session['payload_type'] = 'text'
+            session['payload_platform'] = 'none'
+
+            log_debug(f"[DEMO] Generated demo payload file: {payload_filename}", "INFO", "Payload")
+            return jsonify({
+                'success': True,
+                'message': 'SAFE_DEMO enabled: produced non-executable demo artifact',
+                'payload_size': os.path.getsize(payload_path),
+                'payload_type': 'text',
+                'platform': 'none',
+                'filename': payload_filename,
+                'download_url': '/api/download-payload'
+            })
         
         # Import the enhanced payload generator
         from web_payload_generator import web_payload_gen
@@ -933,6 +992,8 @@ def download_payload():
                 mimetype = 'application/x-msdownload'
             elif payload_filename.endswith('.py'):
                 mimetype = 'text/x-python'
+            elif payload_filename.endswith('.txt'):
+                mimetype = 'text/plain'
             else:
                 # Generic binary for Linux/Mac executables
                 mimetype = 'application/octet-stream'
@@ -1796,10 +1857,13 @@ def monitor_connections():
     # TODO: Review - infinite loop may need exit condition
     while True:
         try:
-            server = get_stitch_server()
-            active_count = len(server.inf_sock)
+            if getattr(Config, 'SAFE_DEMO', False):
+                active_count = 1
+            else:
+                server = get_stitch_server()
+                active_count = len(server.inf_sock)
             # Clean up connection_context entries for dropped connections
-            active_ips = set(server.inf_sock.keys())
+            active_ips = set(server.inf_sock.keys()) if not getattr(Config, 'SAFE_DEMO', False) else {'127.0.0.1'}
             for ip in list(connection_context.keys()):
                 if ip not in active_ips:
                     connection_context.pop(ip, None)
@@ -1815,6 +1879,9 @@ def start_stitch_server():
     """Start the Stitch server"""
     log_debug("Initializing Stitch RAT server", "INFO", "Server")
     try:
+        if getattr(Config, 'SAFE_DEMO', False):
+            log_debug("SAFE_DEMO enabled - not starting C2 listener", "INFO", "Server")
+            return
         server = get_stitch_server()
         # Start listening on port 4040
         server.do_listen('4040')
@@ -1893,9 +1960,10 @@ if __name__ == '__main__':
 
     build_tools_status = check_build_tools()
 
-    # Start Stitch server in background
-    stitch_thread = threading.Thread(target=start_stitch_server, daemon=True)
-    stitch_thread.start()
+    # Start Stitch server in background (skipped in SAFE_DEMO)
+    if not getattr(Config, 'SAFE_DEMO', False):
+        stitch_thread = threading.Thread(target=start_stitch_server, daemon=True)
+        stitch_thread.start()
     
     # Start connection monitor
     monitor_thread = threading.Thread(target=monitor_connections, daemon=True)

@@ -31,6 +31,8 @@ class Config:
     PORT = int(os.getenv('STITCH_PORT', '5000'))
     DEBUG = os.getenv('STITCH_DEBUG', 'false').lower() in ('true', '1', 'yes')
     STITCH_SERVER_PORT = int(os.getenv('STITCH_SERVER_PORT', '4040'))
+    # Safe demo mode: disables real C2 and payload generation
+    SAFE_DEMO = os.getenv('STITCH_SAFE_DEMO', 'false').lower() in ('true', '1', 'yes')
     
     # ============================================================================
     # Security Configuration
@@ -294,6 +296,7 @@ class Config:
         return {
             'APP_NAME': cls.APP_NAME,
             'APP_VERSION': cls.APP_VERSION,
+            'SAFE_DEMO': cls.SAFE_DEMO,
             'WEBSOCKET_UPDATE_INTERVAL': cls.WEBSOCKET_UPDATE_INTERVAL,
             'PAGINATION_DEFAULT': cls.PAGINATION_DEFAULT,
             'PAGINATION_OPTIONS': cls.PAGINATION_OPTIONS,
