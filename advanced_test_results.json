@@ -1,0 +1,144 @@
+{
+  "timestamp": "2025-10-17T21:47:46.425076",
+  "web_interface": {
+    "timestamp": "2025-10-17T21:47:45.987480",
+    "api_endpoints": {
+      "health": {
+        "status_code": 200,
+        "response": {
+          "service": "stitch-web",
+          "status": "healthy"
+        }
+      },
+      "login_page": 200,
+      "dashboard_redirect": 302,
+      "connections": {
+        "status_code": 302,
+        "data": null
+      },
+      "server_status": {
+        "status_code": 302,
+        "data": null
+      }
+    },
+    "authentication": {
+      "invalid_login": 400,
+      "valid_login": 400
+    },
+    "command_system": {
+      "sessions_command": {
+        "success": true,
+        "output_length": 80
+      },
+      "command_definitions": {
+        "status_code": 302,
+        "count": 0
+      },
+      "history_command": {
+        "success": true,
+        "output_length": 55
+      },
+      "showkey_command": {
+        "success": true,
+        "output_length": 41
+      },
+      "home_command": {
+        "success": true,
+        "output_length": 59
+      },
+      "cls_command": {
+        "success": true,
+        "output_length": 46
+      }
+    },
+    "file_operations": {
+      "downloads_list": {
+        "status_code": 302,
+        "count": 0
+      },
+      "export_logs": 302,
+      "export_commands": 302
+    },
+    "ui_functionality": {},
+    "issues": [],
+    "server_instance": {
+      "listening_port": null,
+      "active_connections": 0,
+      "has_config": true,
+      "has_aes_lib": true
+    }
+  },
+  "ui_components": {
+    "static_files": {
+      "style_real.css": {
+        "exists": true,
+        "size": 23197
+      },
+      "app_real.js": {
+        "exists": true,
+        "size": 35972
+      },
+      "favicon.ico": {
+        "exists": true,
+        "size": 950
+      },
+      "favicon.svg": {
+        "exists": true,
+        "size": 189
+      }
+    },
+    "templates": {
+      "dashboard_real.html": {
+        "exists": true,
+        "size": 26294
+      },
+      "login.html": {
+        "exists": true,
+        "size": 9533
+      }
+    },
+    "css_analysis": {
+      "lines": 1233,
+      "has_responsive": true,
+      "has_animations": true,
+      "has_grid": true,
+      "has_flexbox": true
+    },
+    "js_analysis": {
+      "lines": 1032,
+      "has_websocket": true,
+      "has_ajax": true,
+      "has_event_listeners": true,
+      "has_error_handling": true
+    }
+  },
+  "payload_system": {
+    "aes_system": {
+      "aes_file_exists": true,
+      "aes_lib_exists": true,
+      "secret_available": true
+    },
+    "payload_paths": {
+      "payloads": {
+        "exists": true,
+        "writable": true
+      },
+      "downloads": {
+        "exists": true,
+        "writable": true
+      },
+      "uploads": {
+        "exists": true,
+        "writable": true
+      },
+      "tools": {
+        "exists": true,
+        "writable": true
+      }
+    },
+    "generation_capability": {
+      "imports": true
+    }
+  },
+  "summary": {}
+}
