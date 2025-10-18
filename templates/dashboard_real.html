@@ -380,16 +380,73 @@
                         </form>
                     </div>
                     
+                    <!-- Build Capabilities Status -->
+                    <div class="build-status" id="buildStatus" style="display: none;">
+                        <h4>🔧 Build Environment</h4>
+                        <div class="capabilities-grid" id="capabilitiesGrid"></div>
+                    </div>
+                    
                     <div class="payload-output" id="payloadOutput" style="display: none;">
                         <h3>Generated Payload</h3>
                         <div class="payload-info" id="payloadInfo"></div>
+                        
+                        <!-- Enhanced Download Options -->
+                        <div class="download-options" id="downloadOptions">
+                            <h4>📥 Download Options</h4>
+                            <div class="download-grid">
+                                <button class="download-btn primary" id="downloadPrimaryBtn" style="display: none;">
+                                    <span class="btn-icon">🚀</span>
+                                    <span class="btn-text">Download Executable</span>
+                                    <span class="btn-subtitle">Recommended</span>
+                                </button>
+                                
+                                <button class="download-btn secondary" id="downloadPythonBtn" style="display: none;">
+                                    <span class="btn-icon">🐍</span>
+                                    <span class="btn-text">Download Python Source</span>
+                                    <span class="btn-subtitle">Cross-platform</span>
+                                </button>
+                                
+                                <button class="download-btn installer" id="downloadInstallerBtn" style="display: none;">
+                                    <span class="btn-icon">📦</span>
+                                    <span class="btn-text">Download Installer</span>
+                                    <span class="btn-subtitle">Auto-deploy</span>
+                                </button>
+                                
+                                <button class="download-btn advanced" id="viewAllFilesBtn" style="display: none;">
+                                    <span class="btn-icon">📁</span>
+                                    <span class="btn-text">View All Files</span>
+                                    <span class="btn-subtitle">Advanced</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Payload Validation Status -->
+                        <div class="validation-status" id="validationStatus" style="display: none;">
+                            <h4>✅ Payload Validation</h4>
+                            <div class="validation-details" id="validationDetails"></div>
+                        </div>
+                        
+                        <!-- Legacy Actions -->
                         <div class="payload-actions">
-                            <button class="cmd-btn" id="downloadPayloadBtn">
-                                📥 Download Payload
-                            </button>
                             <button class="clear-btn" id="copyPayloadInfoBtn">
                                 📋 Copy Info
                             </button>
+                            <button class="cmd-btn" id="generateInstallerBtn" style="display: none;">
+                                🔧 Create Installer
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- All Files Modal -->
+                    <div class="modal" id="allFilesModal" style="display: none;">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3>📁 All Payload Files</h3>
+                                <button class="close-btn" id="closeAllFilesModal">&times;</button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="files-list" id="allFilesList"></div>
+                            </div>
                         </div>
                     </div>
                     
