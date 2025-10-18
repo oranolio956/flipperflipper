@@ -102,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeWebSocket();
     initializeNavigation();
     loadCommandDefinitions();
+    loadBuildCapabilities();
     loadInitialData();
     startAutoRefresh();
     initializeCommandHistory();
@@ -110,20 +111,68 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeCSPSafeHandlers();
 });
 
-// WebSocket
+// WebSocket with improved connection handling
 function initializeWebSocket() {
-    socket = io();
+    // Disconnect existing socket if any
+    if (socket) {
+        socket.disconnect();
+    }
     
-    socket.on('connect', () => {
-        document.getElementById('serverStatus').classList.add('online');
-        document.getElementById('statusText').textContent = 'Connected';
-        showToast('Connected to server', 'success');
+    socket = io({
+        // Improved connection options
+        transports: ['websocket', 'polling'],  // Fallback to polling if websocket fails
+        upgrade: true,
+        rememberUpgrade: true,
+        timeout: 20000,  // 20 second timeout
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        maxReconnectionAttempts: 5,
+        randomizationFactor: 0.5
     });
     
-    socket.on('disconnect', () => {
+    socket.on('connect', () => {
+        console.log('WebSocket connected successfully');
+        document.getElementById('serverStatus').classList.add('online');
+        document.getElementById('statusText').textContent = 'Connected';
+        // Only show connection toast on reconnection, not initial connection
+        if (socket.recovered) {
+            showToast('Reconnected to server', 'success');
+        }
+        
+        // Clear any previous disconnection warnings
+        clearDisconnectionWarnings();
+    });
+    
+    socket.on('disconnect', (reason) => {
+        console.log('WebSocket disconnected:', reason);
         document.getElementById('serverStatus').classList.remove('online');
         document.getElementById('statusText').textContent = 'Disconnected';
-        showToast('Disconnected from server', 'error');
+        
+        // Only show disconnect toast for unexpected disconnections
+        if (reason !== 'io client disconnect' && reason !== 'io server disconnect') {
+            showToast('Connection lost - attempting reconnection...', 'warning', 5000);
+        }
+    });
+    
+    socket.on('connect_error', (error) => {
+        console.error('WebSocket connection error:', error);
+        // Don't show error toast for every connection attempt
+    });
+    
+    socket.on('reconnect', (attemptNumber) => {
+        console.log('WebSocket reconnected after', attemptNumber, 'attempts');
+        showToast('Connection restored', 'success');
+    });
+    
+    socket.on('reconnect_error', (error) => {
+        console.error('WebSocket reconnection failed:', error);
+    });
+    
+    socket.on('reconnect_failed', () => {
+        console.error('WebSocket failed to reconnect');
+        showToast('Unable to reconnect to server', 'error', 10000);
     });
     
     socket.on('debug_log', (log) => {
@@ -141,6 +190,16 @@ function initializeWebSocket() {
     socket.on('connection_update', (data) => {
         document.getElementById('activeCount').textContent = data.active_connections;
         loadConnections(); // Refresh connections
+    });
+}
+
+function clearDisconnectionWarnings() {
+    // Remove any existing disconnect warnings
+    const toasts = document.querySelectorAll('.toast.warning, .toast.error');
+    toasts.forEach(toast => {
+        if (toast.textContent.includes('Disconnected') || toast.textContent.includes('Connection lost')) {
+            toast.remove();
+        }
     });
 }
 
@@ -252,22 +311,91 @@ async function loadServerStatus() {
     if (loadingIndicator) loadingIndicator.classList.add('show');
     
     try {
-        const response = await fetch('/api/server/status');
-        const status = await response.json();
+        const response = await fetch('/api/server/status', {
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
         
-        document.getElementById('serverListening').textContent = 
-            status.listening ? '✅ Listening' : '⚠️ Not Listening';
-        document.getElementById('serverPort').textContent = status.port;
-        document.getElementById('activeCount').textContent = status.active_connections;
+        if (response.ok) {
+            const status = await response.json();
+            
+            document.getElementById('serverListening').textContent = 
+                status.listening ? '✅ Listening' : '⚠️ Not Listening';
+            document.getElementById('serverPort').textContent = status.port;
+            document.getElementById('activeCount').textContent = status.active_connections;
+        } else {
+            // Handle API error gracefully
+            document.getElementById('serverListening').textContent = '❌ Error';
+            document.getElementById('serverPort').textContent = 'Unknown';
+            document.getElementById('activeCount').textContent = '0';
+            console.error('Failed to load server status:', response.status);
+        }
     } catch (error) {
-        showToast('Error loading server status', 'error');
+        // Handle network error gracefully
+        document.getElementById('serverListening').textContent = '🔌 Offline';
+        document.getElementById('serverPort').textContent = 'N/A';
+        document.getElementById('activeCount').textContent = '0';
+        console.error('Server status network error:', error);
     } finally {
-        if (loadingIndicator) loadingIndicator.classList.remove('show');
+        // Always hide loading indicator
+        if (loadingIndicator) {
+            setTimeout(() => {
+                loadingIndicator.classList.remove('show');
+            }, 100);
+        }
     }
 }
 
 async function loadConnections() {
     const loadingIndicator = document.getElementById('connectionsLoadingIndicator');
+    const connectionsGrid = document.getElementById('connectionsGrid');
+    const connectionsContainer = document.getElementById('connectionsContainer');
+    
+    if (loadingIndicator) loadingIndicator.classList.add('show');
+    
+    try {
+        const response = await fetch('/api/connections', {
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+        
+        if (response.ok) {
+            const connections = await response.json();
+            connectionsPagination.allData = connections;
+            connectionsPagination.totalItems = connections.length;
+            
+            displayConnections();
+            
+            // Update connection count
+            const activeConnections = connections.filter(conn => conn.status === 'online').length;
+            const activeCountElement = document.getElementById('activeCount');
+            if (activeCountElement) {
+                activeCountElement.textContent = activeConnections;
+            }
+        } else {
+            // Handle API error
+            console.error('Failed to load connections:', response.status);
+            if (connectionsGrid) {
+                connectionsGrid.innerHTML = '<div class="empty-state">❌ Failed to load connections</div>';
+            }
+        }
+    } catch (error) {
+        // Handle network error
+        console.error('Connections network error:', error);
+        if (connectionsGrid) {
+            connectionsGrid.innerHTML = '<div class="empty-state">🔌 Connection error - check network</div>';
+        }
+    } finally {
+        // Always hide loading indicator
+        if (loadingIndicator) {
+            setTimeout(() => {
+                loadingIndicator.classList.remove('show');
+            }, 100);
+        }
+    }
+}
     if (loadingIndicator) loadingIndicator.classList.add('show');
     
     try {
@@ -744,7 +872,48 @@ function fallbackCopyToClipboard(text) {
 
 async function loadFiles() {
     const loadingIndicator = document.getElementById('filesLoadingIndicator');
+    const filesGrid = document.getElementById('filesGrid');
+    
     if (loadingIndicator) loadingIndicator.classList.add('show');
+    
+    try {
+        const response = await fetch('/api/files/downloads', {
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+        
+        if (response.ok) {
+            const files = await response.json();
+            
+            // Store all data for pagination
+            filesPagination.allData = files;
+            filesPagination.totalItems = files.length;
+            
+            // Display files
+            displayFiles();
+        } else {
+            // Handle API error
+            console.error('Failed to load files:', response.status);
+            if (filesGrid) {
+                filesGrid.innerHTML = '<div class="empty-state">❌ Failed to load files</div>';
+            }
+        }
+    } catch (error) {
+        // Handle network error
+        console.error('Files network error:', error);
+        if (filesGrid) {
+            filesGrid.innerHTML = '<div class="empty-state">🔌 Connection error - check network</div>';
+        }
+    } finally {
+        // Always hide loading indicator
+        if (loadingIndicator) {
+            setTimeout(() => {
+                loadingIndicator.classList.remove('show');
+            }, 100);
+        }
+    }
+}
     
     try {
         const response = await fetch('/api/files/downloads');
@@ -1320,7 +1489,13 @@ function initializeCSPSafeHandlers() {
     wire('#generatePayloadBtn', () => generatePayload());
     wire('#resetPayloadBtn', () => resetPayloadForm());
     wire('#downloadPayloadBtn', () => downloadPayload());
+    wire('#downloadPrimaryBtn', () => downloadPrimaryPayload());
+    wire('#downloadPythonBtn', () => downloadPythonPayload());
+    wire('#downloadInstallerBtn', () => downloadInstaller());
+    wire('#viewAllFilesBtn', () => viewAllFiles());
+    wire('#generateInstallerBtn', () => generateInstaller());
     wire('#copyPayloadInfoBtn', () => copyPayloadInfo());
+    wire('#closeAllFilesModal', () => closeAllFilesModal());
     wire('#refreshLogsBtn', () => loadLogs());
     wire('#clearLogsBtn', () => clearDebugLogs());
 
@@ -1428,7 +1603,98 @@ function updateTargetIndicator(hostname, status) {
     `;
 }
 
-// Payload Generation Functions
+// Global variable to store current payload info
+let currentPayloadInfo = null;
+
+// Load build capabilities on page load
+async function loadBuildCapabilities() {
+    try {
+        const response = await fetch('/api/build-capabilities', {
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            displayBuildCapabilities(data);
+        }
+    } catch (error) {
+        console.error('Error loading build capabilities:', error);
+    }
+}
+
+function displayBuildCapabilities(data) {
+    const buildStatus = document.getElementById('buildStatus');
+    const capabilitiesGrid = document.getElementById('capabilitiesGrid');
+    
+    if (!data.success) return;
+    
+    const capabilities = data.capabilities;
+    const recommendations = data.recommendations || [];
+    
+    let capabilitiesHtml = '';
+    
+    // PyInstaller
+    capabilitiesHtml += `
+        <div class="capability-item ${capabilities.pyinstaller ? 'available' : 'missing'}">
+            <span class="capability-icon">${capabilities.pyinstaller ? '✅' : '❌'}</span>
+            <div class="capability-text">
+                <div class="capability-name">PyInstaller</div>
+                <div class="capability-status">${capabilities.pyinstaller ? 'Available' : 'Not installed'}</div>
+            </div>
+        </div>
+    `;
+    
+    // py2exe (Windows only)
+    if (capabilities.platform.startsWith('win')) {
+        capabilitiesHtml += `
+            <div class="capability-item ${capabilities.py2exe ? 'available' : 'missing'}">
+                <span class="capability-icon">${capabilities.py2exe ? '✅' : '❌'}</span>
+                <div class="capability-text">
+                    <div class="capability-name">py2exe</div>
+                    <div class="capability-status">${capabilities.py2exe ? 'Available' : 'Not installed'}</div>
+                </div>
+            </div>
+        `;
+        
+        // NSIS
+        capabilitiesHtml += `
+            <div class="capability-item ${capabilities.nsis ? 'available' : 'missing'}">
+                <span class="capability-icon">${capabilities.nsis ? '✅' : '❌'}</span>
+                <div class="capability-text">
+                    <div class="capability-name">NSIS</div>
+                    <div class="capability-status">${capabilities.nsis ? 'Available' : 'Not installed'}</div>
+                </div>
+            </div>
+        `;
+    } else {
+        // Makeself (Linux/macOS)
+        capabilitiesHtml += `
+            <div class="capability-item ${capabilities.makeself ? 'available' : 'missing'}">
+                <span class="capability-icon">${capabilities.makeself ? '✅' : '❌'}</span>
+                <div class="capability-text">
+                    <div class="capability-name">Makeself</div>
+                    <div class="capability-status">${capabilities.makeself ? 'Available' : 'Not available'}</div>
+                </div>
+            </div>
+        `;
+    }
+    
+    capabilitiesGrid.innerHTML = capabilitiesHtml;
+    buildStatus.style.display = 'block';
+    
+    // Show recommendations if any
+    if (recommendations.length > 0) {
+        recommendations.forEach(rec => {
+            if (rec.type === 'missing_tool') {
+                showToast(rec.message, 'warning', 8000);
+            }
+        });
+    }
+}
+
+// Enhanced Payload Generation Function
 async function generatePayload() {
     const form = document.getElementById('payloadForm');
     const outputDiv = document.getElementById('payloadOutput');
@@ -1465,24 +1731,28 @@ async function generatePayload() {
                 bind_port: parseInt(bindPort),
                 enable_listen: enableListen,
                 listen_host: listenHost,
-                listen_port: parseInt(listenPort)
+                listen_port: parseInt(listenPort),
+                create_installers: false  // Phase 2: Can be made configurable
             })
         });
         
         const result = await response.json();
         
         if (result.success) {
-            infoDiv.innerHTML = `
-                <div class="success-box">
-                    <h4>✅ Payload Generated Successfully</h4>
-                    <p><strong>Size:</strong> ${formatBytes(result.payload_size)}</p>
-                    <p><strong>Configuration:</strong></p>
-                    <ul>
-                        ${result.config.enable_bind ? `<li>Bind: ${result.config.bind_host || 'any'}:${result.config.bind_port}</li>` : ''}
-                        ${result.config.enable_listen ? `<li>Listen: ${result.config.listen_host}:${result.config.listen_port}</li>` : ''}
-                    </ul>
-                </div>
-            `;
+            // Store payload info globally
+            currentPayloadInfo = result;
+            
+            // Show payload info
+            displayPayloadInfo(result);
+            
+            // Show download options
+            displayDownloadOptions(result);
+            
+            // Show validation status
+            if (result.payload_info) {
+                displayValidationStatus(result.payload_info);
+            }
+            
             showToast('Payload generated successfully!', 'success');
         } else {
             infoDiv.innerHTML = `
@@ -1492,6 +1762,13 @@ async function generatePayload() {
                 </div>
             `;
             showToast(`Generation failed: ${result.error}`, 'error');
+            
+            // Show warnings if any
+            if (result.warnings) {
+                result.warnings.forEach(warning => {
+                    showToast(warning, 'warning', 6000);
+                });
+            }
         }
     } catch (error) {
         infoDiv.innerHTML = `
@@ -1502,6 +1779,148 @@ async function generatePayload() {
         `;
         showToast('Network error during generation', 'error');
     }
+}
+
+function displayPayloadInfo(result) {
+    const infoDiv = document.getElementById('payloadInfo');
+    const payloadInfo = result.payload_info || {};
+    
+    infoDiv.innerHTML = `
+        <div class="payload-details">
+            <h4>✅ ${result.message}</h4>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Type:</span>
+                    <span class="detail-value">${getPayloadTypeDisplay(payloadInfo.type)}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">File:</span>
+                    <span class="detail-value">${payloadInfo.filename || 'N/A'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Size:</span>
+                    <span class="detail-value">${formatBytes(payloadInfo.size || 0)}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Bind Mode:</span>
+                    <span class="detail-value">${result.config.enable_bind ? `✅ ${result.config.bind_host || 'Any IP'}:${result.config.bind_port}` : '❌ Disabled'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Listen Mode:</span>
+                    <span class="detail-value">${result.config.enable_listen ? `✅ ${result.config.listen_host}:${result.config.listen_port}` : '❌ Disabled'}</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function displayDownloadOptions(result) {
+    const downloadOptions = result.available_downloads || {};
+    const payloadFiles = result.payload_files_summary || {};
+    
+    // Primary download (executable or best available)
+    const primaryBtn = document.getElementById('downloadPrimaryBtn');
+    if (downloadOptions.primary) {
+        primaryBtn.style.display = 'block';
+        const payloadType = result.payload_info?.type || 'unknown';
+        const btnText = primaryBtn.querySelector('.btn-text');
+        const btnSubtitle = primaryBtn.querySelector('.btn-subtitle');
+        
+        if (payloadType === 'executables') {
+            btnText.textContent = 'Download Executable';
+            btnSubtitle.textContent = 'Ready to run';
+        } else if (payloadType === 'installers') {
+            btnText.textContent = 'Download Installer';
+            btnSubtitle.textContent = 'Auto-deploy';
+        } else {
+            btnText.textContent = 'Download Primary';
+            btnSubtitle.textContent = 'Best available';
+        }
+    }
+    
+    // Python source download
+    const pythonBtn = document.getElementById('downloadPythonBtn');
+    if (downloadOptions.python_source) {
+        pythonBtn.style.display = 'block';
+    }
+    
+    // Installer download
+    const installerBtn = document.getElementById('downloadInstallerBtn');
+    if (payloadFiles.installers > 0) {
+        installerBtn.style.display = 'block';
+    }
+    
+    // View all files
+    const allFilesBtn = document.getElementById('viewAllFilesBtn');
+    if (downloadOptions.all_files) {
+        allFilesBtn.style.display = 'block';
+        const totalFiles = Object.values(payloadFiles).reduce((sum, count) => sum + count, 0);
+        allFilesBtn.querySelector('.btn-subtitle').textContent = `${totalFiles} files`;
+    }
+    
+    // Generate installer button
+    const generateInstallerBtn = document.getElementById('generateInstallerBtn');
+    if (result.build_capabilities?.nsis || result.build_capabilities?.makeself) {
+        generateInstallerBtn.style.display = 'inline-block';
+    }
+}
+
+function displayValidationStatus(payloadInfo) {
+    const validationStatus = document.getElementById('validationStatus');
+    const validationDetails = document.getElementById('validationDetails');
+    
+    if (payloadInfo.valid === undefined) return;
+    
+    let validationHtml = '';
+    
+    // File exists
+    validationHtml += `
+        <div class="validation-item">
+            <span class="validation-icon">📁</span>
+            <div class="validation-text">
+                <div class="validation-label">File Status</div>
+                <div class="validation-value">File exists and is accessible</div>
+            </div>
+        </div>
+    `;
+    
+    // File size
+    validationHtml += `
+        <div class="validation-item">
+            <span class="validation-icon">📏</span>
+            <div class="validation-text">
+                <div class="validation-label">File Size</div>
+                <div class="validation-value">${formatBytes(payloadInfo.size)} - ${payloadInfo.size > 1000 ? 'Good' : 'Small (may indicate issue)'}</div>
+            </div>
+        </div>
+    `;
+    
+    // Validation status
+    validationHtml += `
+        <div class="validation-item">
+            <span class="validation-icon">${payloadInfo.valid ? '✅' : '⚠️'}</span>
+            <div class="validation-text">
+                <div class="validation-label">Overall Status</div>
+                <div class="validation-value">${payloadInfo.valid ? 'Valid payload' : 'Issues detected'}</div>
+            </div>
+        </div>
+    `;
+    
+    validationDetails.innerHTML = validationHtml;
+    validationStatus.style.display = 'block';
+}
+
+function getPayloadTypeDisplay(type) {
+    const typeMap = {
+        'executables': '🚀 Executable',
+        'installers': '📦 Installer',
+        'python_source': '🐍 Python Source',
+        'windows_executable': '🪟 Windows Executable',
+        'linux_executable': '🐧 Linux Executable',
+        'macos_app': '🍎 macOS App',
+        'makeself_installer': '📦 Makeself Installer'
+    };
+    return typeMap[type] || `📄 ${type}`;
 }
 
 async function downloadPayload() {
@@ -1561,4 +1980,177 @@ function copyPayloadInfo() {
         document.body.removeChild(textArea);
         showToast('Payload info copied to clipboard', 'success');
     }
+}
+
+// Enhanced Download Functions
+async function downloadPrimaryPayload() {
+    try {
+        const response = await fetch('/api/download-payload-primary', {
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            
+            // Get filename from current payload info
+            const filename = currentPayloadInfo?.payload_info?.filename || 'stitch_payload';
+            a.download = filename;
+            
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showToast('Primary payload downloaded successfully', 'success');
+        } else {
+            const error = await response.json();
+            showToast(`Download failed: ${error.error}`, 'error');
+        }
+    } catch (error) {
+        showToast('Download error', 'error');
+    }
+}
+
+async function downloadPythonPayload() {
+    try {
+        const response = await fetch('/api/download-payload', {
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'stitch_payload.py';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showToast('Python payload downloaded successfully', 'success');
+        } else {
+            const error = await response.json();
+            showToast(`Download failed: ${error.error}`, 'error');
+        }
+    } catch (error) {
+        showToast('Download error', 'error');
+    }
+}
+
+async function downloadInstaller() {
+    showToast('Installer download not yet implemented', 'info');
+    // TODO: Implement installer-specific download
+}
+
+async function viewAllFiles() {
+    try {
+        const response = await fetch('/api/list-payload-files', {
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            displayAllFilesModal(data);
+        } else {
+            const error = await response.json();
+            showToast(`Failed to load files: ${error.error}`, 'error');
+        }
+    } catch (error) {
+        showToast('Error loading files', 'error');
+    }
+}
+
+function displayAllFilesModal(data) {
+    const modal = document.getElementById('allFilesModal');
+    const filesList = document.getElementById('allFilesList');
+    
+    if (!data.success || !data.files) {
+        showToast('No files to display', 'warning');
+        return;
+    }
+    
+    let filesHtml = '';
+    
+    data.files.forEach(file => {
+        const typeIcon = getFileTypeIcon(file.type);
+        const statusIcon = file.valid ? '✅' : '⚠️';
+        
+        filesHtml += `
+            <div class="file-item">
+                <div class="file-info">
+                    <div class="file-name">${typeIcon} ${file.filename}</div>
+                    <div class="file-details">
+                        ${statusIcon} ${file.type} • ${formatBytes(file.size)} • ${new Date(file.created).toLocaleString()}
+                    </div>
+                </div>
+                <div class="file-actions">
+                    <button class="file-download-btn" onclick="downloadSpecificFile('${file.filename}', '${file.type}')">
+                        📥 Download
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    filesList.innerHTML = filesHtml;
+    modal.style.display = 'flex';
+}
+
+function getFileTypeIcon(type) {
+    const iconMap = {
+        'executables': '🚀',
+        'installers': '📦',
+        'python_source': '🐍',
+        'config_files': '⚙️'
+    };
+    return iconMap[type] || '📄';
+}
+
+async function downloadSpecificFile(filename, type) {
+    try {
+        const response = await fetch(`/api/download-payload-file?file=${encodeURIComponent(filename)}&type=${encodeURIComponent(type)}`, {
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showToast(`${filename} downloaded successfully`, 'success');
+        } else {
+            const error = await response.json();
+            showToast(`Download failed: ${error.error}`, 'error');
+        }
+    } catch (error) {
+        showToast('Download error', 'error');
+    }
+}
+
+function closeAllFilesModal() {
+    const modal = document.getElementById('allFilesModal');
+    modal.style.display = 'none';
+}
+
+async function generateInstaller() {
+    showToast('Installer generation feature coming soon', 'info');
+    // TODO: Implement installer generation
 }
