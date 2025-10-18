@@ -1164,209 +1164,106 @@ body {
 /* Responsive pagination */
 
 /* Mobile Layout Fixes */
-
-/* ==================== ENHANCED MOBILE STYLES ==================== */
 @media (max-width: 768px) {
-    /* Sidebar adjustments */
+    /* Hide text, show only icons in sidebar */
     .sidebar {
-        width: 60px !important;
-        min-width: 60px !important;
-        transition: all 0.3s ease;
+        width: 60px;
+        min-width: 60px;
     }
     
-    .sidebar.expanded {
-        width: 200px !important;
+    .sidebar-header h2 {
+        font-size: 1.2rem;
+        text-align: center;
     }
     
-    .sidebar-header {
-        padding: 10px 5px;
-    }
-    
-    .sidebar-header h3 {
+    .sidebar-header .version {
         display: none;
     }
     
-    .sidebar.expanded .sidebar-header h3 {
-        display: block;
-        font-size: 14px;
+    .nav-menu li a span {
+        font-size: 1.5rem;
     }
     
-    /* Navigation menu */
-    .nav-menu {
-        padding: 0;
-    }
-    
-    .nav-menu li {
-        position: relative;
-    }
-    
-    .nav-menu a {
-        padding: 15px 10px;
+    .nav-menu li a {
+        padding: 1rem;
         justify-content: center;
     }
     
-    .nav-menu span {
+    .nav-menu li a::after {
         display: none;
     }
     
-    .sidebar.expanded .nav-menu span {
-        display: inline;
-        margin-left: 10px;
-    }
-    
-    /* Logout button - top right corner */
+    /* Move logout button to top-right corner */
     .logout-btn {
-        display: none !important;
-    }
-    
-    .mobile-logout {
-        display: block !important;
         position: fixed;
         top: 10px;
         right: 10px;
-        z-index: 9999;
-        padding: 8px 15px;
         background: #dc3545;
         color: white;
-        border: none;
+        padding: 0.5rem 1rem;
         border-radius: 5px;
-        font-size: 14px;
-        cursor: pointer;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        font-size: 0.9rem;
+        z-index: 1000;
+        width: auto;
+        margin: 0;
     }
     
-    /* Main content adjustments */
+    .sidebar-footer {
+        display: none;
+    }
+    
+    /* Fix main content */
     .main-content {
-        margin-left: 70px;
-        padding: 15px;
+        margin-left: 60px;
+        padding: 1rem;
     }
     
-    .sidebar.expanded ~ .main-content {
-        margin-left: 210px;
+    /* Fix payload tab text overflow */
+    .payload-config label {
+        font-size: 0.9rem;
     }
     
-    /* Payloads tab fixes */
-    .payload-config {
-        padding: 15px;
-        overflow-x: auto;
-    }
-    
-    .payload-config h2 {
-        font-size: 20px;
-        margin-bottom: 15px;
-        word-wrap: break-word;
-    }
-    
-    .config-section {
-        margin-bottom: 20px;
-    }
-    
-    .config-section h3 {
-        font-size: 16px;
-        margin-bottom: 10px;
-        word-wrap: break-word;
-    }
-    
-    .form-group {
-        margin-bottom: 15px;
-    }
-    
-    .form-group label {
-        display: block;
-        margin-bottom: 5px;
-        font-size: 14px;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-    }
-    
-    .form-control {
+    .payload-config input,
+    .payload-config select {
         width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-        font-size: 14px;
+        font-size: 0.9rem;
+        padding: 0.4rem;
     }
     
-    /* Prevent text overflow */
-    * {
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        hyphens: auto;
+    .btn {
+        font-size: 0.9rem;
+        padding: 0.6rem 1rem;
     }
     
-    /* Tables responsive */
-    .table-responsive {
+    /* Fix grid layouts for mobile */
+    .connections-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Fix table overflow */
+    .table-container {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
     
     table {
-        min-width: 100%;
+        min-width: 600px;
     }
     
-    /* Cards and containers */
-    .card {
-        margin-bottom: 15px;
-    }
-    
-    .card-body {
-        padding: 10px;
-        overflow-x: auto;
-    }
-    
-    /* Buttons */
-    .btn {
-        padding: 8px 12px;
-        font-size: 14px;
-        margin: 2px;
-    }
-    
-    /* Grid adjustments */
-    .row {
-        margin: 0;
-    }
-    
-    .col-md-6,
-    .col-lg-4 {
-        padding: 5px;
-    }
-    
-    /* Terminal/console */
-    .terminal {
-        font-size: 12px;
-    }
-    
-    /* Modals */
-    .modal-dialog {
+    /* Fix modals for mobile */
+    .modal-content {
+        width: 95%;
         margin: 10px;
-        max-width: calc(100% - 20px);
-    }
-    
-    /* Hamburger menu for sidebar */
-    .sidebar-toggle {
-        display: block !important;
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        z-index: 9998;
-        background: #2c3e50;
-        color: white;
-        border: none;
-        padding: 10px;
-        border-radius: 5px;
-        cursor: pointer;
+        max-height: 90vh;
+        overflow-y: auto;
     }
 }
 
-/* Desktop - hide mobile elements */
-@media (min-width: 769px) {
-    .mobile-logout {
-        display: none !important;
-    }
-    
-    .sidebar-toggle {
-        display: none !important;
-    }
-}
+/* Tablet adjustments */
 @media (min-width: 769px) and (max-width: 1024px) {
     .sidebar {
         width: 200px;
