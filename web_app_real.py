@@ -813,6 +813,11 @@ def generate_payload():
         # Import payload generation
         from Application.stitch_gen import run_exe_gen
         from Application.stitch_pyld_config import stitch_ini
+        # Ensure a valid default config exists before attempting to write values
+        try:
+            from Application.stitch_pyld_config import gen_default_st_config
+        except Exception:
+            gen_default_st_config = None
         import tempfile
         import shutil
         
@@ -828,7 +833,14 @@ def generate_payload():
             if os.path.exists(st_config):
                 config_backup = st_config + '.backup'
                 shutil.copy2(st_config, config_backup)
-            
+
+            # Create a default config file if missing so section writes succeed
+            if not os.path.exists(st_config) and gen_default_st_config:
+                try:
+                    gen_default_st_config()
+                except Exception as e:
+                    log_debug(f"Failed to create default payload config: {e}", "ERROR", "Config")
+
             # Create new config with web parameters
             stini = stitch_ini()
             stini.set_value('BIND', str(enable_bind))
