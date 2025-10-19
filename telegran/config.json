@@ -1,4 +1,8 @@
 {
+  "simple_mode": false,
+  "simple_welcome_message": "Hey {username}! Welcome! 👋",
+  "simple_help_message": "Hey {username}! What do you need help with?",
+  
   "welcome_messages": [
     "Hey {username}! Welcome to the group! 👋 Glad you're here!",
     "Hi {username}! Great to have you join us! Feel free to ask if you need anything 😊",

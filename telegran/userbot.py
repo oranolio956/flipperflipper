@@ -9,11 +9,13 @@ import logging
 import asyncio
 import random
 from datetime import datetime, timedelta
-from typing import Dict, Set
+from typing import Dict, Set, Tuple
 from dotenv import load_dotenv
 
 from telethon import TelegramClient, events
 from telethon.tl.types import User, Channel, Chat
+
+from database import Database
 
 # Load environment variables
 load_dotenv()
@@ -36,12 +38,20 @@ class StealthUserbot:
     def __init__(self):
         """Initialize the userbot with stealth configuration"""
         self.config = self.load_config()
-        self.welcomed_users: Set[int] = set()
-        self.help_cooldowns: Dict[int, datetime] = {}
-        self.message_count = 0
-        self.daily_message_count = 0
+        
+        # Initialize database for persistence
+        self.db = Database()
+        
+        # Load welcomed users from database
+        self.welcomed_users: Set[int] = self.db.get_welcomed_users()
+        
+        # Counters
+        self.message_count = 0  # Hourly counter (resets every hour)
+        self.daily_message_count = self.db.get_daily_count()  # From database
         self.session_start = datetime.now()
         self.last_reset_date = datetime.now().date()
+        
+        logger.info(f"📊 Loaded from database: {len(self.welcomed_users)} welcomed users, {self.daily_message_count} messages today")
         
         # Get credentials
         self.api_id = os.getenv('API_ID')
@@ -112,19 +122,19 @@ class StealthUserbot:
         
         return default_config
     
-    def should_respond_now(self) -> bool:
+    def should_respond_now(self, is_welcome: bool = True) -> Tuple[bool, str]:
         """Determine if bot should respond based on stealth settings"""
         stealth = self.config['stealth']
         
         # Check hourly rate limit
         if self.message_count >= stealth['max_messages_per_hour']:
             logger.info("⏸️  Hourly rate limit reached, skipping response")
-            return False
+            return False, "hourly_limit"
         
         # Check daily rate limit
         if self.daily_message_count >= stealth['max_messages_per_day']:
             logger.info("⏸️  Daily rate limit reached, skipping response")
-            return False
+            return False, "daily_limit"
         
         # Check time of day
         current_hour = datetime.now().hour
@@ -138,11 +148,14 @@ class StealthUserbot:
             logger.info(f"🌙 Night time - reduced response probability: {probability}")
         
         # Random chance to skip (make it look human)
-        if random.random() > probability:
-            logger.info(f"🎲 Randomly skipping response (stealth mode)")
-            return False
+        # BUT: For welcomes, we ALWAYS welcome (just delay randomly)
+        # Only use probability for help messages
+        if not is_welcome:
+            if random.random() > probability:
+                logger.info(f"🎲 Randomly skipping help response (stealth mode)")
+                return False, "probability"
         
-        return True
+        return True, "ok"
     
     async def simulate_human_delay(self, min_delay: int, max_delay: int):
         """Simulate human-like random delay"""
@@ -162,9 +175,19 @@ class StealthUserbot:
         async with self.client.action(chat, 'typing'):
             await asyncio.sleep(typing_time)
     
-    def get_random_message(self, message_list: list, username: str) -> str:
-        """Get random message from list to vary responses"""
-        message = random.choice(message_list)
+    def get_random_message(self, message_list: list, username: str, is_welcome: bool = True) -> str:
+        """Get message - either simple mode (same every time) or random variation"""
+        
+        # Check if simple mode is enabled (one copy/paste message)
+        if self.config.get('simple_mode', False):
+            if is_welcome:
+                message = self.config.get('simple_welcome_message', message_list[0])
+            else:
+                message = self.config.get('simple_help_message', message_list[0])
+        else:
+            # Random variation mode
+            message = random.choice(message_list)
+        
         return message.format(username=username)
     
     async def handle_new_member(self, event):
@@ -193,8 +216,10 @@ class StealthUserbot:
                 return
             
             # Check if should respond (stealth mode)
-            if not self.should_respond_now():
-                logger.info(f"Stealth mode: Skipping welcome for {username}")
+            can_respond, reason = self.should_respond_now(is_welcome=True)
+            if not can_respond:
+                logger.warning(f"⚠️  Cannot welcome {username} due to {reason} - adding to pending queue")
+                self.db.add_pending_welcome(user_id, username, reason)
                 return
             
             logger.info(f"👤 New member: {username} ({user_id})")
@@ -211,16 +236,25 @@ class StealthUserbot:
             # Send welcome message
             message = self.get_random_message(
                 self.config['welcome_messages'],
-                username
+                username,
+                is_welcome=True
             )
             
             await self.client.send_message(event.chat_id, message)
             
+            # Mark as welcomed in memory AND database
             self.welcomed_users.add(user_id)
+            self.db.add_welcomed(user_id)
+            
+            # Update counters
             self.message_count += 1
             self.daily_message_count += 1
+            self.db.increment_daily_count()
             
-            logger.info(f"✅ Welcomed {username}")
+            # Remove from pending if they were there
+            self.db.remove_pending_welcome(user_id)
+            
+            logger.info(f"✅ Welcomed {username} (Total: {len(self.welcomed_users)}, Today: {self.daily_message_count})")
             
         except Exception as e:
             logger.error(f"Error handling new member: {e}", exc_info=True)
@@ -262,17 +296,15 @@ class StealthUserbot:
             if not is_help_request:
                 return
             
-            # Check cooldown
-            if user_id in self.help_cooldowns:
-                last_help = self.help_cooldowns[user_id]
-                cooldown_time = timedelta(hours=self.config['stealth']['cooldown_hours'])
-                if datetime.now() - last_help < cooldown_time:
-                    logger.info(f"Cooldown active for {username}")
-                    return
+            # Check cooldown (from database)
+            if self.db.is_on_cooldown(user_id, self.config['stealth']['cooldown_hours']):
+                logger.info(f"Cooldown active for {username}")
+                return
             
-            # Check if should respond (stealth mode)
-            if not self.should_respond_now():
-                logger.info(f"Stealth mode: Skipping help response for {username}")
+            # Check if should respond (stealth mode) - help can be skipped randomly
+            can_respond, reason = self.should_respond_now(is_welcome=False)
+            if not can_respond:
+                logger.info(f"Stealth mode: Skipping help response for {username} ({reason})")
                 return
             
             logger.info(f"💬 Help request from {username}: {message_text[:50]}...")
@@ -289,16 +321,21 @@ class StealthUserbot:
             # Send help message
             help_text = self.get_random_message(
                 self.config['help_messages'],
-                username
+                username,
+                is_welcome=False
             )
             
             await event.reply(help_text)
             
-            self.help_cooldowns[user_id] = datetime.now()
+            # Save cooldown to database
+            self.db.add_help_cooldown(user_id)
+            
+            # Update counters
             self.message_count += 1
             self.daily_message_count += 1
+            self.db.increment_daily_count()
             
-            logger.info(f"✅ Responded to {username}")
+            logger.info(f"✅ Responded to {username} (Today: {self.daily_message_count})")
             
         except Exception as e:
             logger.error(f"Error handling message: {e}", exc_info=True)
@@ -343,16 +380,87 @@ class StealthUserbot:
         
         return False
     
+    async def process_pending_welcomes(self):
+        """Process pending welcomes queue - try to welcome people we missed"""
+        while True:
+            await asyncio.sleep(600)  # Check every 10 minutes
+            
+            pending = self.db.get_pending_welcomes()
+            if not pending:
+                continue
+            
+            logger.info(f"🗓️  Processing {len(pending)} pending welcomes...")
+            
+            for user_data in pending[:3]:  # Try max 3 at a time
+                user_id = user_data['user_id']
+                username = user_data['username']
+                
+                # Skip if already welcomed
+                if user_id in self.welcomed_users:
+                    self.db.remove_pending_welcome(user_id)
+                    continue
+                
+                # Check if we can send now
+                can_respond, reason = self.should_respond_now(is_welcome=True)
+                if not can_respond:
+                    logger.info(f"⏸️  Still can't welcome {username} ({reason})")
+                    continue
+                
+                try:
+                    # Try to get the chat and send welcome
+                    target_group = self.config['target_group']
+                    
+                    # Get message
+                    message = self.get_random_message(
+                        self.config['welcome_messages'],
+                        username,
+                        is_welcome=True
+                    )
+                    
+                    # Send to group by username/id
+                    await self.client.send_message(target_group, message)
+                    
+                    # Mark as welcomed
+                    self.welcomed_users.add(user_id)
+                    self.db.add_welcomed(user_id)
+                    self.db.remove_pending_welcome(user_id)
+                    
+                    # Update counters
+                    self.message_count += 1
+                    self.daily_message_count += 1
+                    self.db.increment_daily_count()
+                    
+                    logger.info(f"✅ Processed pending welcome for {username}")
+                    
+                    # Small delay between pending messages
+                    await asyncio.sleep(5)
+                    
+                except Exception as e:
+                    logger.error(f"Error processing pending welcome for {username}: {e}")
+    
+    async def cleanup_database(self):
+        """Periodic database cleanup"""
+        while True:
+            await asyncio.sleep(3600)  # Every hour
+            
+            # Clean old cooldowns
+            self.db.clean_old_cooldowns(hours=48)
+            
+            logger.info("🧹 Database cleanup completed")
+    
     async def print_stats(self):
         """Print statistics every 30 minutes"""
         while True:
             await asyncio.sleep(1800)  # 30 minutes
             uptime = datetime.now() - self.session_start
+            db_stats = self.db.get_stats()
+            
             logger.info(
-                f"📊 Stats - Welcomed: {len(self.welcomed_users)} | "
-                f"Cooldowns: {len(self.help_cooldowns)} | "
-                f"Messages this hour: {self.message_count}/{self.config['stealth']['max_messages_per_hour']} | "
-                f"Daily: {self.daily_message_count}/{self.config['stealth']['max_messages_per_day']} | "
+                f"📊 Stats - Welcomed: {db_stats['total_welcomed']} | "
+                f"Cooldowns: {db_stats['active_cooldowns']} | "
+                f"Messages/hr: {self.message_count}/{self.config['stealth']['max_messages_per_hour']} | "
+                f"Today: {db_stats['messages_today']}/{self.config['stealth']['max_messages_per_day']} | "
+                f"Pending: {db_stats['pending_welcomes']} | "
                 f"Uptime: {uptime}"
             )
     
@@ -380,6 +488,8 @@ class StealthUserbot:
         # Start background tasks
         asyncio.create_task(self.reset_hourly_counter())
         asyncio.create_task(self.print_stats())
+        asyncio.create_task(self.process_pending_welcomes())
+        asyncio.create_task(self.cleanup_database())
         
         logger.info("✅ Userbot active! Monitoring for new members and help requests...")
         logger.info("🕵️  STEALTH MODE: Random delays, human patterns, rate limiting active")

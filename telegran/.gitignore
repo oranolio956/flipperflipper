@@ -35,6 +35,7 @@ Thumbs.db
 # Bot specific
 telegran.db
 user_data/
+userbot_data.json
 
 # Telethon session files (CRITICAL - contains auth!)
 *.session
