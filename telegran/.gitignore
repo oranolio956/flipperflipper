@@ -57,3 +57,10 @@ alerts.log
 userbot_session*
 get_groups_session*
 test_session*
+scraper_session*
+
+# Member scraper data (SENSITIVE!)
+scraper_state.json
+scraper_config.json
+scraped_members_*.csv
+member_scraper.log
