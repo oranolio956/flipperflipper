@@ -27,7 +27,7 @@ telegran/
 └── DEPLOYMENT.md                 # 24/7 hosting (8.9KB)
 ```
 
-**Total:** 3,814 lines of code + 90KB documentation (30,000+ words!)
+**Total:** 404 lines of code + 92KB documentation (11,083 words!)
 
 ---
 
@@ -238,10 +238,10 @@ python userbot.py
 ## ✅ What You're Getting
 
 ### Immediate:
-- ✅ Working userbot code (500+ lines)
+- ✅ Working userbot code (404 lines)
 - ✅ 8 anti-detection features
 - ✅ Easy JSON configuration
-- ✅ 30,000+ words documentation
+- ✅ 11,000+ words documentation
 - ✅ Auto-installer script
 - ✅ 24/7 service template
 
@@ -385,7 +385,7 @@ Ctrl + C
 
 ### vs. Other Userbots:
 - ✅ **Most comprehensive anti-detection** (8 features)
-- ✅ **Best documentation** (30,000+ words)
+- ✅ **Best documentation** (11,000+ words)
 - ✅ **Production-ready** (error handling, logging)
 - ✅ **Risk management** (conservative defaults)
 - ✅ **Easy to use** (JSON config, no coding)
@@ -440,7 +440,7 @@ This is a USERBOT that uses your personal Telegram account. This is against Tele
 
 Your telegran folder contains everything you need:
 - World-class stealth userbot
-- 30,000+ words of documentation
+- 11,000+ words of documentation
 - Advanced anti-detection features
 - Complete safety protocols
 

@@ -39,7 +39,9 @@ class StealthUserbot:
         self.welcomed_users: Set[int] = set()
         self.help_cooldowns: Dict[int, datetime] = {}
         self.message_count = 0
+        self.daily_message_count = 0
         self.session_start = datetime.now()
+        self.last_reset_date = datetime.now().date()
         
         # Get credentials
         self.api_id = os.getenv('API_ID')
@@ -119,6 +121,11 @@ class StealthUserbot:
             logger.info("⏸️  Hourly rate limit reached, skipping response")
             return False
         
+        # Check daily rate limit
+        if self.daily_message_count >= stealth['max_messages_per_day']:
+            logger.info("⏸️  Daily rate limit reached, skipping response")
+            return False
+        
         # Check time of day
         current_hour = datetime.now().hour
         is_active_hours = stealth['active_hours_start'] <= current_hour <= stealth['active_hours_end']
@@ -166,6 +173,11 @@ class StealthUserbot:
             if not self.config['enable_welcome']:
                 return
             
+            # Check if this is the target group
+            chat = await event.get_chat()
+            if not self.is_target_group(chat):
+                return
+            
             # Get new member info
             user = await event.get_user()
             
@@ -206,6 +218,7 @@ class StealthUserbot:
             
             self.welcomed_users.add(user_id)
             self.message_count += 1
+            self.daily_message_count += 1
             
             logger.info(f"✅ Welcomed {username}")
             
@@ -216,6 +229,15 @@ class StealthUserbot:
         """Handle messages and detect help requests"""
         try:
             if not self.config['enable_help']:
+                return
+            
+            # Check if message has text
+            if not event.message or not event.message.text:
+                return
+            
+            # Check if this is the target group
+            chat = await event.get_chat()
+            if not self.is_target_group(chat):
                 return
             
             # Don't respond to own messages
@@ -274,6 +296,7 @@ class StealthUserbot:
             
             self.help_cooldowns[user_id] = datetime.now()
             self.message_count += 1
+            self.daily_message_count += 1
             
             logger.info(f"✅ Responded to {username}")
             
@@ -286,7 +309,39 @@ class StealthUserbot:
             await asyncio.sleep(3600)  # 1 hour
             old_count = self.message_count
             self.message_count = 0
-            logger.info(f"🔄 Hourly reset - Sent {old_count} messages last hour")
+            
+            # Check if we need to reset daily counter
+            current_date = datetime.now().date()
+            if current_date != self.last_reset_date:
+                logger.info(f"🔄 Daily reset - Sent {self.daily_message_count} messages yesterday")
+                self.daily_message_count = 0
+                self.last_reset_date = current_date
+            
+            logger.info(f"🔄 Hourly reset - Sent {old_count} messages last hour | Daily total: {self.daily_message_count}")
+    
+    def is_target_group(self, chat) -> bool:
+        """Check if the chat is the target group"""
+        target = self.config['target_group']
+        
+        # Check by username
+        if hasattr(chat, 'username') and chat.username:
+            if chat.username.lower() == target.lower():
+                return True
+        
+        # Check by title (partial match)
+        if hasattr(chat, 'title') and chat.title:
+            if target.lower() in chat.title.lower():
+                return True
+        
+        # Check by ID (if target is a number)
+        try:
+            target_id = int(target)
+            if chat.id == target_id:
+                return True
+        except ValueError:
+            pass
+        
+        return False
     
     async def print_stats(self):
         """Print statistics every 30 minutes"""
@@ -296,7 +351,8 @@ class StealthUserbot:
             logger.info(
                 f"📊 Stats - Welcomed: {len(self.welcomed_users)} | "
                 f"Cooldowns: {len(self.help_cooldowns)} | "
-                f"Messages this hour: {self.message_count} | "
+                f"Messages this hour: {self.message_count}/{self.config['stealth']['max_messages_per_hour']} | "
+                f"Daily: {self.daily_message_count}/{self.config['stealth']['max_messages_per_day']} | "
                 f"Uptime: {uptime}"
             )
     
