@@ -64,6 +64,37 @@ class StealthUserbot:
         # Initialize Telegram client
         self.client = TelegramClient('userbot_session', int(self.api_id), self.api_hash)
     
+    def validate_config(self, config: dict) -> tuple[bool, str]:
+        """Validate configuration values"""
+        # Check welcome messages
+        if not config.get('welcome_messages') or len(config['welcome_messages']) == 0:
+            return False, "welcome_messages cannot be empty"
+        
+        # Check help messages
+        if not config.get('help_messages') or len(config['help_messages']) == 0:
+            return False, "help_messages cannot be empty"
+        
+        # Check stealth settings
+        stealth = config.get('stealth', {})
+        
+        if stealth.get('max_messages_per_hour', 0) <= 0:
+            return False, "max_messages_per_hour must be positive"
+        
+        if stealth.get('max_messages_per_hour', 0) > 30:
+            return False, "max_messages_per_hour too high (Telegram limit ~30/min)"
+        
+        if stealth.get('response_probability', 0) <= 0 or stealth.get('response_probability', 0) > 1:
+            return False, "response_probability must be between 0 and 1"
+        
+        if stealth.get('welcome_delay_min', 0) > stealth.get('welcome_delay_max', 0):
+            return False, "welcome_delay_min cannot be greater than welcome_delay_max"
+        
+        # Check target group
+        if not config.get('target_group'):
+            return False, "target_group must be set"
+        
+        return True, "OK"
+    
     def load_config(self) -> dict:
         """Load stealth configuration"""
         default_config = {
@@ -112,7 +143,19 @@ class StealthUserbot:
             if os.path.exists('config.json'):
                 with open('config.json', 'r') as f:
                     config = json.load(f)
-                    return {**default_config, **config}
+                    merged = {**default_config, **config}
+                    
+                    # Validate merged config
+                    valid, error = self.validate_config(merged)
+                    if not valid:
+                        logger.error(f"❌ Invalid config.json: {error}")
+                        logger.error("   Using default config instead")
+                        return default_config
+                    
+                    return merged
+        except json.JSONDecodeError as e:
+            logger.error(f"❌ Invalid JSON in config.json: {e}")
+            logger.error("   Using default config instead")
         except Exception as e:
             logger.warning(f"Could not load config.json: {e}. Using defaults.")
         
@@ -166,6 +209,11 @@ class StealthUserbot:
     async def simulate_typing(self, chat):
         """Show typing indicator like a human"""
         stealth = self.config['stealth']
+        
+        # Skip typing if disabled
+        if stealth['typing_time_min'] == 0 and stealth['typing_time_max'] == 0:
+            return
+        
         typing_time = random.uniform(
             stealth['typing_time_min'],
             stealth['typing_time_max']
@@ -485,13 +533,15 @@ class StealthUserbot:
         # Verify user is in target group
         await self.verify_target_group()
         
-        # Register event handlers
-        @self.client.on(events.ChatAction)
+        # Register event handlers - ONLY for target group!
+        target_chat_id = self.target_group_id if hasattr(self, 'target_group_id') else None
+        
+        @self.client.on(events.ChatAction(chats=[target_chat_id] if target_chat_id else None))
         async def chat_action_handler(event):
             if event.user_joined or event.user_added:
                 await self.handle_new_member(event)
         
-        @self.client.on(events.NewMessage)
+        @self.client.on(events.NewMessage(chats=[target_chat_id] if target_chat_id else None))
         async def message_handler(event):
             await self.handle_message(event)
         
