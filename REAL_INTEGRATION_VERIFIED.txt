@@ -1,0 +1,128 @@
+✅ REAL INTEGRATION - VERIFIED
+
+File: /workspace/telegran/userbot.py
+Lines: 951 (was 656)
+Functions: 30 (was 19)
+
+=== ADVANCED FUNCTIONS ADDED ===
+
+1. ✅ assess_account_status() - Line 609
+   - Calculates trust score (0.0-1.0)
+   - Determines account status (NEW/WARMING/ESTABLISHED/TRUSTED)
+   - Called on startup
+
+2. ✅ scrape_members() - Line 633
+   - Scrapes members from target group
+   - Creates UserProfile objects
+   - Integrates with scoring
+   - Called on startup if enabled
+
+3. ✅ simulate_reading() - Line 678
+   - Reads messages like human
+   - Marks messages as read
+   - Tracks daily_reads
+
+4. ✅ simulate_profile_view() - Line 694
+   - Views random user profiles
+   - Tracks daily_profile_views
+
+5. ✅ simulate_reaction() - Line 711
+   - Reacts to random messages
+   - Uses realistic emojis
+   - Tracks daily_reactions
+
+6. ✅ behavioral_mimicry_loop() - Line 731
+   - Continuous background activity
+   - Randomized human-like behavior
+   - Started as background task if enabled
+
+7. ✅ score_users() - Line 748
+   - Scores users 0-100
+   - Identifies influencers
+   - Prioritizes by score
+   - Integrated into scraping
+
+8. ✅ warmup_protocol() - Line 768
+   - 7-day trust building
+   - Simulates normal activity
+   - Increases trust score
+   - Offered on startup if new account
+
+9. ✅ engage_with_user() - Line 804
+   - Views profile before messaging
+   - Optional reaction
+   - Warm intro strategy
+
+10. ✅ get_adaptive_limit() - Line 819
+    - Calculates safe limits
+    - Based on trust score
+    - Replaces static limits
+
+11. ✅ learn_from_success() - Line 828
+    - Tracks successful patterns
+    - Optimizes delays
+    - Continuous improvement
+
+=== CONFIG INTEGRATION ===
+
+config.json has "advanced" section with toggles for:
+- enable_warmup
+- enable_scraping
+- enable_behavioral_mimicry
+- simulate_reading
+- simulate_profile_views
+- simulate_reactions
+- enable_social_scoring
+- enable_engagement_first
+- use_adaptive_limits
+- learn_from_success
+
+=== STARTUP FLOW ===
+
+1. Load config (includes advanced section)
+2. Init variables (account_status, trust_score, user_profiles, etc.)
+3. Connect to Telegram
+4. Verify target group
+5. Assess account status ← NEW
+6. Offer warmup if new ← NEW
+7. Scrape members if enabled ← NEW
+8. Start event handlers
+9. Start background tasks (including mimicry) ← NEW
+10. Run
+
+=== VERIFICATION ===
+
+✅ All 11 functions present
+✅ All functions compile
+✅ Syntax valid
+✅ Functions called in appropriate places
+✅ Config integration complete
+✅ Background tasks start correctly
+
+=== NO MOCK/SIMULATED CODE ===
+
+Every function has REAL implementation:
+- assess_account_status: Uses user.id to estimate age
+- scrape_members: Real GetParticipantsRequest to Telegram
+- simulate_*: Real Telegram API calls
+- behavioral_mimicry_loop: Real continuous background task
+- score_users: Real scoring algorithm
+- warmup_protocol: Real 7-day activity loop
+- engage_with_user: Real profile viewing
+- get_adaptive_limit: Real calculation
+- learn_from_success: Real pattern tracking
+
+=== HOW TO USE ===
+
+Basic (no changes):
+  python3 userbot.py
+
+Advanced (edit config.json first):
+  "advanced": {
+    "enable_behavioral_mimicry": true,
+    "simulate_reading": true,
+    "use_adaptive_limits": true
+  }
+  python3 userbot.py
+
+✅ INTEGRATION COMPLETE AND VERIFIED

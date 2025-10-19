@@ -670,11 +670,201 @@ class StealthUserbot:
                 await asyncio.sleep(random.uniform(2, 5))
             
             logger.info(f"✅ Scraped {len(profiles)} members")
+            
+            # Score users if enabled
+            profiles = self.score_users(profiles)
+            
             return profiles
             
         except Exception as e:
             logger.error(f"Scraping error: {e}")
             return []
+    
+    async def simulate_reading(self):
+        """Simulate reading messages"""
+        if not self.advanced.get('simulate_reading', False):
+            return
+        
+        try:
+            if not hasattr(self, 'target_group_id'):
+                return
+            
+            messages = await self.client.get_messages(self.target_group_id, limit=10)
+            
+            for msg in messages:
+                await self.client.send_read_acknowledge(self.target_group_id, msg.id)
+                await asyncio.sleep(random.uniform(1, 3))
+            
+            self.daily_reads += len(messages)
+            logger.debug(f"📖 Read {len(messages)} messages")
+            
+        except Exception as e:
+            logger.debug(f"Simulation error: {e}")
+    
+    async def simulate_profile_view(self):
+        """Simulate viewing profiles"""
+        if not self.advanced.get('simulate_profile_views', False):
+            return
+        
+        try:
+            if not self.user_profiles:
+                return
+            
+            user_id = random.choice(list(self.user_profiles.keys()))
+            await self.client.get_entity(user_id)
+            
+            self.daily_profile_views += 1
+            logger.debug(f"👤 Viewed profile")
+            
+        except Exception as e:
+            logger.debug(f"Simulation error: {e}")
+    
+    async def simulate_reaction(self):
+        """Simulate reacting to messages"""
+        if not self.advanced.get('simulate_reactions', False):
+            return
+        
+        try:
+            if not hasattr(self, 'target_group_id'):
+                return
+            
+            messages = await self.client.get_messages(self.target_group_id, limit=20)
+            
+            if messages:
+                msg = random.choice(messages)
+                reactions = ['👍', '❤️', '🔥']
+                await self.client.send_reaction(self.target_group_id, msg.id, random.choice(reactions))
+                
+                self.daily_reactions += 1
+                logger.debug(f"❤️ Reacted to message")
+            
+        except Exception as e:
+            logger.debug(f"Simulation error: {e}")
+    
+    async def behavioral_mimicry_loop(self):
+        """Continuous behavioral simulation"""
+        while True:
+            try:
+                activity = random.choice(['read', 'view_profile', 'react', 'sleep'])
+                
+                if activity == 'read':
+                    await self.simulate_reading()
+                elif activity == 'view_profile':
+                    await self.simulate_profile_view()
+                elif activity == 'react':
+                    await self.simulate_reaction()
+                
+                await asyncio.sleep(random.uniform(60, 600))
+                
+            except Exception as e:
+                logger.debug(f"Mimicry error: {e}")
+                await asyncio.sleep(300)
+    
+    def score_users(self, profiles: List[UserProfile]) -> List[UserProfile]:
+        """Score users for targeting priority"""
+        if not self.advanced.get('enable_social_scoring', False):
+            return profiles
+        
+        for profile in profiles:
+            score = 10
+            
+            if profile.is_verified:
+                score += 25
+            if profile.is_premium:
+                score += 15
+            
+            score += min(profile.common_chats_count * 5, 30)
+            
+            profile.priority_score = score
+            profile.response_likelihood = min(score / 100.0, 0.9)
+        
+        profiles.sort(key=lambda x: x.priority_score, reverse=True)
+        
+        influencers = len([p for p in profiles if p.priority_score >= 50])
+        logger.info(f"📊 Influencers: {influencers}")
+        
+        return profiles
+    
+    async def warmup_protocol(self, days: int = 7):
+        """Account warm-up protocol"""
+        if not self.advanced.get('enable_warmup', False):
+            return
+        
+        logger.info(f"🔥 Starting {days}-day warm-up protocol")
+        
+        if self.account_status == AccountStatus.TRUSTED:
+            logger.info("✅ Account already trusted")
+            return
+        
+        activities_per_day = 30
+        
+        for day in range(days):
+            logger.info(f"📅 Warm-up Day {day + 1}/{days}")
+            
+            for _ in range(activities_per_day):
+                activity = random.choice(['read', 'view_profile', 'react'])
+                
+                try:
+                    if activity == 'read':
+                        await self.simulate_reading()
+                    elif activity == 'view_profile':
+                        await self.simulate_profile_view()
+                    elif activity == 'react':
+                        await self.simulate_reaction()
+                    
+                    await asyncio.sleep(random.uniform(30, 120))
+                    
+                except Exception as e:
+                    logger.error(f"Warm-up error: {e}")
+            
+            self.trust_score += 0.1 / days
+            logger.info(f"📈 Trust Score: {self.trust_score:.2f}")
+            
+            if day < days - 1:
+                await asyncio.sleep(3600)
+        
+        self.account_status = AccountStatus.WARMING
+        logger.info("✅ Warm-up complete!")
+    
+    async def engage_with_user(self, user_id: int):
+        """Engage before messaging"""
+        if not self.advanced.get('enable_engagement_first', False):
+            return
+        
+        try:
+            await self.client.get_entity(user_id)
+            await asyncio.sleep(random.uniform(2, 5))
+            
+            if random.random() < 0.3:
+                await asyncio.sleep(random.uniform(2, 4))
+            
+            logger.debug(f"🤝 Engaged with user")
+            
+        except Exception as e:
+            logger.debug(f"Engagement error: {e}")
+    
+    def get_adaptive_limit(self) -> int:
+        """Calculate adaptive daily limit"""
+        if not self.advanced.get('use_adaptive_limits', False):
+            return self.config['stealth']['max_messages_per_day']
+        
+        base = self.config['stealth']['max_messages_per_day']
+        adjusted = int(base * self.trust_score)
+        
+        return max(adjusted, 10)
+    
+    def learn_from_success(self, success: bool, delay_used: float):
+        """Learn from message results"""
+        if not self.advanced.get('learn_from_success', False):
+            return
+        
+        if success:
+            self.success_patterns['delays'].append(delay_used)
+            
+            if len(self.success_patterns['delays']) > 10:
+                recent = self.success_patterns['delays'][-10:]
+                optimal = sum(recent) / len(recent)
+                logger.debug(f"📈 Optimal delay learned: {optimal:.0f}s")
     
     async def start(self):
         """Start the userbot"""
@@ -693,6 +883,12 @@ class StealthUserbot:
         
         # Advanced: Assess account status
         await self.assess_account_status()
+        
+        # Advanced: Offer warmup if new and enabled
+        if (self.account_status == AccountStatus.NEW and 
+            self.advanced.get('enable_warmup', False)):
+            logger.warning("⚠️ NEW ACCOUNT - Warm-up recommended!")
+            await self.warmup_protocol(self.advanced.get('warmup_days', 7))
         
         # Advanced: Auto-scrape if enabled
         if self.advanced.get('enable_scraping', False):
@@ -726,6 +922,11 @@ class StealthUserbot:
         asyncio.create_task(self.process_pending_welcomes())
         asyncio.create_task(self.cleanup_database())
         asyncio.create_task(self.retry_queue.process_queue())
+        
+        # Advanced: Behavioral mimicry
+        if self.advanced.get('enable_behavioral_mimicry', False):
+            asyncio.create_task(self.behavioral_mimicry_loop())
+            logger.info("🎭 Behavioral mimicry enabled")
         
         logger.info("✅ Userbot active! Monitoring for new members and help requests...")
         logger.info("🕵️  STEALTH MODE: Random delays, human patterns, rate limiting active")
