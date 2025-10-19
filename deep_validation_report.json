@@ -1,0 +1,16 @@
+{
+  "confidence_score": 84.0,
+  "critical_failures": [],
+  "issues": [
+    "Polymorphic builds have same hash",
+    "Injection manager not working",
+    "AES CTR mode not implemented",
+    "Protocol Encryption not implemented",
+    "Endpoint / error",
+    "Endpoint /api/test-native-payload error",
+    "Endpoint /api/inject/list-processes error",
+    "Endpoint /api/inject/techniques error"
+  ],
+  "tests_run": 50,
+  "tests_passed": 42
+}

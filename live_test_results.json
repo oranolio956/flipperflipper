@@ -20,6 +20,10 @@
     "msg": "\u2705 Binary created: 55584 bytes"
   },
   {
+    "level": "SUCCESS",
+    "msg": "\u2705 Binary executes (times out looking for C2 - expected)"
+  },
+  {
     "level": "INFO",
     "msg": "\n======================================================================"
   },
@@ -44,10 +48,6 @@
     "msg": "\u2705 Main page responds"
   },
   {
-    "level": "SUCCESS",
-    "msg": "\u2705 Native payload API works: 47488 bytes"
-  },
-  {
     "level": "ERROR",
     "msg": "\u274c API test failed: Expecting value: line 1 column 1 (char 0)"
   },
@@ -65,7 +65,7 @@
   },
   {
     "level": "SUCCESS",
-    "msg": "\u2705 Found 50 processes"
+    "msg": "\u2705 Found 14 processes"
   },
   {
     "level": "SUCCESS",
