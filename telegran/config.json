@@ -1,0 +1,23 @@
+{
+  "welcome_message": "👋 Welcome {username} to Cupidbot! We're so glad you're here! ❤️\n\nThis is a friendly community where you can connect, chat, and find meaningful connections.\n\nFeel free to introduce yourself! 💬",
+  "help_message": "💬 Hi {username}! I noticed you might need some help.\n\nHere's how to get started:\n\n📚 Check out our guide: https://t.me/cupidbotg\n💬 Ask your question in the chat - our community is friendly and helpful!\n🔧 For technical issues or urgent matters, tag an admin with @admin\n\nWhat specifically do you need help with?",
+  "welcome_delay": 30,
+  "cooldown_hours": 24,
+  "help_keywords": [
+    "help",
+    "support",
+    "how do i",
+    "how to",
+    "question",
+    "need assistance",
+    "can someone help",
+    "issue",
+    "problem",
+    "stuck",
+    "confused",
+    "don't understand",
+    "not working"
+  ],
+  "enable_welcome_buttons": true,
+  "admin_notify": true
+}
