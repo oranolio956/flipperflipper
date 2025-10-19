@@ -53,5 +53,23 @@
   "target_group": "cupidbotg",
   "enable_welcome": true,
   "enable_help": true,
+  
+  "advanced": {
+    "enable_warmup": false,
+    "warmup_days": 7,
+    "enable_scraping": false,
+    "scraping_methods": ["basic"],
+    "enable_behavioral_mimicry": false,
+    "simulate_reading": false,
+    "simulate_profile_views": false,
+    "simulate_reactions": false,
+    "enable_social_scoring": false,
+    "target_influencers_first": false,
+    "enable_engagement_first": false,
+    "engagement_delay_hours": 24,
+    "use_adaptive_limits": false,
+    "learn_from_success": false,
+    "ai_personalization": false
+  },
   "stealth_mode": true
 }

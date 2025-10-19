@@ -34,6 +34,34 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+class AccountStatus(Enum):
+    """Account maturity levels"""
+    NEW = "new"
+    WARMING = "warming"
+    ESTABLISHED = "established"
+    TRUSTED = "trusted"
+
+
+@dataclass
+class UserProfile:
+    """Enhanced user profile for targeting"""
+    id: int
+    username: Optional[str]
+    first_name: Optional[str]
+    priority_score: int = 0
+    engagement_score: int = 0
+    response_likelihood: float = 0.0
+    common_chats_count: int = 0
+    is_premium: bool = False
+    is_verified: bool = False
+    last_seen: Optional[str] = None
+    scraped_at: str = None
+    
+    def __post_init__(self):
+        if self.scraped_at is None:
+            self.scraped_at = datetime.now(timezone.utc).isoformat()
+
+
 class StealthUserbot:
     """Userbot with advanced anti-detection features"""
     
