@@ -1,0 +1,348 @@
+"""
+Telegran Userbot - Stealth Auto-Welcome & Help System
+Uses YOUR personal Telegram account to send messages
+"""
+
+import os
+import json
+import logging
+import asyncio
+import random
+from datetime import datetime, timedelta
+from typing import Dict, Set
+from dotenv import load_dotenv
+
+from telethon import TelegramClient, events
+from telethon.tl.types import User, Channel, Chat
+
+# Load environment variables
+load_dotenv()
+
+# Configure logging
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO,
+    handlers=[
+        logging.FileHandler('telegran.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
+
+class StealthUserbot:
+    """Userbot with advanced anti-detection features"""
+    
+    def __init__(self):
+        """Initialize the userbot with stealth configuration"""
+        self.config = self.load_config()
+        self.welcomed_users: Set[int] = set()
+        self.help_cooldowns: Dict[int, datetime] = {}
+        self.message_count = 0
+        self.session_start = datetime.now()
+        
+        # Get credentials
+        self.api_id = os.getenv('API_ID')
+        self.api_hash = os.getenv('API_HASH')
+        self.phone = os.getenv('PHONE_NUMBER')
+        
+        if not all([self.api_id, self.api_hash, self.phone]):
+            raise ValueError("API_ID, API_HASH, and PHONE_NUMBER required in .env!")
+        
+        # Initialize Telegram client
+        self.client = TelegramClient('userbot_session', int(self.api_id), self.api_hash)
+    
+    def load_config(self) -> dict:
+        """Load stealth configuration"""
+        default_config = {
+            "welcome_messages": [
+                "Hey {username}! Welcome to the group! 👋 Glad you're here!",
+                "Hi {username}! Great to have you join us! Feel free to ask if you need anything 😊",
+                "Welcome {username}! 🎉 Hope you enjoy the community!",
+                "Hey there {username}! Welcome! Don't hesitate to reach out if you have questions 💬"
+            ],
+            "help_messages": [
+                "Hey {username}! I saw your message - what do you need help with?",
+                "Hi {username}! I can help with that. What specifically are you looking for?",
+                "Hey {username}! I'm around if you need assistance. What's up?",
+                "Hi {username}! Let me know how I can help you out 😊"
+            ],
+            "help_keywords": [
+                "help", "support", "how do i", "how to", "question",
+                "need assistance", "can someone help", "anyone help",
+                "issue", "problem", "stuck", "confused"
+            ],
+            
+            # STEALTH SETTINGS - Anti-Detection
+            "stealth": {
+                "welcome_delay_min": 45,      # Minimum seconds before welcome
+                "welcome_delay_max": 180,     # Maximum seconds before welcome
+                "help_delay_min": 10,         # Minimum seconds before help response
+                "help_delay_max": 60,         # Maximum seconds before help response
+                "typing_time_min": 2,         # Minimum typing indicator time
+                "typing_time_max": 5,         # Maximum typing indicator time
+                "cooldown_hours": 24,         # Don't message same user for 24h
+                "max_messages_per_hour": 8,   # Limit messages per hour
+                "max_messages_per_day": 50,   # Daily limit
+                "response_probability": 0.85, # Respond to 85% of triggers (not 100%)
+                "active_hours_start": 8,      # Be more active after 8 AM
+                "active_hours_end": 23,       # Be less active after 11 PM
+                "night_response_probability": 0.3  # Lower response rate at night
+            },
+            
+            "target_group": "cupidbotg",      # Group username or ID
+            "enable_welcome": True,
+            "enable_help": True,
+            "stealth_mode": True
+        }
+        
+        try:
+            if os.path.exists('config.json'):
+                with open('config.json', 'r') as f:
+                    config = json.load(f)
+                    return {**default_config, **config}
+        except Exception as e:
+            logger.warning(f"Could not load config.json: {e}. Using defaults.")
+        
+        # Save default config
+        with open('config.json', 'w') as f:
+            json.dump(default_config, f, indent=2)
+        
+        return default_config
+    
+    def should_respond_now(self) -> bool:
+        """Determine if bot should respond based on stealth settings"""
+        stealth = self.config['stealth']
+        
+        # Check hourly rate limit
+        if self.message_count >= stealth['max_messages_per_hour']:
+            logger.info("⏸️  Hourly rate limit reached, skipping response")
+            return False
+        
+        # Check time of day
+        current_hour = datetime.now().hour
+        is_active_hours = stealth['active_hours_start'] <= current_hour <= stealth['active_hours_end']
+        
+        # Adjust probability based on time
+        if is_active_hours:
+            probability = stealth['response_probability']
+        else:
+            probability = stealth['night_response_probability']
+            logger.info(f"🌙 Night time - reduced response probability: {probability}")
+        
+        # Random chance to skip (make it look human)
+        if random.random() > probability:
+            logger.info(f"🎲 Randomly skipping response (stealth mode)")
+            return False
+        
+        return True
+    
+    async def simulate_human_delay(self, min_delay: int, max_delay: int):
+        """Simulate human-like random delay"""
+        delay = random.uniform(min_delay, max_delay)
+        logger.info(f"⏰ Waiting {delay:.1f}s (human-like delay)")
+        await asyncio.sleep(delay)
+    
+    async def simulate_typing(self, chat):
+        """Show typing indicator like a human"""
+        stealth = self.config['stealth']
+        typing_time = random.uniform(
+            stealth['typing_time_min'],
+            stealth['typing_time_max']
+        )
+        
+        logger.info(f"⌨️  Showing typing for {typing_time:.1f}s...")
+        async with self.client.action(chat, 'typing'):
+            await asyncio.sleep(typing_time)
+    
+    def get_random_message(self, message_list: list, username: str) -> str:
+        """Get random message from list to vary responses"""
+        message = random.choice(message_list)
+        return message.format(username=username)
+    
+    async def handle_new_member(self, event):
+        """Handle new member joins with stealth"""
+        try:
+            if not self.config['enable_welcome']:
+                return
+            
+            # Get new member info
+            user = await event.get_user()
+            
+            if not isinstance(user, User) or user.bot:
+                return
+            
+            user_id = user.id
+            username = user.first_name or "there"
+            
+            # Check if already welcomed
+            if user_id in self.welcomed_users:
+                logger.info(f"Already welcomed {username}")
+                return
+            
+            # Check if should respond (stealth mode)
+            if not self.should_respond_now():
+                logger.info(f"Stealth mode: Skipping welcome for {username}")
+                return
+            
+            logger.info(f"👤 New member: {username} ({user_id})")
+            
+            # Human-like delay before welcoming
+            await self.simulate_human_delay(
+                self.config['stealth']['welcome_delay_min'],
+                self.config['stealth']['welcome_delay_max']
+            )
+            
+            # Show typing indicator
+            await self.simulate_typing(event.chat_id)
+            
+            # Send welcome message
+            message = self.get_random_message(
+                self.config['welcome_messages'],
+                username
+            )
+            
+            await self.client.send_message(event.chat_id, message)
+            
+            self.welcomed_users.add(user_id)
+            self.message_count += 1
+            
+            logger.info(f"✅ Welcomed {username}")
+            
+        except Exception as e:
+            logger.error(f"Error handling new member: {e}", exc_info=True)
+    
+    async def handle_message(self, event):
+        """Handle messages and detect help requests"""
+        try:
+            if not self.config['enable_help']:
+                return
+            
+            # Don't respond to own messages
+            if event.sender_id == (await self.client.get_me()).id:
+                return
+            
+            message_text = event.message.text.lower()
+            sender = await event.get_sender()
+            
+            if not isinstance(sender, User):
+                return
+            
+            user_id = sender.id
+            username = sender.first_name or "there"
+            
+            # Check for help keywords
+            is_help_request = any(
+                keyword in message_text 
+                for keyword in self.config['help_keywords']
+            )
+            
+            if not is_help_request:
+                return
+            
+            # Check cooldown
+            if user_id in self.help_cooldowns:
+                last_help = self.help_cooldowns[user_id]
+                cooldown_time = timedelta(hours=self.config['stealth']['cooldown_hours'])
+                if datetime.now() - last_help < cooldown_time:
+                    logger.info(f"Cooldown active for {username}")
+                    return
+            
+            # Check if should respond (stealth mode)
+            if not self.should_respond_now():
+                logger.info(f"Stealth mode: Skipping help response for {username}")
+                return
+            
+            logger.info(f"💬 Help request from {username}: {message_text[:50]}...")
+            
+            # Human-like delay before responding
+            await self.simulate_human_delay(
+                self.config['stealth']['help_delay_min'],
+                self.config['stealth']['help_delay_max']
+            )
+            
+            # Show typing indicator
+            await self.simulate_typing(event.chat_id)
+            
+            # Send help message
+            help_text = self.get_random_message(
+                self.config['help_messages'],
+                username
+            )
+            
+            await event.reply(help_text)
+            
+            self.help_cooldowns[user_id] = datetime.now()
+            self.message_count += 1
+            
+            logger.info(f"✅ Responded to {username}")
+            
+        except Exception as e:
+            logger.error(f"Error handling message: {e}", exc_info=True)
+    
+    async def reset_hourly_counter(self):
+        """Reset message counter every hour"""
+        while True:
+            await asyncio.sleep(3600)  # 1 hour
+            old_count = self.message_count
+            self.message_count = 0
+            logger.info(f"🔄 Hourly reset - Sent {old_count} messages last hour")
+    
+    async def print_stats(self):
+        """Print statistics every 30 minutes"""
+        while True:
+            await asyncio.sleep(1800)  # 30 minutes
+            uptime = datetime.now() - self.session_start
+            logger.info(
+                f"📊 Stats - Welcomed: {len(self.welcomed_users)} | "
+                f"Cooldowns: {len(self.help_cooldowns)} | "
+                f"Messages this hour: {self.message_count} | "
+                f"Uptime: {uptime}"
+            )
+    
+    async def start(self):
+        """Start the userbot"""
+        logger.info("🚀 Starting Telegran Userbot (STEALTH MODE)...")
+        
+        # Connect and authenticate
+        await self.client.start(phone=self.phone)
+        
+        me = await self.client.get_me()
+        logger.info(f"✅ Logged in as: {me.first_name} (@{me.username})")
+        logger.info(f"🎯 Monitoring group: {self.config['target_group']}")
+        
+        # Register event handlers
+        @self.client.on(events.ChatAction)
+        async def chat_action_handler(event):
+            if event.user_joined or event.user_added:
+                await self.handle_new_member(event)
+        
+        @self.client.on(events.NewMessage)
+        async def message_handler(event):
+            await self.handle_message(event)
+        
+        # Start background tasks
+        asyncio.create_task(self.reset_hourly_counter())
+        asyncio.create_task(self.print_stats())
+        
+        logger.info("✅ Userbot active! Monitoring for new members and help requests...")
+        logger.info("🕵️  STEALTH MODE: Random delays, human patterns, rate limiting active")
+        
+        # Keep running
+        await self.client.run_until_disconnected()
+
+
+async def main():
+    """Main entry point"""
+    try:
+        userbot = StealthUserbot()
+        await userbot.start()
+    except KeyboardInterrupt:
+        logger.info("🛑 Userbot stopped by user")
+    except Exception as e:
+        logger.error(f"❌ Fatal error: {e}", exc_info=True)
+        raise
+
+
+if __name__ == '__main__':
+    asyncio.run(main())
