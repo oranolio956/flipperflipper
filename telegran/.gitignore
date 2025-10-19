@@ -36,8 +36,24 @@ Thumbs.db
 telegran.db
 user_data/
 userbot_data.json
+idempotency_state.json
+
+# Backups (keep local, don't commit)
+backups/
+*.backup
+
+# Alerts and monitoring
+alerts.log
+
+# Lock files
+*.lock
+
+# Master password (CRITICAL!)
+.telegran_key
 
 # Telethon session files (CRITICAL - contains auth!)
 *.session
 *.session-journal
 userbot_session*
+get_groups_session*
+test_session*

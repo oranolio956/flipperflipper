@@ -16,6 +16,8 @@ from telethon import TelegramClient, events
 from telethon.tl.types import User, Channel, Chat
 
 from database import Database
+from flood_wait_handler import FloodWaitHandler, RetryQueue
+from message_validator import safe_format_message, validator
 
 # Load environment variables
 load_dotenv()
@@ -41,6 +43,10 @@ class StealthUserbot:
         
         # Initialize database for persistence
         self.db = Database()
+        
+        # Initialize flood wait handler
+        self.flood_handler = FloodWaitHandler()
+        self.retry_queue = RetryQueue(self.flood_handler)
         
         # Load welcomed users from database
         self.welcomed_users: Set[int] = self.db.get_welcomed_users()
@@ -287,14 +293,33 @@ class StealthUserbot:
             # Show typing indicator
             await self.simulate_typing(event.chat_id)
             
-            # Send welcome message
-            message = self.get_random_message(
+            # Get and validate welcome message
+            template = self.get_random_message(
                 self.config['welcome_messages'],
                 username,
                 is_welcome=True
             )
             
-            await self.client.send_message(event.chat_id, message)
+            # Sanitize and validate
+            message = safe_format_message(template, username)
+            
+            # Send with flood wait protection
+            result = await self.flood_handler.execute_with_flood_protection(
+                self.client.send_message,
+                event.chat_id,
+                message
+            )
+            
+            if result is None:
+                # Failed even after retries - add to queue
+                logger.warning(f"⚠️  Failed to send welcome, adding to retry queue")
+                self.retry_queue.add(
+                    self.client.send_message,
+                    (event.chat_id, message),
+                    {},
+                    priority=1
+                )
+                return
             
             # Mark as welcomed in memory AND database
             self.welcomed_users.add(user_id)
@@ -372,14 +397,32 @@ class StealthUserbot:
             # Show typing indicator
             await self.simulate_typing(event.chat_id)
             
-            # Send help message
-            help_text = self.get_random_message(
+            # Get and validate help message
+            template = self.get_random_message(
                 self.config['help_messages'],
                 username,
                 is_welcome=False
             )
             
-            await event.reply(help_text)
+            # Sanitize and validate
+            help_text = safe_format_message(template, username)
+            
+            # Send with flood wait protection
+            result = await self.flood_handler.execute_with_flood_protection(
+                event.reply,
+                help_text
+            )
+            
+            if result is None:
+                # Failed - add to queue
+                logger.warning(f"⚠️  Failed to send help response, adding to retry queue")
+                self.retry_queue.add(
+                    event.reply,
+                    (help_text,),
+                    {},
+                    priority=0
+                )
+                return
             
             # Save cooldown to database
             self.db.add_help_cooldown(user_id)
@@ -538,6 +581,16 @@ class StealthUserbot:
         
         @self.client.on(events.ChatAction(chats=[target_chat_id] if target_chat_id else None))
         async def chat_action_handler(event):
+            # Handle group migration (group -> supergroup)
+            if event.migrated_to:
+                old_id = event.chat_id
+                new_id = event.migrated_to.id
+                logger.warning(f"🔄 Group migrated! Old ID: {old_id}, New ID: {new_id}")
+                logger.warning(f"⚠️  Update config.json with new target_group: {new_id}")
+                # Update our cached ID
+                self.target_group_id = new_id
+                return
+            
             if event.user_joined or event.user_added:
                 await self.handle_new_member(event)
         
@@ -550,6 +603,7 @@ class StealthUserbot:
         asyncio.create_task(self.print_stats())
         asyncio.create_task(self.process_pending_welcomes())
         asyncio.create_task(self.cleanup_database())
+        asyncio.create_task(self.retry_queue.process_queue())
         
         logger.info("✅ Userbot active! Monitoring for new members and help requests...")
         logger.info("🕵️  STEALTH MODE: Random delays, human patterns, rate limiting active")

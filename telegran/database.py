@@ -5,8 +5,9 @@ Ensures we remember who we've messaged even after restarts
 
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Set, Dict
+from file_lock import DatabaseLock
 
 
 class Database:
@@ -14,17 +15,19 @@ class Database:
     
     def __init__(self, db_file='userbot_data.json'):
         self.db_file = db_file
+        self.lock = DatabaseLock(db_file)
         self.data = self.load()
         # Create file immediately if it doesn't exist
         if not os.path.exists(self.db_file):
             self.save()
     
     def load(self) -> dict:
-        """Load database from file"""
+        """Load database from file with locking"""
         if os.path.exists(self.db_file):
             try:
-                with open(self.db_file, 'r') as f:
-                    return json.load(f)
+                with self.lock.transaction():
+                    with open(self.db_file, 'r') as f:
+                        return json.load(f)
             except Exception as e:
                 print(f"Error loading database: {e}")
                 return self._default_data()
@@ -41,10 +44,16 @@ class Database:
         }
     
     def save(self):
-        """Save database to file"""
+        """Save database to file with locking"""
         try:
-            with open(self.db_file, 'w') as f:
-                json.dump(self.data, f, indent=2)
+            with self.lock.transaction():
+                # Write to temp file first
+                temp_file = f"{self.db_file}.tmp"
+                with open(temp_file, 'w') as f:
+                    json.dump(self.data, f, indent=2)
+                
+                # Atomic rename
+                os.replace(temp_file, self.db_file)
         except Exception as e:
             print(f"Error saving database: {e}")
     
@@ -74,12 +83,12 @@ class Database:
     
     def add_help_cooldown(self, user_id: int):
         """Add user to help cooldown"""
-        self.data['help_cooldowns'][str(user_id)] = datetime.now().isoformat()
+        self.data['help_cooldowns'][str(user_id)] = datetime.now(timezone.utc).isoformat()
         self.save()
     
     def get_daily_count(self) -> int:
         """Get today's message count"""
-        today = str(datetime.now().date())
+        today = str(datetime.now(timezone.utc).date())
         
         # Reset if new day
         if self.data['last_reset_date'] != today:
@@ -100,7 +109,7 @@ class Database:
             'user_id': user_id,
             'username': username,
             'reason': reason,
-            'added': datetime.now().isoformat()
+            'added': datetime.now(timezone.utc).isoformat()
         }
         
         # Don't add duplicates
