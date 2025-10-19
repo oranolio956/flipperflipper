@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.session
+*.session-journal
+userbot_data.json
+backups/
+alerts.log
+*.log
+.git/
+.env
+idempotency_state.json
+*.lock
