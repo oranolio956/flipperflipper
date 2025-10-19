@@ -15,6 +15,9 @@ class Database:
     def __init__(self, db_file='userbot_data.json'):
         self.db_file = db_file
         self.data = self.load()
+        # Create file immediately if it doesn't exist
+        if not os.path.exists(self.db_file):
+            self.save()
     
     def load(self) -> dict:
         """Load database from file"""

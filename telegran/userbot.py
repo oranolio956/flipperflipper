@@ -208,6 +208,12 @@ class StealthUserbot:
                 return
             
             user_id = user.id
+            
+            # Don't welcome myself!
+            if user_id == self.my_id:
+                logger.info("Skipping self-join event")
+                return
+            
             username = user.first_name or "there"
             
             # Check if already welcomed
@@ -472,8 +478,12 @@ class StealthUserbot:
         await self.client.start(phone=self.phone)
         
         me = await self.client.get_me()
+        self.my_id = me.id  # Store for later checks
         logger.info(f"✅ Logged in as: {me.first_name} (@{me.username})")
         logger.info(f"🎯 Monitoring group: {self.config['target_group']}")
+        
+        # Verify user is in target group
+        await self.verify_target_group()
         
         # Register event handlers
         @self.client.on(events.ChatAction)

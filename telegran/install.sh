@@ -99,7 +99,7 @@ Type=simple
 User=$CURRENT_USER
 WorkingDirectory=$CURRENT_DIR
 Environment="PATH=$CURRENT_DIR/venv/bin"
-ExecStart=$CURRENT_DIR/venv/bin/python bot.py
+ExecStart=$CURRENT_DIR/venv/bin/python userbot.py
 Restart=always
 RestartSec=10
 
