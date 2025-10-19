@@ -15,12 +15,10 @@
     "failed": 0
   },
   "integration": {
-    "tests": 14,
-    "passed": 13,
-    "failed": 1
+    "tests": 19,
+    "passed": 19,
+    "failed": 0
   },
   "issues": [],
-  "critical": [
-    "Web server starts"
-  ]
+  "critical": []
 }

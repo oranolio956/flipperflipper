@@ -244,7 +244,7 @@ class IntegrationValidator:
         env = os.environ.copy()
         env.update({
             'STITCH_ADMIN_USER': 'admin',
-            'STITCH_ADMIN_PASSWORD': 'Test123!@#',
+            'STITCH_ADMIN_PASSWORD': 'SecureTestPassword123!',
             'STITCH_WEB_PORT': '19876',
             'STITCH_DEBUG': 'true'
         })
