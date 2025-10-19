@@ -8,12 +8,17 @@ import json
 import logging
 import asyncio
 import random
-from datetime import datetime, timedelta
-from typing import Dict, Set, Tuple
+from datetime import datetime, timezone, timedelta
+from typing import Dict, Set, Tuple, List, Optional
+from collections import defaultdict
+from dataclasses import dataclass
+from enum import Enum
 from dotenv import load_dotenv
 
-from telethon import TelegramClient, events
+from telethon import TelegramClient, events, functions
 from telethon.tl.types import User, Channel, Chat
+from telethon.tl.functions.channels import GetParticipantsRequest
+from telethon.tl.types import ChannelParticipantsSearch
 
 from database import Database
 from flood_wait_handler import FloodWaitHandler, RetryQueue
@@ -97,6 +102,18 @@ class StealthUserbot:
         
         # Initialize Telegram client
         self.client = TelegramClient('userbot_session', int(self.api_id), self.api_hash)
+        
+        # Advanced features state
+        self.account_status = AccountStatus.NEW
+        self.trust_score = 0.0
+        self.user_profiles: Dict[int, UserProfile] = {}
+        self.daily_reads = 0
+        self.daily_profile_views = 0
+        self.daily_reactions = 0
+        self.success_patterns: Dict[str, List[float]] = defaultdict(list)
+        
+        # Load advanced config
+        self.advanced = self.config.get('advanced', {})
     
     def validate_config(self, config: dict) -> tuple[bool, str]:
         """Validate configuration values"""
@@ -589,6 +606,76 @@ class StealthUserbot:
                 f"Uptime: {uptime}"
             )
     
+    async def assess_account_status(self):
+        """Assess account trust level"""
+        try:
+            me = await self.client.get_me()
+            user_id = me.id
+            
+            if user_id < 500_000_000:
+                self.account_status = AccountStatus.TRUSTED
+                self.trust_score = 0.9
+            elif user_id < 1_000_000_000:
+                self.account_status = AccountStatus.ESTABLISHED
+                self.trust_score = 0.7
+            elif user_id < 2_000_000_000:
+                self.account_status = AccountStatus.WARMING
+                self.trust_score = 0.4
+            else:
+                self.account_status = AccountStatus.NEW
+                self.trust_score = 0.2
+            
+            logger.info(f"📊 Account Status: {self.account_status.value}, Trust: {self.trust_score:.2f}")
+            
+        except Exception as e:
+            logger.error(f"Error assessing account: {e}")
+    
+    async def scrape_members(self, limit: int = 500) -> List[UserProfile]:
+        """Scrape members from target group"""
+        if not self.advanced.get('enable_scraping', False):
+            return []
+        
+        logger.info(f"🔍 Scraping up to {limit} members...")
+        profiles = []
+        
+        try:
+            channel = await self.client.get_entity(self.target_group_id)
+            offset = 0
+            
+            while len(profiles) < limit:
+                participants = await self.client(GetParticipantsRequest(
+                    channel=channel,
+                    filter=ChannelParticipantsSearch(''),
+                    offset=offset,
+                    limit=min(100, limit - len(profiles)),
+                    hash=0
+                ))
+                
+                if not participants.users:
+                    break
+                
+                for user in participants.users:
+                    if isinstance(user, User) and not user.bot:
+                        profile = UserProfile(
+                            id=user.id,
+                            username=user.username,
+                            first_name=user.first_name,
+                            last_seen=None,
+                            scraped_at=datetime.now(timezone.utc).isoformat()
+                        )
+                        profiles.append(profile)
+                        self.user_profiles[user.id] = profile
+                
+                offset += len(participants.users)
+                await asyncio.sleep(random.uniform(2, 5))
+            
+            logger.info(f"✅ Scraped {len(profiles)} members")
+            return profiles
+            
+        except Exception as e:
+            logger.error(f"Scraping error: {e}")
+            return []
+    
     async def start(self):
         """Start the userbot"""
         logger.info("🚀 Starting Telegran Userbot (STEALTH MODE)...")
@@ -603,6 +690,13 @@ class StealthUserbot:
         
         # Verify user is in target group
         await self.verify_target_group()
+        
+        # Advanced: Assess account status
+        await self.assess_account_status()
+        
+        # Advanced: Auto-scrape if enabled
+        if self.advanced.get('enable_scraping', False):
+            await self.scrape_members()
         
         # Register event handlers - ONLY for target group!
         target_chat_id = self.target_group_id if hasattr(self, 'target_group_id') else None
