@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# Decoded from Configuration/st_encryption.py
+# Original was obfuscated with exec(SEC(INFO(...)))
+
 
 import base64
 from Crypto import Random
