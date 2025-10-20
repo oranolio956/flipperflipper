@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# Decoded from Configuration/st_main.py
+# Original was obfuscated with exec(SEC(INFO(...)))
+
 #!/usr/bin/env python
 # TODO: Replace wildcard import with specific imports
 # TODO: Replace wildcard import with specific imports

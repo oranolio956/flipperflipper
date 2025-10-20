@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# Decoded from Configuration/st_protocol.py
+# Original was obfuscated with exec(SEC(INFO(...)))
+
 
 import socket
 import struct

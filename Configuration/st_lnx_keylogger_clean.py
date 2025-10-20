@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# Decoded from Configuration/st_lnx_keylogger.py
+# Original was obfuscated with exec(SEC(INFO(...)))
+
 
 import os
 import sys

