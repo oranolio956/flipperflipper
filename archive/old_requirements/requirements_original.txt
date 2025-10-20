@@ -1,78 +1,81 @@
-# Stitch RAT - Consolidated Requirements
-# Python 3.9+ compatible versions - Consolidated from all platform requirements
-# Generated: 2025-10-20
+# Stitch RAT - Web Interface Requirements
+# Core dependencies for web interface and RAT functionality
 
 # ==============================================================================
 # Core Web Framework (Required)
+# Python 3.13 compatible versions - Updated for 2025
 # ==============================================================================
 Flask>=3.0.0,<4.0.0
 Flask-SocketIO>=5.4.0
 Flask-Limiter>=3.8.0
-Flask-WTF>=1.2.0
 python-socketio>=5.11.0
 gevent>=24.2.1
 Werkzeug>=3.0.0,<4.0.0
 
 # ==============================================================================
 # Security & Authentication (Required)
-# CRITICAL: Replaced deprecated pycrypto with pycryptodome
 # ==============================================================================
+Flask-WTF>=1.2.0
 pycryptodome>=3.19.0
 python-dotenv>=1.0.0
 
 # ==============================================================================
 # Core RAT Functionality (Required)
 # ==============================================================================
-colorama>=0.4.6
-requests>=2.32.3
-psutil>=5.9.0
-python-dateutil>=2.8.2
+colorama==0.4.6
+requests==2.32.3
 
 # ==============================================================================
-# Cross-Platform Dependencies
+# Optional Dependencies (Platform-Specific)
 # ==============================================================================
 # Screenshot functionality (cross-platform)
-mss>=9.0.1
+mss>=1.10.1
+
+# PIL/Pillow for image processing
 Pillow>=10.0.0
 
 # SSH automation (Linux/macOS)
 pexpect>=4.9.0; sys_platform != 'win32'
 
+# Date/time utilities
+python-dateutil>=2.8.2
+
 # Linux-specific dependencies
 python-xlib>=0.33; sys_platform == 'linux'
 pyudev>=0.24.1; sys_platform == 'linux'
 
-# Windows-specific dependencies
-pywin32>=306; sys_platform == 'win32'
+# Windows-specific dependencies (uncomment if building Windows payloads)
+# pywin32>=306; sys_platform == 'win32'
+# pyHook>=1.5.1; sys_platform == 'win32'
 
-# macOS-specific dependencies
-pyobjc-framework-Cocoa>=10.0; sys_platform == 'darwin'
-pyobjc-framework-Quartz>=10.0; sys_platform == 'darwin'
-
-# ==============================================================================
-# Development & Testing (Required for fixes)
-# ==============================================================================
-pytest>=8.0.0
-pytest-cov>=4.1.0
-bandit>=1.7.5
-safety>=3.0.0
-black>=23.0.0
-isort>=5.12.0
-pylint>=3.0.0
-mypy>=1.7.0
+# macOS-specific dependencies (uncomment if on macOS)
+# pyobjc-framework-Cocoa>=10.0; sys_platform == 'darwin'
 
 # ==============================================================================
-# Optional: Build Tools
+# Development & Build Tools (Optional)
 # ==============================================================================
-PyInstaller>=6.0.0
+# PyInstaller for creating standalone executables
+# PyInstaller>=6.0.0
+
+# py2exe for Windows executables (Windows only)
+# py2exe>=0.13.0; sys_platform == 'win32'
 
 # ==============================================================================
-# Optional: Caching and Performance
+# Additional Security Tools (Optional)
 # ==============================================================================
+# Fuzzy hashing for file analysis
+# ssdeep>=3.4
+
+# Redis for distributed rate limiting (optional)
 redis>=5.0.0
 
 # ==============================================================================
-# Telegram Integration (Optional)
+# Notes
 # ==============================================================================
-telethon>=1.34.0
-cryptg>=0.4.0
+# - Minimum Python version: 3.8+
+# - For production deployment, consider using a virtual environment
+# - Some dependencies are platform-specific (marked with sys_platform)
+# - Optional dependencies are commented out - uncomment as needed
+# - Run: pip install -r requirements.txt
+psutil
+pytest>=8.0.0

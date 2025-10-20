@@ -1,5 +1,5 @@
 import os
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding: utf-8
 ''' This is part of the MSS Python's module.
     Source: https://github.com/BoboTiG/python-mss

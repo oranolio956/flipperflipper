@@ -1,5 +1,5 @@
 import os
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding: utf-8
 ''' An ultra fast cross-platform multiple screenshots module in pure python
     using ctypes.

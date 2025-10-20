@@ -16,7 +16,7 @@ for n in range(0,10):
 #                       st_main.py stitch_gen variables                        #
 ################################################################################
 
-main_imports = '''#!/usr/bin/env python
+main_imports = '''#!/usr/bin/env python3
 # TODO: Replace wildcard import with specific imports
 # TODO: Replace wildcard import with specific imports
 from st_utils import *

@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2017, Nathan Lopez
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 
