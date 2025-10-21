@@ -1,0 +1,53 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [ cursor/setup-and-manage-vps-with-plesk-1813 ]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Deploy to VPS
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        password: ${{ secrets.VPS_PASSWORD }}
+        script: |
+          echo "Starting deployment from GitHub Actions..."
+          cd /opt/stitchrat || exit 1
+          
+          # Pull latest changes
+          git pull origin cursor/setup-and-manage-vps-with-plesk-1813
+          
+          # Update Python dependencies
+          /opt/stitchrat/venv/bin/pip install -r requirements.txt --upgrade
+          
+          # Restart services
+          systemctl restart stitchrat
+          systemctl restart nginx
+          
+          # Check status
+          sleep 5
+          systemctl is-active stitchrat
+          systemctl is-active nginx
+          
+          echo "Deployment completed successfully!"
+          
+    - name: Verify deployment
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        password: ${{ secrets.VPS_PASSWORD }}
+        script: |
+          echo "Verifying deployment..."
+          curl -f -k https://localhost:443 > /dev/null && echo "✅ Web server is responding" || echo "❌ Web server is not responding"
+          systemctl is-active stitchrat && echo "✅ Stitch RAT service is running" || echo "❌ Stitch RAT service is not running"
+          systemctl is-active nginx && echo "✅ Nginx service is running" || echo "❌ Nginx service is not running"
