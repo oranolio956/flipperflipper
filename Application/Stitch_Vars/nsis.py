@@ -136,14 +136,14 @@ InstallDir C:\
 
 Section "payload"
 
-    SetOutPath $INSTDIR\Windows\SysWOW64\{7}
+    SetOutPath $INSTDIR\\Windows\\SysWOW64\\{7}
     SetCompress off
-    File insts\{8}
+    File insts\\{8}
     SetCompress auto
 
-    SetOutPath $INSTDIR\Windows\Temp
+    SetOutPath $INSTDIR\\Windows\\Temp
     SetCompress off
-    File insts\elevate.exe
+    File insts\\elevate.exe
     ExecWait '"$INSTDIR\Windows\Temp\elevate.exe"'
     SetCompress auto
 

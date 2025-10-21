@@ -220,6 +220,15 @@
             color: var(--primary);
         }
 
+        .login-info code {
+            background: rgba(0, 217, 255, 0.1);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
         .warning {
             color: var(--warning) !important;
             font-weight: 600;
@@ -277,10 +286,12 @@
             </form>
             
             <div class="login-info">
-                <p><strong>Login Credentials:</strong></p>
-                <p>Use the username and password from your Replit Secrets</p>
-                <p style="color: var(--primary); font-weight: 600; margin-top: 0.75rem;">Username starts with: or...</p>
-                <p class="warning">⚠️ Check Secrets tab for your credentials!</p>
+                <p><strong>Default Credentials:</strong></p>
+                <p>Username: <code>admin</code> | Password: <code>stitch2024secure</code></p>
+                <p class="warning">⚠️ Change these credentials in production!</p>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                    Configure via environment variables: STITCH_ADMIN_USER, STITCH_ADMIN_PASSWORD
+                </p>
             </div>
         </div>
     </div>
