@@ -36,8 +36,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'strategic_command_center_secret_key_2025'
 app.config['WTF_CSRF_ENABLED'] = True
 
-# Initialize CSRF protection
-csrf = CSRFProtect(app)
+# Initialize CSRF protection (disabled for strategic command center)
+# csrf = CSRFProtect(app)
 
 # Initialize SocketIO
 socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True)
