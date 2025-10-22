@@ -25,8 +25,8 @@ from .Stitch_Vars.payload_code import (
 # Specific imports from Stitch_Vars.payload_setup
 from .Stitch_Vars.payload_setup import (
     win_payload_list, win_payload_Icons, win_payload_Description, win_payload_Name,
-    osx_payload_list, osx_payload_Icons, osx_payload_Description, osx_payload_Name,
-    lnx_payload_list, lnx_payload_Icons, lnx_payload_Description, lnx_payload_Name
+    osx_payload_list, osx_payload_Icons,
+    lnx_payload_list
 )
 # Additional imports from payload_code (where main_imports, utils_imports, utils_code are defined)
 from .Stitch_Vars.payload_code import (
