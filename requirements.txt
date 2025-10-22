@@ -26,6 +26,9 @@ pexpect>=4.9.0
 # Keylogger (Linux)
 pyxhook>=1.0.0
 
+# Real-time Data
+redis>=5.0.0
+
 # Additional Dependencies
 python-xlib>=0.33
 ptyprocess>=0.7.0
