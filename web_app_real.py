@@ -1847,11 +1847,18 @@ def download_payload():
         
         # Fallback to checking for last generated payload
         if not payload_path:
-            from web_payload_generator import web_payload_gen
-            payload_path = web_payload_gen.get_last_payload()
+            # Check for any recent payloads in the output directory
+            from unified_payload_generator import unified_generator
+            output_dir = unified_generator.output_path
             
-            if payload_path:
-                payload_filename = os.path.basename(payload_path)
+            if output_dir.exists():
+                # Get the most recent payload file
+                payload_files = list(output_dir.glob("*"))
+                if payload_files:
+                    # Sort by modification time, newest first
+                    payload_files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
+                    payload_path = str(payload_files[0])
+                    payload_filename = payload_files[0].name
                 if payload_path.endswith('.exe'):
                     payload_type = 'executable'
                     payload_platform = 'windows'

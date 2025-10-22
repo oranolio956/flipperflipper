@@ -18,6 +18,7 @@ import sqlite3
 import zipfile
 import threading
 from io import StringIO, BytesIO
+from .Stitch_Vars.globals import st_log
 import contextlib
 import subprocess
 import shlex
