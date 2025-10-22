@@ -11,7 +11,7 @@ from .stitch_utils import (
 )
 
 # Import globals
-from .Stitch_Vars.globals import st_config
+from .Stitch_Vars.globals import st_config, payloads_path, aes_encoded
 
 class stitch_ini():
     def __init__(self):

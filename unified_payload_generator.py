@@ -22,6 +22,8 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from Application.stitch_gen import assemble_stitch
 from Application.stitch_pyld_config import stitch_ini, get_conf_dir, gen_default_st_config
+from Application.stitch_cross_compile import compile_payload
+from Application.Stitch_Vars.globals import configuration_path
 
 class UnifiedPayloadGenerator:
     """Unified payload generation system that handles both Python and native payloads"""
@@ -134,18 +136,36 @@ class UnifiedPayloadGenerator:
             # Generate payload using legacy system
             assemble_stitch()
             
-            # Find the generated payload
+            # Get configuration directory
             conf_dir = get_conf_dir()
-            payload_files = list(Path(conf_dir).glob("*.exe")) + list(Path(conf_dir).glob("*.py"))
             
-            if not payload_files:
+            # Compile payload based on platform
+            payload_name = config.get('payload_name', 'stitch_payload')
+            platform = config['platform']
+            
+            # Map platform names
+            platform_map = {
+                'windows': 'windows',
+                'linux': 'linux', 
+                'macos': 'macos'
+            }
+            target_platform = platform_map.get(platform, 'linux')
+            
+            # Compile the payload
+            payload_path = compile_payload(
+                source_dir=configuration_path,
+                output_dir=conf_dir,
+                platform=target_platform,
+                payload_name=payload_name
+            )
+            
+            if not payload_path or not os.path.exists(payload_path):
                 return {
                     'success': False,
-                    'error': 'No payload files generated'
+                    'error': 'Payload compilation failed'
                 }
             
-            # Use the first generated file
-            payload_file = payload_files[0]
+            payload_file = Path(payload_path)
             
             # Copy to output directory
             output_filename = f"{config.get('payload_name', 'stitch_payload')}_{config['platform']}.{payload_file.suffix[1:]}"

