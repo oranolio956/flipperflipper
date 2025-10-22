@@ -1,122 +1,265 @@
 #!/usr/bin/env python3
 """
-SSL/TLS Certificate Generation Utility
-Generates self-signed certificates for HTTPS support with configurable OPSEC-friendly fields
+SSL Certificate Utilities for Stitch RAT
+Handles SSL certificate generation and management
 """
-import os
-import subprocess
-import sys
-from pathlib import Path
 
-def generate_self_signed_cert(cert_dir="certs"):
+import os
+import ssl
+import socket
+from pathlib import Path
+from datetime import datetime, timedelta
+try:
+    from cryptography import x509
+    from cryptography.x509.oid import NameOID
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import rsa
+    CRYPTO_AVAILABLE = True
+except ImportError:
+    CRYPTO_AVAILABLE = False
+    print("⚠️  cryptography library not available. SSL auto-generation disabled.")
+
+def get_ssl_context(cert_dir="certs", cert_file="cert.pem", key_file="key.pem", 
+                   auto_generate=True, cn="localhost"):
     """
-    Generate a self-signed SSL certificate for development/testing.
-    
-    Uses environment variables for certificate fields (OPSEC-friendly):
-    - STITCH_SSL_COUNTRY: Country code (default: US)
-    - STITCH_SSL_STATE: State/Province (default: State)
-    - STITCH_SSL_CITY: City/Locality (default: City)
-    - STITCH_SSL_ORG: Organization name (default: Web Services)
-    - STITCH_SSL_CN: Common Name (default: localhost)
+    Get SSL context for Flask application
     
     Args:
-        cert_dir: Directory to store certificates (default: 'certs')
+        cert_dir: Directory to store certificates
+        cert_file: Certificate filename
+        key_file: Private key filename
+        auto_generate: Whether to auto-generate certificates if missing
+        cn: Common name for certificate
     
     Returns:
-        tuple: (cert_path, key_path) or (None, None) if generation fails
+        SSL context or None if SSL not available
     """
-    cert_path = os.path.join(cert_dir, "cert.pem")
-    key_path = os.path.join(cert_dir, "key.pem")
+    cert_path = Path(cert_dir)
+    cert_path.mkdir(exist_ok=True)
     
-    if os.path.exists(cert_path) and os.path.exists(key_path):
-        print(f"✓ SSL: Using existing certificates in {cert_dir}/")
-        return cert_path, key_path
+    cert_file_path = cert_path / cert_file
+    key_file_path = cert_path / key_file
     
-    os.makedirs(cert_dir, exist_ok=True)
+    # Check if certificates exist and are valid
+    if cert_file_path.exists() and key_file_path.exists():
+        if is_certificate_valid(cert_file_path):
+            print(f"✓ Using existing SSL certificate: {cert_file_path}")
+            return ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        else:
+            print("⚠️  Existing certificate is expired or invalid")
     
-    # Get certificate subject fields from environment (neutral defaults for OPSEC)
-    cert_country = os.getenv('STITCH_SSL_COUNTRY', 'US')
-    cert_state = os.getenv('STITCH_SSL_STATE', 'State')
-    cert_city = os.getenv('STITCH_SSL_CITY', 'City')
-    cert_org = os.getenv('STITCH_SSL_ORG', 'Web Services')
-    cert_cn = os.getenv('STITCH_SSL_CN', 'localhost')
+    # Generate new certificate if needed
+    if auto_generate and CRYPTO_AVAILABLE:
+        if generate_self_signed_cert(cert_file_path, key_file_path, cn):
+            print(f"✓ Generated new SSL certificate: {cert_file_path}")
+            return ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     
-    subject_string = f'/C={cert_country}/ST={cert_state}/L={cert_city}/O={cert_org}/CN={cert_cn}'
+    print("❌ SSL certificate not available. Running without HTTPS.")
+    return None
+
+def generate_self_signed_cert(cert_path, key_path, cn="localhost", 
+                            country="US", state="State", city="City", 
+                            org="Organization", validity_days=365):
+    """
+    Generate a self-signed SSL certificate
     
-    print("🔐 Generating self-signed SSL certificate...")
-    print("   This may take a moment...")
+    Args:
+        cert_path: Path to save certificate
+        key_path: Path to save private key
+        cn: Common name (usually domain or IP)
+        country: Country code
+        state: State/Province
+        city: City
+        org: Organization
+        validity_days: Certificate validity in days
+    
+    Returns:
+        True if successful, False otherwise
+    """
+    if not CRYPTO_AVAILABLE:
+        return False
     
     try:
-        subprocess.run([
-            'openssl', 'req',
-            '-x509',
-            '-newkey', 'rsa:4096',
-            '-nodes',
-            '-out', cert_path,
-            '-keyout', key_path,
-            '-days', '365',
-            '-subj', subject_string
-        ], check=True, capture_output=True, text=True)
+        # Generate private key
+        private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+        )
         
-        print(f"✓ SSL: Self-signed certificate generated")
-        print(f"   Certificate: {cert_path}")
-        print(f"   Private key: {key_path}")
-        print(f"   Valid for: 365 days")
-        print("\n⚠️  WARNING: Self-signed certificates are NOT TRUSTED by browsers!")
-        print("   For production, use certificates from a trusted CA (Let's Encrypt, etc.)")
-        print()
+        # Create certificate subject
+        subject = issuer = x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, country),
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, state),
+            x509.NameAttribute(NameOID.LOCALITY_NAME, city),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, org),
+            x509.NameAttribute(NameOID.COMMON_NAME, cn),
+        ])
         
-        return cert_path, key_path
+        # Create certificate
+        cert = x509.CertificateBuilder().subject_name(
+            subject
+        ).issuer_name(
+            issuer
+        ).public_key(
+            private_key.public_key()
+        ).serial_number(
+            x509.random_serial_number()
+        ).not_valid_before(
+            datetime.utcnow()
+        ).not_valid_after(
+            datetime.utcnow() + timedelta(days=validity_days)
+        ).add_extension(
+            x509.SubjectAlternativeName([
+                x509.DNSName(cn),
+                x509.IPAddress(socket.inet_aton(cn)) if is_ip_address(cn) else x509.DNSName("localhost"),
+            ]),
+            critical=False,
+        ).add_extension(
+            x509.KeyUsage(
+                key_encipherment=True,
+                digital_signature=True,
+                key_agreement=False,
+                key_cert_sign=False,
+                crl_sign=False,
+                content_commitment=False,
+                data_encipherment=False,
+                encipher_only=False,
+                decipher_only=False,
+            ),
+            critical=True,
+        ).add_extension(
+            x509.ExtendedKeyUsage([
+                x509.oid.ExtendedKeyUsageOID.SERVER_AUTH,
+            ]),
+            critical=True,
+        ).sign(private_key, hashes.SHA256())
         
-    except subprocess.CalledProcessError as e:
-        print(f"❌ SSL: Failed to generate certificate: {e.stderr}")
-        return None, None
-    except FileNotFoundError:
-        print("❌ SSL: OpenSSL not found. Install openssl to use HTTPS.")
-        return None, None
+        # Write private key
+        with open(key_path, "wb") as f:
+            f.write(private_key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.PKCS8,
+                encryption_algorithm=serialization.NoEncryption()
+            ))
+        
+        # Write certificate
+        with open(cert_path, "wb") as f:
+            f.write(cert.public_bytes(serialization.Encoding.PEM))
+        
+        # Set proper permissions
+        os.chmod(key_path, 0o600)
+        os.chmod(cert_path, 0o644)
+        
+        print(f"✓ Generated SSL certificate for: {cn}")
+        print(f"  Certificate: {cert_path}")
+        print(f"  Private Key: {key_path}")
+        print(f"  Valid until: {datetime.utcnow() + timedelta(days=validity_days)}")
+        
+        return True
+        
+    except Exception as e:
+        print(f"❌ Failed to generate SSL certificate: {e}")
+        return False
 
-def get_ssl_context():
+def is_certificate_valid(cert_path):
     """
-    Get SSL context for Flask application based on environment configuration.
+    Check if a certificate file is valid and not expired
+    
+    Args:
+        cert_path: Path to certificate file
     
     Returns:
-        tuple: (cert_path, key_path) for SSL or (None, None) for HTTP
+        True if valid, False otherwise
     """
-    https_enabled = os.getenv('STITCH_ENABLE_HTTPS', 'false').lower() in ('true', '1', 'yes')
+    if not CRYPTO_AVAILABLE:
+        return False
     
-    if not https_enabled:
-        return None, None
-    
-    custom_cert = os.getenv('STITCH_SSL_CERT')
-    custom_key = os.getenv('STITCH_SSL_KEY')
-    
-    if custom_cert and custom_key:
-        if os.path.exists(custom_cert) and os.path.exists(custom_key):
-            print(f"✓ SSL: Using custom certificates")
-            print(f"   Certificate: {custom_cert}")
-            print(f"   Private key: {custom_key}\n")
-            return custom_cert, custom_key
-        else:
-            print("❌ SSL: Custom certificate files not found!")
-            print(f"   STITCH_SSL_CERT={custom_cert} (exists: {os.path.exists(custom_cert)})")
-            print(f"   STITCH_SSL_KEY={custom_key} (exists: {os.path.exists(custom_key)})")
-            print("   Falling back to auto-generated certificate...\n")
-    
-    return generate_self_signed_cert()
+    try:
+        with open(cert_path, "rb") as f:
+            cert_data = f.read()
+        
+        cert = x509.load_pem_x509_certificate(cert_data)
+        
+        # Check if certificate is still valid
+        now = datetime.utcnow()
+        if now < cert.not_valid_before or now > cert.not_valid_after:
+            return False
+        
+        return True
+        
+    except Exception:
+        return False
 
-if __name__ == '__main__':
-    print("SSL Certificate Generator\n")
-    cert, key = generate_self_signed_cert()
+def is_ip_address(address):
+    """
+    Check if a string is a valid IP address
     
-    if cert and key:
-        print("\n✓ Certificates generated successfully!")
-        print("\nTo use HTTPS with Stitch:")
-        print("  1. Set: export STITCH_ENABLE_HTTPS=true")
-        print("  2. Run: python3 web_app_real.py")
-        print("\nOr use custom certificates:")
-        print("  export STITCH_ENABLE_HTTPS=true")
-        print("  export STITCH_SSL_CERT=/path/to/your/cert.pem")
-        print("  export STITCH_SSL_KEY=/path/to/your/key.pem")
+    Args:
+        address: String to check
+    
+    Returns:
+        True if valid IP, False otherwise
+    """
+    try:
+        socket.inet_aton(address)
+        return True
+    except socket.error:
+        return False
+
+def get_certificate_info(cert_path):
+    """
+    Get information about a certificate
+    
+    Args:
+        cert_path: Path to certificate file
+    
+    Returns:
+        Dictionary with certificate information
+    """
+    if not CRYPTO_AVAILABLE or not Path(cert_path).exists():
+        return None
+    
+    try:
+        with open(cert_path, "rb") as f:
+            cert_data = f.read()
+        
+        cert = x509.load_pem_x509_certificate(cert_data)
+        
+        return {
+            'subject': cert.subject.rfc4514_string(),
+            'issuer': cert.issuer.rfc4514_string(),
+            'serial_number': str(cert.serial_number),
+            'not_valid_before': cert.not_valid_before,
+            'not_valid_after': cert.not_valid_after,
+            'is_valid': datetime.utcnow() < cert.not_valid_after,
+            'days_until_expiry': (cert.not_valid_after - datetime.utcnow()).days
+        }
+        
+    except Exception as e:
+        return {'error': str(e)}
+
+if __name__ == "__main__":
+    # Test certificate generation
+    import sys
+    
+    if len(sys.argv) > 1:
+        cn = sys.argv[1]
     else:
-        print("\n❌ Certificate generation failed!")
-        sys.exit(1)
+        cn = "localhost"
+    
+    print(f"Generating test certificate for: {cn}")
+    
+    cert_dir = Path("test_certs")
+    cert_dir.mkdir(exist_ok=True)
+    
+    cert_path = cert_dir / "cert.pem"
+    key_path = cert_dir / "key.pem"
+    
+    if generate_self_signed_cert(cert_path, key_path, cn):
+        info = get_certificate_info(cert_path)
+        if info:
+            print("\nCertificate Information:")
+            for key, value in info.items():
+                print(f"  {key}: {value}")
+    
+    print(f"\nSSL Context: {get_ssl_context(cert_dir)}")
