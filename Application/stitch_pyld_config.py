@@ -3,10 +3,10 @@ import os
 # Copyright (c) 2017, Nathan Lopez
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 
-# TODO: Replace wildcard import with specific imports
-# TODO: Replace wildcard import with specific imports
-# TODO: Replace wildcard import with specific imports
-from .stitch_utils import *
+# Specific imports from stitch_utils
+from .stitch_utils import (
+    st_print, run_command, start_command, no_error, windows_client, osx_client, linux_client
+)
 
 class stitch_ini():
     def __init__(self):

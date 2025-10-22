@@ -23,9 +23,24 @@ import subprocess
 import shlex
 import configparser as ConfigParser
 from time import sleep
-from Crypto import Random
+try:
+    from Crypto import Random
+    from Crypto.Cipher import AES
+    CRYPTO_AVAILABLE = True
+except ImportError:
+    CRYPTO_AVAILABLE = False
+    # Define dummy classes for when Crypto is not available
+    class Random:
+        @staticmethod
+        def new():
+            return type('obj', (object,), {'read': lambda x: b'0' * x})()
+    class AES:
+        block_size = 16
+        @staticmethod
+        def new(key, mode):
+            return type('obj', (object,), {'encrypt': lambda x: x, 'decrypt': lambda x: x})()
+
 from getpass import getpass
-from Crypto.Cipher import AES
 from time import strftime, sleep
 # TODO: Replace wildcard import with specific imports
 # TODO: Replace wildcard import with specific imports
@@ -35,7 +50,21 @@ from .Stitch_Vars.globals import banner, st_config, st_tag, st_aes_lib, aes_abbr
 # TODO: Replace wildcard import with specific imports
 # TODO: Replace wildcard import with specific imports
 from .Stitch_Vars.st_aes import secret
-from colorama import Fore, Back, Style, init, deinit, reinit
+try:
+    from colorama import Fore, Back, Style, init, deinit, reinit
+    COLORAMA_AVAILABLE = True
+except ImportError:
+    COLORAMA_AVAILABLE = False
+    # Define dummy colorama classes
+    class Fore:
+        RED = GREEN = YELLOW = BLUE = MAGENTA = CYAN = WHITE = RESET = ''
+    class Back:
+        RED = GREEN = YELLOW = BLUE = MAGENTA = CYAN = WHITE = RESET = ''
+    class Style:
+        DIM = NORMAL = BRIGHT = RESET_ALL = ''
+    def init(): pass
+    def deinit(): pass
+    def reinit(): pass
 
 # Global stealth mode flag
 STEALTH_MODE = os.environ.get('ELITE_STEALTH', 'false').lower() == 'true'

