@@ -1,0 +1,50 @@
+{
+  "payload_generation": {
+    "success": true,
+    "details": {
+      "generated_payloads": [
+        {
+          "platform": "linux",
+          "filename": "comprehensive_test_linux_linux.py",
+          "path": "/workspace/payloads/output/comprehensive_test_linux_linux.py",
+          "size": 1379,
+          "hash": "966b96d17f902c3267bec72dd206d74db7ff851ea8ca344cbaedaddc00f59733"
+        },
+        {
+          "platform": "windows",
+          "filename": "comprehensive_test_windows_windows.py",
+          "path": "/workspace/payloads/output/comprehensive_test_windows_windows.py",
+          "size": 1379,
+          "hash": "966b96d17f902c3267bec72dd206d74db7ff851ea8ca344cbaedaddc00f59733"
+        },
+        {
+          "platform": "macos",
+          "filename": "comprehensive_test_macos_macos.py",
+          "path": "/workspace/payloads/output/comprehensive_test_macos_macos.py",
+          "size": 1379,
+          "hash": "966b96d17f902c3267bec72dd206d74db7ff851ea8ca344cbaedaddc00f59733"
+        }
+      ]
+    }
+  },
+  "stitch_server": {
+    "success": true,
+    "details": {
+      "port": 4040,
+      "listening": true,
+      "server_thread": true
+    }
+  },
+  "payload_connection": {
+    "success": true,
+    "details": {
+      "payload_file": "/workspace/payloads/output/comprehensive_test_linux_linux.py",
+      "execution_time": 15
+    }
+  },
+  "dashboard_display": {
+    "success": false,
+    "details": {}
+  },
+  "overall_success": false
+}
