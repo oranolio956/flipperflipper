@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oranolio • Exclusive Access</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Stitch - Secure Access</title>
     <style>
         * {
             margin: 0;
@@ -15,577 +12,333 @@
         }
 
         :root {
-            --gold: #d4af37;
-            --gold-light: #f4e5a1;
-            --gold-dark: #b8941e;
-            --black: #0a0a0a;
-            --black-light: #1a1a1a;
-            --black-lighter: #2a2a2a;
-            --white: #ffffff;
-            --gray: #999999;
-            --gray-light: #cccccc;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border: #d1d5db;
+            --border-focus: #2563eb;
+            --background: #ffffff;
+            --background-secondary: #f9fafb;
+            --error: #dc2626;
+            --success: #059669;
+            --warning: #d97706;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--black);
-            color: var(--white);
-            min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
-        }
-
-        /* Animated Background */
-        .background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            overflow: hidden;
-        }
-
-        .background::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
-            animation: drift 20s ease-in-out infinite;
-        }
-
-        @keyframes drift {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(30px, -30px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
-        }
-
-        .particles {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-        }
-
-        .particle {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: var(--gold);
-            border-radius: 50%;
-            opacity: 0;
-            animation: float 15s infinite;
-        }
-
-        @keyframes float {
-            0% {
-                opacity: 0;
-                transform: translateY(100vh) translateX(0);
-            }
-            10% {
-                opacity: 0.3;
-            }
-            90% {
-                opacity: 0.1;
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-100px) translateX(100px);
-            }
-        }
-
-        /* Grid overlay */
-        .grid-overlay {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background-image:
-                linear-gradient(rgba(212, 175, 55, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
-            background-size: 100px 100px;
-            animation: gridMove 20s linear infinite;
-        }
-
-        @keyframes gridMove {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(100px, 100px); }
-        }
-
-        /* Main Container */
-        .container {
-            position: relative;
-            z-index: 10;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background-color: var(--background-secondary);
+            color: var(--text-primary);
+            line-height: 1.5;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 1rem;
         }
 
-        /* Top Bar */
-        .top-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: 30px 50px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 100;
-            background: linear-gradient(180deg, rgba(10, 10, 10, 0.8) 0%, transparent 100%);
-            backdrop-filter: blur(10px);
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            padding: 2rem;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
         }
 
         .logo {
-            font-family: 'Playfair Display', serif;
-            font-size: 24px;
+            font-size: 1.5rem;
             font-weight: 600;
-            letter-spacing: 3px;
-            background: linear-gradient(135deg, var(--gold), var(--gold-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
         }
 
-        .status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 11px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--gray);
-        }
-
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            background: var(--gold);
-            border-radius: 50%;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
-        }
-
-        /* Login Card */
-        .login-card {
-            width: 100%;
-            max-width: 500px;
-            background: rgba(26, 26, 26, 0.6);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(212, 175, 55, 0.1);
-            border-radius: 24px;
-            padding: 60px 50px;
-            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5),
-                        0 0 1px rgba(212, 175, 55, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .login-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--gold), transparent);
-            opacity: 0.5;
-        }
-
-        .card-header {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-
-        .exclusive-badge {
-            display: inline-block;
-            font-size: 10px;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: var(--gold);
-            padding: 8px 20px;
-            border: 1px solid var(--gold);
-            border-radius: 30px;
-            margin-bottom: 25px;
+        .login-title {
+            font-size: 1.25rem;
             font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
         }
 
-        .card-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 36px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            background: linear-gradient(135deg, #ffffff, var(--gray-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .login-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
         }
 
-        .card-subtitle {
-            font-size: 14px;
-            color: var(--gray);
-            font-weight: 300;
-            letter-spacing: 0.5px;
-        }
-
-        /* Form */
         .form-group {
-            margin-bottom: 30px;
+            margin-bottom: 1.5rem;
         }
 
-        label {
+        .form-label {
             display: block;
-            font-size: 11px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--gray-light);
-            margin-bottom: 12px;
+            font-size: 0.875rem;
             font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
         }
 
-        input[type="email"] {
+        .form-input {
             width: 100%;
-            padding: 18px 24px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            border-radius: 12px;
-            color: var(--white);
-            font-size: 16px;
-            font-family: 'Inter', sans-serif;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            color: var(--text-primary);
+            background-color: var(--background);
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
         }
 
-        input[type="email"]::placeholder {
-            color: var(--gray);
-        }
-
-        input[type="email"]:focus {
+        .form-input:focus {
             outline: none;
-            background: rgba(255, 255, 255, 0.08);
-            border-color: var(--gold);
-            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-input.error {
+            border-color: var(--error);
+        }
+
+        .form-input.error:focus {
+            border-color: var(--error);
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
         }
 
         .submit-btn {
             width: 100%;
-            padding: 18px 24px;
-            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-            color: var(--black);
+            padding: 0.75rem 1rem;
+            background-color: var(--primary);
+            color: white;
             border: none;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .submit-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.5s;
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
-        }
-
-        .submit-btn:hover::before {
-            left: 100%;
-        }
-
-        .submit-btn:active {
-            transform: translateY(0);
-        }
-
-        /* Info Box */
-        .info-box {
-            margin-top: 40px;
-            padding: 25px;
-            background: rgba(212, 175, 55, 0.05);
-            border-left: 2px solid var(--gold);
-            border-radius: 8px;
-        }
-
-        .info-box h4 {
-            font-size: 12px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--gold);
-            margin-bottom: 15px;
-            font-weight: 600;
-        }
-
-        .info-box ol {
-            padding-left: 20px;
-        }
-
-        .info-box li {
-            font-size: 13px;
-            color: var(--gray-light);
-            margin-bottom: 10px;
-            line-height: 1.6;
-            font-weight: 300;
-        }
-
-        /* Alert */
-        .alert {
-            padding: 16px 20px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            font-size: 14px;
+            border-radius: 6px;
+            font-size: 1rem;
             font-weight: 500;
-            animation: slideDown 0.3s ease-out;
+            cursor: pointer;
+            transition: background-color 0.15s ease-in-out;
         }
 
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .submit-btn:hover:not(:disabled) {
+            background-color: var(--primary-hover);
         }
 
-        .alert-error {
-            background: rgba(220, 38, 38, 0.1);
-            border: 1px solid rgba(220, 38, 38, 0.3);
-            color: #ff6b6b;
+        .submit-btn:disabled {
+            background-color: var(--text-muted);
+            cursor: not-allowed;
         }
 
-        .alert-success {
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid rgba(34, 197, 94, 0.3);
-            color: #4ade80;
-        }
-
-        /* Bottom Info */
-        .bottom-info {
-            position: fixed;
-            bottom: 30px;
-            left: 0;
-            right: 0;
-            text-align: center;
-            z-index: 100;
-        }
-
-        .bottom-info p {
-            font-size: 11px;
-            color: var(--gray);
-            letter-spacing: 1px;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .top-bar {
-                padding: 20px 25px;
-            }
-
-            .logo {
-                font-size: 20px;
-            }
-
-            .login-card {
-                padding: 40px 30px;
-                margin: 20px;
-                width: calc(100% - 40px);
-            }
-
-            .card-title {
-                font-size: 28px;
-            }
-
-            .bottom-info {
-                bottom: 20px;
-                font-size: 12px;
-            }
-
-            .form-group input {
-                font-size: 16px; /* Prevents zoom on iOS */
-            }
-
-            .submit-btn {
-                font-size: 14px;
-                padding: 16px 20px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .login-card {
-                padding: 30px 20px;
-                margin: 10px;
-                width: calc(100% - 20px);
-            }
-
-            .card-title {
-                font-size: 24px;
-            }
-
-            .info-box {
-                padding: 20px;
-            }
-
-            .info-box h4 {
-                font-size: 16px;
-            }
-
-            .info-box ol {
-                font-size: 14px;
-            }
-        }
-
-        /* Loading State */
         .submit-btn.loading {
-            pointer-events: none;
-            opacity: 0.7;
+            position: relative;
+            color: transparent;
         }
 
         .submit-btn.loading::after {
             content: '';
             position: absolute;
-            width: 16px;
-            height: 16px;
             top: 50%;
             left: 50%;
-            margin-left: -8px;
-            margin-top: -8px;
-            border: 2px solid var(--black);
-            border-top-color: transparent;
+            width: 16px;
+            height: 16px;
+            margin: -8px 0 0 -8px;
+            border: 2px solid transparent;
+            border-top-color: white;
             border-radius: 50%;
-            animation: spin 0.6s linear infinite;
+            animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        .alert {
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            border: 1px solid;
+        }
+
+        .alert-error {
+            background-color: #fef2f2;
+            border-color: #fecaca;
+            color: var(--error);
+        }
+
+        .alert-success {
+            background-color: #f0fdf4;
+            border-color: #bbf7d0;
+            color: var(--success);
+        }
+
+        .alert-warning {
+            background-color: #fffbeb;
+            border-color: #fed7aa;
+            color: var(--warning);
+        }
+
+        .help-text {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: var(--background-secondary);
+            border-radius: 6px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .help-text h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .help-text ol {
+            padding-left: 1.25rem;
+        }
+
+        .help-text li {
+            margin-bottom: 0.25rem;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 1.5rem;
+                margin: 0.5rem;
+            }
+
+            .login-title {
+                font-size: 1.125rem;
+            }
+
+            .form-input {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+        }
+
+        /* Focus visible for accessibility */
+        .submit-btn:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        .form-input:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
     </style>
 </head>
 <body>
-    <!-- Background -->
-    <div class="background">
-        <div class="grid-overlay"></div>
-        <div class="particles" id="particles"></div>
-    </div>
-
-    <!-- Top Bar -->
-    <div class="top-bar">
-        <div class="logo">ORANOLIO</div>
-        <div class="status">
-            <div class="status-dot"></div>
-            <span>Secure Connection</span>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo">Stitch</div>
+            <h1 class="login-title">Sign in to your account</h1>
+            <p class="login-subtitle">Enter your email address to receive a secure access code</p>
         </div>
-    </div>
 
-    <!-- Main Container -->
-    <div class="container">
-        <div class="login-card">
-            <div class="card-header">
-                <span class="exclusive-badge">Privileged Access</span>
-                <h1 class="card-title">Welcome Back</h1>
-                <p class="card-subtitle">Enter your credentials to access the system</p>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" id="loginForm">
+            {{ csrf_token() }}
+            <div class="form-group">
+                <label for="email" class="form-label">Email address</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    class="form-input"
+                    required 
+                    autofocus
+                    autocomplete="email"
+                    placeholder="Enter your email address">
             </div>
 
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">{{ message }}</div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+            <button type="submit" class="submit-btn" id="submitBtn">
+                Send access code
+            </button>
+        </form>
 
-            <form method="POST" id="loginForm">
-                {{ csrf_token() }}
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" 
-                           id="email" 
-                           name="email" 
-                           required 
-                           autofocus
-                           autocomplete="email"
-                           placeholder="your.email@domain.com">
-                </div>
-
-                <button type="submit" class="submit-btn" id="submitBtn">
-                    Request Access Code
-                </button>
-            </form>
-
-            <div class="info-box">
-                <h4>How This Works</h4>
-                <ol>
-                    <li>Enter your authorized email address</li>
-                    <li>Receive a secure verification code</li>
-                    <li>Authenticate with your TOTP device</li>
-                    <li>Access granted to the system</li>
-                </ol>
-            </div>
+        <div class="help-text">
+            <h4>How it works</h4>
+            <ol>
+                <li>Enter your authorized email address above</li>
+                <li>Check your email for a secure verification code</li>
+                <li>Use the code to complete authentication</li>
+                <li>Access your account securely</li>
+            </ol>
         </div>
-    </div>
 
-    <!-- Bottom Info -->
-    <div class="bottom-info">
-        <p>Protected by enterprise-grade encryption • All access monitored</p>
+        <div class="footer">
+            Secure authentication system
+        </div>
     </div>
 
     <script>
-        // Create floating particles
-        const particlesContainer = document.getElementById('particles');
-        const particleCount = 30;
-
-        for (let i = 0; i < particleCount; i++) {
-            const particle = document.createElement('div');
-            particle.className = 'particle';
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.animationDelay = Math.random() * 15 + 's';
-            particle.style.animationDuration = (10 + Math.random() * 10) + 's';
-            particlesContainer.appendChild(particle);
-        }
-
         // Form handling
         const form = document.getElementById('loginForm');
         const submitBtn = document.getElementById('submitBtn');
+        const emailInput = document.getElementById('email');
 
-        form.addEventListener('submit', function(e) {
-            // Add loading state
-            submitBtn.classList.add('loading');
-            submitBtn.textContent = '';
+        // Email validation
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // Update input styling based on validation
+        emailInput.addEventListener('input', function() {
+            const email = this.value.trim();
             
-            // Form will submit normally
+            if (email && !validateEmail(email)) {
+                this.classList.add('error');
+            } else {
+                this.classList.remove('error');
+            }
         });
 
-        // Email validation feedback
-        const emailInput = document.getElementById('email');
-        emailInput.addEventListener('input', function(e) {
-            const email = e.target.value;
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        // Form submission
+        form.addEventListener('submit', function(e) {
+            const email = emailInput.value.trim();
             
-            if (email && !emailRegex.test(email)) {
-                e.target.style.borderColor = 'rgba(220, 38, 38, 0.5)';
-            } else if (email && emailRegex.test(email)) {
-                e.target.style.borderColor = 'var(--gold)';
-            } else {
-                e.target.style.borderColor = 'rgba(212, 175, 55, 0.2)';
+            if (!email || !validateEmail(email)) {
+                e.preventDefault();
+                emailInput.classList.add('error');
+                emailInput.focus();
+                return false;
             }
+
+            // Add loading state
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+            
+            // Form will submit normally
         });
 
         // Prevent double submission
@@ -596,6 +349,11 @@
                 return false;
             }
             isSubmitting = true;
+        });
+
+        // Clear error state on focus
+        emailInput.addEventListener('focus', function() {
+            this.classList.remove('error');
         });
     </script>
 </body>
