@@ -2978,6 +2978,7 @@ def api_strategic_targets():
         }), 500
 
 @app.route('/api/strategic/execute', methods=['POST'])
+@csrf.exempt
 @login_required
 def api_strategic_execute():
     """Execute command via strategic command center"""
@@ -3009,6 +3010,7 @@ def api_strategic_execute():
         }), 500
 
 @app.route('/api/strategic/parallel', methods=['POST'])
+@csrf.exempt
 @login_required
 def api_strategic_parallel():
     """Execute command on multiple targets"""
