@@ -4,9 +4,12 @@
 # Web Framework
 flask>=3.1.2
 flask-socketio>=5.5.1
+flask-wtf>=1.2.2
+flask-limiter>=4.0.0
 
 # Cryptography
 pycryptodome>=3.23.0
+cryptography>=46.0.0
 
 # System Monitoring
 psutil>=7.1.1
@@ -26,8 +29,21 @@ pexpect>=4.9.0
 # Keylogger (Linux)
 pyxhook>=1.0.0
 
-# Additional Dependencies
+# GUI Libraries (Linux)
 python-xlib>=0.33
+
+# WebSocket Support
+gevent>=25.9.0
+gevent-websocket>=0.10.1
+
+# Form Handling
+wtforms>=3.2.1
+email-validator>=2.3.0
+
+# Environment Management
+python-dotenv>=1.1.1
+
+# Additional Dependencies
 ptyprocess>=0.7.0
 six>=1.17.0
 bidict>=0.23.1
@@ -46,3 +62,10 @@ charset-normalizer>=3.4.4
 idna>=3.11
 urllib3>=2.5.0
 certifi>=2025.10.5
+
+# Development and Testing
+pytest>=8.4.0
+pytest-cov>=7.0.0
+websocket-client>=1.9.0
+scapy>=2.6.0
+pyshark>=0.6.0
