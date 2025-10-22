@@ -12,9 +12,11 @@
         }
 
         :root {
+            /* Light theme colors */
             --primary: #2563eb;
             --primary-hover: #1d4ed8;
             --primary-light: #dbeafe;
+            --primary-dark: #1e40af;
             --text-primary: #1f2937;
             --text-secondary: #6b7280;
             --text-muted: #9ca3af;
@@ -22,6 +24,7 @@
             --border-focus: #2563eb;
             --background: #ffffff;
             --background-secondary: #f9fafb;
+            --background-pattern: #f8fafc;
             --error: #dc2626;
             --error-light: #fef2f2;
             --success: #059669;
@@ -33,20 +36,48 @@
             --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             --radius: 6px;
             --radius-lg: 8px;
+            --radius-xl: 12px;
             --spacing-xs: 0.25rem;
             --spacing-sm: 0.5rem;
             --spacing-md: 1rem;
             --spacing-lg: 1.5rem;
             --spacing-xl: 2rem;
             --spacing-2xl: 3rem;
+            --spacing-3xl: 4rem;
+        }
+
+        /* Dark theme */
+        [data-theme="dark"] {
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --primary-light: #1e3a8a;
+            --primary-dark: #1e40af;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --border: #374151;
+            --border-focus: #3b82f6;
+            --background: #111827;
+            --background-secondary: #1f2937;
+            --background-pattern: #0f172a;
+            --error: #ef4444;
+            --error-light: #7f1d1d;
+            --success: #10b981;
+            --success-light: #064e3b;
+            --warning: #f59e0b;
+            --warning-light: #78350f;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-            background: var(--background-secondary);
+            background: var(--background-pattern);
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(37, 99, 235, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
             color: var(--text-primary);
             min-height: 100vh;
             line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .container {
@@ -59,14 +90,21 @@
 
         .login-card {
             width: 100%;
-            max-width: 420px;
+            max-width: 440px;
             background: var(--background);
             border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: var(--spacing-2xl);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-3xl);
             box-shadow: var(--shadow-xl);
             position: relative;
             overflow: hidden;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .login-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
         }
 
         .login-card::before {
@@ -76,38 +114,78 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+            background: linear-gradient(90deg, var(--primary), var(--primary-hover), #8b5cf6);
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        }
+
+        .login-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.03) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
         }
 
         .header {
             text-align: center;
-            margin-bottom: var(--spacing-2xl);
+            margin-bottom: var(--spacing-3xl);
+            position: relative;
+            z-index: 1;
         }
 
         .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            font-size: 1.875rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-md);
+            letter-spacing: -0.025em;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.125rem;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .title {
             font-size: 1.75rem;
             font-weight: 700;
             color: var(--text-primary);
             margin-bottom: var(--spacing-sm);
             letter-spacing: -0.025em;
-        }
-
-        .title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: var(--spacing-sm);
-            letter-spacing: -0.025em;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .subtitle {
-            font-size: 0.875rem;
+            font-size: 0.9375rem;
             color: var(--text-secondary);
-            line-height: 1.5;
+            line-height: 1.6;
+            font-weight: 500;
         }
 
         .form-group {
-            margin-bottom: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            position: relative;
+            z-index: 1;
         }
 
         label {
@@ -120,14 +198,15 @@
 
         input[type="email"] {
             width: 100%;
-            padding: 0.875rem 1rem;
+            padding: 1rem 1.25rem;
             border: 2px solid var(--border);
-            border-radius: var(--radius);
+            border-radius: var(--radius-lg);
             font-size: 1rem;
             color: var(--text-primary);
             background: var(--background);
-            transition: all 0.2s ease-in-out;
+            transition: all 0.3s ease-in-out;
             font-weight: 500;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
         input[type="email"]:focus {
@@ -158,23 +237,25 @@
 
         .submit-btn {
             width: 100%;
-            padding: 0.875rem 1rem;
-            background: var(--primary);
+            padding: 1rem 1.25rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
             color: white;
             border: none;
-            border-radius: var(--radius);
+            border-radius: var(--radius-lg);
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s ease-in-out;
+            transition: all 0.3s ease-in-out;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            z-index: 1;
         }
 
         .submit-btn:hover {
-            background: var(--primary-hover);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+            background: linear-gradient(135deg, var(--primary-hover), var(--primary-dark));
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
         }
 
         .submit-btn:active {
@@ -348,16 +429,73 @@
 
         @media (max-width: 480px) {
             .login-card {
-                padding: var(--spacing-lg);
+                padding: var(--spacing-xl);
                 margin: var(--spacing-sm);
+                border-radius: var(--radius-lg);
             }
             
             .title {
-                font-size: 1.25rem;
+                font-size: 1.5rem;
             }
             
             .logo {
                 font-size: 1.5rem;
+            }
+
+            .logo-icon {
+                width: 28px;
+                height: 28px;
+                font-size: 1rem;
+            }
+
+            .theme-toggle {
+                width: 36px;
+                height: 36px;
+                top: var(--spacing-md);
+                right: var(--spacing-md);
+            }
+
+            .theme-toggle svg {
+                width: 18px;
+                height: 18px;
+            }
+
+            .security-badges {
+                gap: var(--spacing-sm);
+            }
+
+            .security-badge {
+                font-size: 0.6875rem;
+            }
+
+            .security-badge svg {
+                width: 12px;
+                height: 12px;
+            }
+
+            input[type="email"] {
+                padding: 0.875rem 1rem;
+                font-size: 0.9375rem;
+            }
+
+            .submit-btn {
+                padding: 0.875rem 1rem;
+                font-size: 0.9375rem;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .login-card {
+                padding: var(--spacing-lg);
+                margin: var(--spacing-xs);
+            }
+
+            .header {
+                margin-bottom: var(--spacing-xl);
+            }
+
+            .form-group {
+                margin-bottom: var(--spacing-lg);
             }
         }
 
@@ -376,6 +514,110 @@
             }
         }
 
+        /* Dark mode toggle */
+        .theme-toggle {
+            position: absolute;
+            top: var(--spacing-lg);
+            right: var(--spacing-lg);
+            background: var(--background-secondary);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .theme-toggle:hover {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-secondary);
+            transition: fill 0.3s ease;
+        }
+
+        .theme-toggle:hover svg {
+            fill: var(--primary);
+        }
+
+        /* Security indicators */
+        .security-badges {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+            flex-wrap: wrap;
+        }
+
+        .security-badge {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .security-badge svg {
+            width: 14px;
+            height: 14px;
+            fill: var(--success);
+        }
+
+        /* Enhanced error messages */
+        .error-message {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: 0.875rem;
+            color: var(--error);
+            margin-top: var(--spacing-sm);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .error-message::before {
+            content: '⚠️';
+            font-size: 1rem;
+        }
+
+        /* Enhanced loading state */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-lg);
+            z-index: 5;
+        }
+
+        [data-theme="dark"] .loading-overlay {
+            background: rgba(17, 24, 39, 0.9);
+        }
+
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
         /* Reduced motion support */
         @media (prefers-reduced-motion: reduce) {
             * {
@@ -389,8 +631,20 @@
 <body>
     <div class="container">
         <div class="login-card">
+            <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">
+                <svg class="sun-icon" viewBox="0 0 24 24">
+                    <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/>
+                </svg>
+                <svg class="moon-icon" viewBox="0 0 24 24" style="display: none;">
+                    <path d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z"/>
+                </svg>
+            </button>
+            
             <div class="header">
-                <div class="logo">Secure Access</div>
+                <div class="logo">
+                    <div class="logo-icon">S</div>
+                    <span>Secure Access</span>
+                </div>
                 <h1 class="title">Sign In</h1>
                 <p class="subtitle">Enter your email to receive a verification code</p>
             </div>
@@ -430,6 +684,27 @@
                 </ol>
             </div>
 
+            <div class="security-badges">
+                <div class="security-badge">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                    </svg>
+                    <span>SSL Encrypted</span>
+                </div>
+                <div class="security-badge">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                    <span>2FA Protected</span>
+                </div>
+                <div class="security-badge">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                    </svg>
+                    <span>GDPR Compliant</span>
+                </div>
+            </div>
+
             <div class="security-notice">
                 <p>Your session is secured with industry-standard encryption</p>
             </div>
@@ -440,14 +715,47 @@
         const form = document.getElementById('loginForm');
         const submitBtn = document.getElementById('submitBtn');
         const emailInput = document.getElementById('email');
+        const themeToggle = document.getElementById('themeToggle');
+        const sunIcon = themeToggle.querySelector('.sun-icon');
+        const moonIcon = themeToggle.querySelector('.moon-icon');
+
+        // Theme management
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            if (theme === 'dark') {
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+            } else {
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        // Initialize theme on load
+        initTheme();
+        themeToggle.addEventListener('click', toggleTheme);
 
         // Enhanced email validation with visual feedback
         emailInput.addEventListener('input', function(e) {
             const email = e.target.value.trim();
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             
-            // Remove previous states
+            // Remove previous states and error messages
             e.target.classList.remove('error', 'success');
+            removeErrorMessage();
             
             if (email === '') {
                 e.target.style.borderColor = 'var(--border)';
@@ -456,12 +764,28 @@
                 e.target.classList.add('error');
                 e.target.style.borderColor = 'var(--error)';
                 e.target.style.background = 'var(--error-light)';
+                showErrorMessage('Please enter a valid email address');
             } else {
                 e.target.classList.add('success');
                 e.target.style.borderColor = 'var(--success)';
                 e.target.style.background = 'var(--success-light)';
             }
         });
+
+        function showErrorMessage(message) {
+            removeErrorMessage();
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            emailInput.parentNode.appendChild(errorDiv);
+        }
+
+        function removeErrorMessage() {
+            const existingError = emailInput.parentNode.querySelector('.error-message');
+            if (existingError) {
+                existingError.remove();
+            }
+        }
 
         // Real-time validation on blur
         emailInput.addEventListener('blur', function(e) {
@@ -486,16 +810,25 @@
                 emailInput.style.borderColor = 'var(--error)';
                 emailInput.style.background = 'var(--error-light)';
                 emailInput.classList.add('error-shake');
+                showErrorMessage('Please enter a valid email address');
                 setTimeout(() => emailInput.classList.remove('error-shake'), 500);
                 emailInput.focus();
                 return false;
             }
             
-            // Add loading state
+            // Add enhanced loading state
+            showLoadingOverlay();
             submitBtn.classList.add('loading');
             submitBtn.disabled = true;
             submitBtn.textContent = '';
         });
+
+        function showLoadingOverlay() {
+            const overlay = document.createElement('div');
+            overlay.className = 'loading-overlay';
+            overlay.innerHTML = '<div class="loading-spinner"></div>';
+            document.querySelector('.login-card').appendChild(overlay);
+        }
 
         // Prevent double submission
         let isSubmitting = false;
