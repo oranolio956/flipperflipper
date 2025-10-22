@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backup Codes - Oranolio Security</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #d4af37;
+            --gold-light: #f4e5a1;
+            --gold-dark: #b8941e;
+            --black: #0a0a0a;
+            --black-light: #1a1a1a;
+            --black-lighter: #2a2a2a;
+            --white: #ffffff;
+            --gray: #999999;
+            --gray-light: #cccccc;
+            --error: #ff4757;
+            --success: #2ed573;
+            --warning: #ffa502;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--black);
+            color: var(--white);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 80%, rgba(212, 175, 55, 0.08) 0%, transparent 50%);
+            animation: drift 20s ease-in-out infinite;
+        }
+
+        @keyframes drift {
+            0%, 100% { transform: translateX(0) translateY(0); }
+            33% { transform: translateX(-20px) translateY(-10px); }
+            66% { transform: translateX(10px) translateY(-20px); }
+        }
+
+        /* Grid Overlay */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: 
+                linear-gradient(rgba(212, 175, 55, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: grid-move 20s linear infinite;
+        }
+
+        @keyframes grid-move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* Floating Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--gold);
+            border-radius: 50%;
+            animation: float 15s infinite linear;
+            opacity: 0.6;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-10vh) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        /* Main Container */
+        .container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .backup-codes-card {
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 24px;
+            padding: 60px 50px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .backup-codes-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, var(--gold), transparent, var(--gold));
+            border-radius: 24px;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 14px;
+            letter-spacing: 4px;
+            color: var(--gold);
+            font-weight: 400;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .title {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--white);
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            color: var(--gray);
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--success), #26d063);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            font-size: 32px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+
+        .warning-banner {
+            background: rgba(255, 165, 2, 0.1);
+            border: 2px solid rgba(255, 165, 2, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .warning-banner h3 {
+            color: var(--warning);
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .warning-banner p {
+            color: var(--gray-light);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .codes-container {
+            background: rgba(42, 42, 42, 0.8);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .codes-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .codes-header h3 {
+            color: var(--gold);
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .codes-header p {
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        .codes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .code-item {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .code-item:hover {
+            border-color: var(--gold);
+            transform: translateY(-2px);
+        }
+
+        .code-number {
+            color: var(--gray);
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .code-value {
+            color: var(--white);
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+
+        .code-item.copied {
+            border-color: var(--success);
+            background: rgba(46, 213, 115, 0.1);
+        }
+
+        .code-item.copied::after {
+            content: '✓ Copied';
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--success);
+            color: var(--white);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            animation: fadeInOut 2s ease-in-out;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            20%, 80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .action-button {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .action-button.primary {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: var(--black);
+        }
+
+        .action-button.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+        }
+
+        .action-button.secondary {
+            background: rgba(42, 42, 42, 0.8);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            color: var(--gold);
+        }
+
+        .action-button.secondary:hover {
+            border-color: var(--gold);
+            background: rgba(42, 42, 42, 1);
+        }
+
+        .security-info {
+            background: rgba(42, 42, 42, 0.5);
+            border-left: 4px solid var(--gold);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .security-info h4 {
+            color: var(--gold);
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .security-info ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .security-info li {
+            color: var(--gray-light);
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .security-info li::before {
+            content: '•';
+            color: var(--gold);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .backup-codes-card {
+                padding: 40px 30px;
+                margin: 10px;
+            }
+
+            .title {
+                font-size: 24px;
+            }
+
+            .subtitle {
+                font-size: 14px;
+            }
+
+            .success-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
+
+            .codes-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .code-item {
+                padding: 12px;
+            }
+
+            .code-value {
+                font-size: 14px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .action-button {
+                padding: 12px 16px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background"></div>
+    <div class="grid-overlay"></div>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <div class="backup-codes-card">
+            <div class="header">
+                <div class="logo">Oranolio</div>
+                <h1 class="title">Backup Codes Generated</h1>
+                <p class="subtitle">Your account recovery codes are ready</p>
+            </div>
+
+            <div class="success-icon">
+                ✅
+            </div>
+
+            <div class="warning-banner">
+                <h3>⚠️ Important: Save These Codes Securely</h3>
+                <p>These backup codes can be used to access your account if you lose your authenticator device. Each code can only be used once. Store them in a secure location.</p>
+            </div>
+
+            <div class="codes-container">
+                <div class="codes-header">
+                    <h3>🔑 Your Backup Recovery Codes</h3>
+                    <p>Click any code to copy it to your clipboard</p>
+                </div>
+
+                <div class="codes-grid">
+                    {% for code in formatted_backup_codes %}
+                        <div class="code-item" onclick="copyCode(this, '{{ code.split('. ')[1] }}')">
+                            <div class="code-number">{{ code.split('. ')[0] }}</div>
+                            <div class="code-value">{{ code.split('. ')[1] }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-button primary" onclick="downloadCodes()">
+                        📥 Download Codes
+                    </button>
+                    <button class="action-button secondary" onclick="printCodes()">
+                        🖨️ Print Codes
+                    </button>
+                </div>
+            </div>
+
+            <div class="security-info">
+                <h4>🔒 Security Guidelines</h4>
+                <ul>
+                    <li>Store these codes in a secure password manager</li>
+                    <li>Keep a printed copy in a safe location</li>
+                    <li>Each code can only be used once</li>
+                    <li>Don't share these codes with anyone</li>
+                    <li>You can regenerate new codes anytime in settings</li>
+                    <li>If compromised, regenerate immediately</li>
+                </ul>
+            </div>
+
+            <div class="action-buttons" style="margin-top: 30px;">
+                <a href="/dashboard" class="action-button primary">
+                    Continue to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Backup codes data for download
+        const backupCodes = [
+            {% for code in backup_codes %}
+                '{{ code }}'{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 20;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Copy code to clipboard
+        function copyCode(element, code) {
+            navigator.clipboard.writeText(code).then(function() {
+                element.classList.add('copied');
+                setTimeout(() => {
+                    element.classList.remove('copied');
+                }, 2000);
+            }).catch(function(err) {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        // Download codes as text file
+        function downloadCodes() {
+            const content = `ORANOLIO SECURITY - BACKUP CODES
+═══════════════════════════════════════
+
+⚠️  IMPORTANT: Save these codes securely!
+
+These backup codes can be used to access your account if you lose
+your authenticator device. Each code can only be used once.
+
+BACKUP CODES:
+
+${backupCodes.map((code, index) => `${(index + 1).toString().padStart(2, ' ')}. ${code.substring(0, 4)}-${code.substring(4)}`).join('\n')}
+
+SECURITY NOTES:
+• Each code can only be used once
+• Store these codes in a secure location
+• Do not share these codes with anyone
+• Generated: ${new Date().toISOString().replace('T', ' ').substring(0, 19)} UTC
+
+If you suspect these codes have been compromised, 
+regenerate them immediately in your account settings.
+
+--
+Oranolio Security Team`;
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'oranolio-backup-codes.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Print codes
+        function printCodes() {
+            const printContent = `
+                <html>
+                <head>
+                    <title>Oranolio Security - Backup Codes</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        .header { text-align: center; margin-bottom: 30px; }
+                        .codes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 0; }
+                        .code { padding: 10px; border: 1px solid #ccc; text-align: center; font-family: monospace; font-size: 16px; }
+                        .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; margin: 20px 0; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>ORANOLIO SECURITY</h1>
+                        <h2>Backup Recovery Codes</h2>
+                        <p>Generated: ${new Date().toLocaleString()}</p>
+                    </div>
+                    
+                    <div class="warning">
+                        <strong>⚠️ IMPORTANT:</strong> These codes can be used to access your account if you lose your authenticator device. Each code can only be used once. Store securely and do not share.
+                    </div>
+                    
+                    <div class="codes">
+                        ${backupCodes.map((code, index) => `<div class="code">${(index + 1).toString().padStart(2, '0')}. ${code.substring(0, 4)}-${code.substring(4)}</div>`).join('')}
+                    </div>
+                    
+                    <div style="margin-top: 30px; font-size: 12px; color: #666;">
+                        <p>Security Guidelines:</p>
+                        <ul>
+                            <li>Store in a secure location (safe, password manager)</li>
+                            <li>Each code can only be used once</li>
+                            <li>Regenerate if compromised</li>
+                            <li>Do not share with anyone</li>
+                        </ul>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // Initialize
+        createParticles();
+    </script>
+</body>
+</html>
