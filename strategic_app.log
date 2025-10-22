@@ -1,0 +1,58 @@
+Server initialized for threading.
+INFO:engineio.server:Server initialized for threading.
+WARNING:strategic_command_center:⚠️ Stitch components not available
+INFO:strategic_command_center:🚀 Real-time monitoring started
+INFO:strategic_command_center:🎯 Strategic Command Center initialized
+INFO:strategic_web_app:📡 Real-time broadcasting started
+INFO:strategic_web_app:🎯 Strategic WebSocket events registered
+INFO:strategic_web_app:🎯 Strategic Command Center Web App initialized
+WARNING:werkzeug:Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+Warning: Some imports not available: No module named 'flask_limiter'
+🎯 Strategic Command Center - Starting...
+==================================================
+URL: http://localhost:5000
+Design: No Bullshit - Everything has a purpose
+==================================================
+ * Serving Flask app 'strategic_web_app'
+ * Debug mode: off
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.30.0.2:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug:127.0.0.1 - - [22/Oct/2025 18:13:38] "GET /api/health HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [22/Oct/2025 18:13:38] "GET /api/targets HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [22/Oct/2025 18:13:38] "GET /api/system_stats HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [22/Oct/2025 18:13:38] "POST /api/execute_command HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [22/Oct/2025 18:13:38] "POST /api/upload_file HTTP/1.1" 200 -
+qqhURLREk5U2sh0DAAAA: Sending packet OPEN data {'sid': 'qqhURLREk5U2sh0DAAAA', 'upgrades': ['websocket'], 'pingTimeout': 20000, 'pingInterval': 25000, 'maxPayload': 1000000}
+INFO:engineio.server:qqhURLREk5U2sh0DAAAA: Sending packet OPEN data {'sid': 'qqhURLREk5U2sh0DAAAA', 'upgrades': ['websocket'], 'pingTimeout': 20000, 'pingInterval': 25000, 'maxPayload': 1000000}
+INFO:werkzeug:127.0.0.1 - - [22/Oct/2025 18:13:38] "GET /socket.io/?transport=polling&EIO=4&t=1761156818.2693348 HTTP/1.1" 200 -
+qqhURLREk5U2sh0DAAAA: Received packet MESSAGE data 0{}
+INFO:engineio.server:qqhURLREk5U2sh0DAAAA: Received packet MESSAGE data 0{}
+INFO:strategic_web_app:Strategic client connected: anonymous
+emitting event "strategic_connected" to Vpghc7lVdJM4_-v5AAAB [/]
+INFO:socketio.server:emitting event "strategic_connected" to Vpghc7lVdJM4_-v5AAAB [/]
+qqhURLREk5U2sh0DAAAA: Sending packet MESSAGE data 2["strategic_connected",{"status":"connected","timestamp":1761156818.291148,"message":"Strategic Command Center connected"}]
+INFO:engineio.server:qqhURLREk5U2sh0DAAAA: Sending packet MESSAGE data 2["strategic_connected",{"status":"connected","timestamp":1761156818.291148,"message":"Strategic Command Center connected"}]
+qqhURLREk5U2sh0DAAAA: Sending packet MESSAGE data 0{"sid":"Vpghc7lVdJM4_-v5AAAB"}
+INFO:engineio.server:qqhURLREk5U2sh0DAAAA: Sending packet MESSAGE data 0{"sid":"Vpghc7lVdJM4_-v5AAAB"}
+INFO:werkzeug:127.0.0.1 - - [22/Oct/2025 18:13:38] "POST /socket.io/?transport=polling&EIO=4&sid=qqhURLREk5U2sh0DAAAA HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [22/Oct/2025 18:13:38] "GET /socket.io/?transport=polling&EIO=4&sid=qqhURLREk5U2sh0DAAAA&t=1761156818.2808769 HTTP/1.1" 200 -
+emitting event "command_result" to all [/]
+INFO:socketio.server:emitting event "command_result" to all [/]
+qqhURLREk5U2sh0DAAAA: Sending packet MESSAGE data 2["command_result",{"type":"command_result","result":{"target_id":"test_target","command":"whoami","success":false,"output":"","error":"Target test_target is not connected","execution_time":4.291534423828125e-06,"timestamp":1761156818.9749928,"command_id":"cmd_1761156818034"},"timestamp":1761156818.9754546}]
+INFO:engineio.server:qqhURLREk5U2sh0DAAAA: Sending packet MESSAGE data 2["command_result",{"type":"command_result","result":{"target_id":"test_target","command":"whoami","success":false,"output":"","error":"Target test_target is not connected","execution_time":4.291534423828125e-06,"timestamp":1761156818.9749928,"command_id":"cmd_1761156818034"},"timestamp":1761156818.9754546}]
+INFO:werkzeug:127.0.0.1 - - [22/Oct/2025 18:13:39] "GET /socket.io/?transport=polling&EIO=4&sid=qqhURLREk5U2sh0DAAAA&t=1761156818.2956514 HTTP/1.1" 200 -
+emitting event "file_operation" to all [/]
+INFO:socketio.server:emitting event "file_operation" to all [/]
+qqhURLREk5U2sh0DAAAA: Sending packet MESSAGE data 2["file_operation",{"type":"file_operation","operation":{"target_id":"test_target","operation":"upload","filename":"test.txt","path":"/tmp/","size":0,"progress":0.0,"status":"failed","timestamp":1761156819.953897},"timestamp":1761156819.9608543}]
+INFO:engineio.server:qqhURLREk5U2sh0DAAAA: Sending packet MESSAGE data 2["file_operation",{"type":"file_operation","operation":{"target_id":"test_target","operation":"upload","filename":"test.txt","path":"/tmp/","size":0,"progress":0.0,"status":"failed","timestamp":1761156819.953897},"timestamp":1761156819.9608543}]
+INFO:werkzeug:127.0.0.1 - - [22/Oct/2025 18:13:40] "GET /socket.io/?transport=polling&EIO=4&sid=qqhURLREk5U2sh0DAAAA&t=1761156819.1101367 HTTP/1.1" 200 -
+qqhURLREk5U2sh0DAAAA: Received packet MESSAGE data 1
+INFO:engineio.server:qqhURLREk5U2sh0DAAAA: Received packet MESSAGE data 1
+INFO:strategic_web_app:Strategic client disconnected: anonymous
+qqhURLREk5U2sh0DAAAA: Received packet CLOSE data 
+INFO:engineio.server:qqhURLREk5U2sh0DAAAA: Received packet CLOSE data 
+INFO:werkzeug:127.0.0.1 - - [22/Oct/2025 18:13:40] "POST /socket.io/?transport=polling&EIO=4&sid=qqhURLREk5U2sh0DAAAA HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [22/Oct/2025 18:13:40] "GET /socket.io/?transport=polling&EIO=4&sid=qqhURLREk5U2sh0DAAAA&t=1761156820.1135192 HTTP/1.1" 200 -
