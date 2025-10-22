@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oranolio • MFA Setup</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Stitch - Setup MFA</title>
     <style>
         * {
             margin: 0;
@@ -15,486 +12,504 @@
         }
 
         :root {
-            --gold: #d4af37;
-            --gold-light: #f4e5a1;
-            --gold-dark: #b8941e;
-            --black: #0a0a0a;
-            --black-light: #1a1a1a;
-            --black-lighter: #2a2a2a;
-            --white: #ffffff;
-            --gray: #999999;
-            --gray-light: #cccccc;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border: #d1d5db;
+            --border-focus: #2563eb;
+            --background: #ffffff;
+            --background-secondary: #f9fafb;
+            --error: #dc2626;
+            --success: #059669;
+            --warning: #d97706;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--black);
-            color: var(--white);
-            min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
-        }
-
-        /* Animated Background */
-        .background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            overflow: hidden;
-        }
-
-        .background::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 20%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
-                        radial-gradient(circle at 40% 80%, rgba(212, 175, 55, 0.08) 0%, transparent 50%);
-            animation: drift 20s ease-in-out infinite;
-        }
-
-        .particles {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        .particle {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: var(--gold);
-            border-radius: 50%;
-            opacity: 0.6;
-            animation: float 15s linear infinite;
-        }
-
-        .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
-        .particle:nth-child(2) { left: 20%; animation-delay: 2s; }
-        .particle:nth-child(3) { left: 30%; animation-delay: 4s; }
-        .particle:nth-child(4) { left: 40%; animation-delay: 6s; }
-        .particle:nth-child(5) { left: 50%; animation-delay: 8s; }
-        .particle:nth-child(6) { left: 60%; animation-delay: 10s; }
-        .particle:nth-child(7) { left: 70%; animation-delay: 12s; }
-        .particle:nth-child(8) { left: 80%; animation-delay: 14s; }
-        .particle:nth-child(9) { left: 90%; animation-delay: 16s; }
-
-        @keyframes float {
-            0% {
-                transform: translateY(100vh) scale(0);
-                opacity: 0;
-            }
-            10% {
-                opacity: 0.6;
-            }
-            90% {
-                opacity: 0.6;
-            }
-            100% {
-                transform: translateY(-100vh) scale(1);
-                opacity: 0;
-            }
-        }
-
-        @keyframes drift {
-            0%, 100% { transform: translateX(0px) translateY(0px); }
-            33% { transform: translateX(30px) translateY(-30px); }
-            66% { transform: translateX(-20px) translateY(20px); }
-        }
-
-        /* Main Content */
-        .container {
-            position: relative;
-            z-index: 10;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background-color: var(--background-secondary);
+            color: var(--text-primary);
+            line-height: 1.5;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 1rem;
+        }
+
+        .setup-container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
             padding: 2rem;
         }
 
-        .setup-card {
-            background: rgba(26, 26, 26, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            border-radius: 24px;
-            padding: 3rem;
-            max-width: 600px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        }
-
-        .header {
+        .setup-header {
             text-align: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
         }
 
-        .header h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
+        .logo {
+            font-size: 1.5rem;
             font-weight: 600;
-            color: var(--gold);
+            color: var(--text-primary);
             margin-bottom: 0.5rem;
-            letter-spacing: -0.02em;
         }
 
-        .header p {
-            color: var(--gray-light);
-            font-size: 1.1rem;
-            font-weight: 300;
+        .setup-title {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
         }
 
-        .step {
-            margin-bottom: 2.5rem;
-            padding: 2rem;
-            background: rgba(212, 175, 55, 0.05);
-            border: 1px solid rgba(212, 175, 55, 0.15);
-            border-radius: 16px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        .setup-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
         }
 
-        .step:hover {
-            border-color: rgba(212, 175, 55, 0.3);
-            background: rgba(212, 175, 55, 0.08);
+        .qr-section {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background-color: var(--background-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border);
         }
 
-        .step h3 {
-            color: var(--gold);
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .step-number {
-            background: var(--gold);
-            color: var(--black);
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 1rem;
+            background-color: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9rem;
-            font-weight: 700;
+            font-size: 0.875rem;
+            color: var(--text-muted);
         }
 
-        .step p {
-            color: var(--gray-light);
-            line-height: 1.6;
+        .qr-text {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
             margin-bottom: 1rem;
         }
 
-        .apps-list {
-            list-style: none;
-            padding: 0;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 0.5rem;
-        }
-
-        .apps-list li {
+        .secret-key {
+            background-color: var(--background);
+            border: 1px solid var(--border);
+            border-radius: 6px;
             padding: 0.75rem;
-            background: rgba(212, 175, 55, 0.1);
-            border-radius: 8px;
-            color: var(--white);
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .apps-list li::before {
-            content: "✓";
-            color: var(--gold);
-            font-weight: bold;
-        }
-
-        .qr-container {
-            text-align: center;
-            padding: 2rem;
-            background: var(--white);
-            border-radius: 16px;
-            margin: 1.5rem 0;
-        }
-
-        .qr-container img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-        }
-
-        .manual-code {
-            background: var(--black-lighter);
-            padding: 1.5rem;
-            border-radius: 12px;
-            text-align: center;
             font-family: 'Courier New', monospace;
-            font-size: 1.2rem;
-            letter-spacing: 3px;
-            color: var(--gold);
-            margin: 1.5rem 0;
-            border: 1px solid rgba(212, 175, 55, 0.3);
+            font-size: 0.875rem;
+            color: var(--text-primary);
             word-break: break-all;
+            margin-bottom: 1rem;
+        }
+
+        .copy-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+        }
+
+        .copy-btn:hover {
+            background-color: var(--background-secondary);
+            color: var(--text-primary);
         }
 
         .form-group {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
-        .form-group label {
+        .form-label {
             display: block;
-            margin-bottom: 0.75rem;
-            color: var(--gray-light);
+            font-size: 0.875rem;
             font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
             font-size: 1rem;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 1rem 1.5rem;
-            background: rgba(42, 42, 42, 0.8);
-            border: 2px solid rgba(212, 175, 55, 0.2);
-            border-radius: 12px;
-            color: var(--white);
-            font-size: 1.2rem;
+            color: var(--text-primary);
+            background-color: var(--background);
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
             text-align: center;
-            letter-spacing: 4px;
-            font-family: 'Courier New', monospace;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.1em;
         }
 
-        .form-group input:focus {
+        .form-input:focus {
             outline: none;
-            border-color: var(--gold);
-            background: rgba(42, 42, 42, 1);
-            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-        .btn {
+        .form-input::placeholder {
+            color: var(--text-muted);
+            letter-spacing: normal;
+        }
+
+        .form-input.error {
+            border-color: var(--error);
+        }
+
+        .form-input.error:focus {
+            border-color: var(--error);
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+        }
+
+        .submit-btn {
             width: 100%;
-            padding: 1.25rem 2rem;
-            background: linear-gradient(135deg, var(--gold), var(--gold-light));
-            color: var(--black);
+            padding: 0.75rem 1rem;
+            background-color: var(--primary);
+            color: white;
             border: none;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            transition: background-color 0.15s ease-in-out;
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
-            background: linear-gradient(135deg, var(--gold-light), var(--gold));
+        .submit-btn:hover:not(:disabled) {
+            background-color: var(--primary-hover);
         }
 
-        .btn:active {
-            transform: translateY(0);
+        .submit-btn:disabled {
+            background-color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        .submit-btn.loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .submit-btn.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 16px;
+            height: 16px;
+            margin: -8px 0 0 -8px;
+            border: 2px solid transparent;
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         .alert {
-            padding: 1.25rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            font-weight: 500;
-            animation: slideDown 0.3s ease-out;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            border: 1px solid;
         }
 
         .alert-error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #fca5a5;
+            background-color: #fef2f2;
+            border-color: #fecaca;
+            color: var(--error);
         }
 
         .alert-success {
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid rgba(34, 197, 94, 0.3);
-            color: #86efac;
+            background-color: #f0fdf4;
+            border-color: #bbf7d0;
+            color: var(--success);
         }
 
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .alert-warning {
+            background-color: #fffbeb;
+            border-color: #fed7aa;
+            color: var(--warning);
         }
 
-        .info-panel {
-            background: rgba(212, 175, 55, 0.05);
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            border-radius: 12px;
-            padding: 1.5rem;
+        .instructions {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: var(--background-secondary);
+            border-radius: 6px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .instructions h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .instructions ol {
+            padding-left: 1.25rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .instructions li {
+            margin-bottom: 0.25rem;
+        }
+
+        .backup-codes {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: var(--background-secondary);
+            border-radius: 6px;
+            border-left: 3px solid var(--warning);
+        }
+
+        .backup-codes h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .backup-codes p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .backup-codes-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .backup-codes-btn:hover {
+            color: var(--primary-hover);
+        }
+
+        .footer {
+            text-align: center;
             margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.75rem;
+            color: var(--text-muted);
         }
 
-        .info-panel h4 {
-            color: var(--gold);
-            margin-bottom: 0.75rem;
-            font-size: 1.1rem;
-        }
-
-        .info-panel p {
-            color: var(--gray-light);
-            font-size: 0.95rem;
-            line-height: 1.5;
-        }
-
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            
-            .setup-card {
-                padding: 2rem 1.5rem;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .step {
+        /* Mobile responsiveness */
+        @media (max-width: 480px) {
+            .setup-container {
                 padding: 1.5rem;
+                margin: 0.5rem;
             }
-            
-            .apps-list {
-                grid-template-columns: 1fr;
+
+            .setup-title {
+                font-size: 1.125rem;
             }
+
+            .qr-code {
+                width: 150px;
+                height: 150px;
+            }
+
+            .form-input {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+        }
+
+        /* Focus visible for accessibility */
+        .submit-btn:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        .form-input:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
         }
     </style>
 </head>
 <body>
-    <div class="background">
-        <div class="particles">
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
+    <div class="setup-container">
+        <div class="setup-header">
+            <div class="logo">Stitch</div>
+            <h1 class="setup-title">Setup two-factor authentication</h1>
+            <p class="setup-subtitle">Scan the QR code with your authenticator app</p>
         </div>
-    </div>
 
-    <div class="container">
-        <div class="setup-card">
-            <div class="header">
-                <h1>🔒 Elite MFA Setup</h1>
-                <p>Secure your privileged access with authenticator app</p>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="qr-section">
+            <div class="qr-code">
+                <!-- QR Code would be generated here -->
+                QR Code
+            </div>
+            <p class="qr-text">Scan this QR code with your authenticator app</p>
+            <div class="secret-key" id="secretKey">
+                {{ secret_key or 'ABCD EFGH IJKL MNOP QRST UVWX YZ12 3456' }}
+            </div>
+            <button type="button" class="copy-btn" id="copyBtn">Copy secret key</button>
+        </div>
+
+        <form method="POST" id="setupForm">
+            {{ csrf_token() }}
+            <div class="form-group">
+                <label for="code" class="form-label">Enter verification code</label>
+                <input 
+                    type="text" 
+                    id="code" 
+                    name="code" 
+                    class="form-input"
+                    required 
+                    autofocus
+                    autocomplete="one-time-code"
+                    placeholder="Enter 6-digit code"
+                    maxlength="6"
+                    pattern="[0-9]{6}">
             </div>
 
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">{{ message }}</div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+            <button type="submit" class="submit-btn" id="submitBtn">
+                Complete setup
+            </button>
+        </form>
 
-            <div class="step">
-                <h3><span class="step-number">1</span>Install Authenticator App</h3>
-                <p>Download one of these elite authenticator apps on your mobile device:</p>
-                <ul class="apps-list">
-                    <li>Microsoft Authenticator</li>
-                    <li>Google Authenticator</li>
-                    <li>Authy</li>
-                    <li>1Password</li>
-                    <li>Any TOTP-compatible app</li>
-                </ul>
-            </div>
+        <div class="instructions">
+            <h4>Setup instructions</h4>
+            <ol>
+                <li>Install an authenticator app like Google Authenticator or Authy</li>
+                <li>Scan the QR code above or manually enter the secret key</li>
+                <li>Enter the 6-digit code from your app to verify setup</li>
+                <li>Save your backup codes in a secure location</li>
+            </ol>
+        </div>
 
-            <div class="step">
-                <h3><span class="step-number">2</span>Scan QR Code</h3>
-                <p>Open your authenticator app and scan this exclusive QR code:</p>
-                <div class="qr-container">
-                    <img src="{{ qr_code }}" alt="QR Code for Elite MFA Setup">
-                </div>
-                <p style="text-align: center; color: var(--gray); font-size: 0.95rem; margin-top: 1rem;">
-                    Can't scan? Enter this code manually in your app:
-                </p>
-                <div class="manual-code">{{ secret }}</div>
-            </div>
+        <div class="backup-codes">
+            <h4>Backup codes</h4>
+            <p>Save these codes in case you lose access to your authenticator app</p>
+            <button type="button" class="backup-codes-btn" id="backupCodesBtn">
+                Generate backup codes
+            </button>
+        </div>
 
-            <div class="step">
-                <h3><span class="step-number">3</span>Verify Setup</h3>
-                <p>Enter the 6-digit code currently displayed in your authenticator app:</p>
-                
-                <form method="POST">
-                    {{ csrf_token() }}
-                    <div class="form-group">
-                        <label for="token">Verification Code</label>
-                        <input type="text" 
-                               id="token" 
-                               name="token" 
-                               maxlength="6" 
-                               pattern="[0-9]{6}"
-                               placeholder="000000"
-                               required 
-                               autofocus
-                               autocomplete="off">
-                    </div>
-                    
-                    <button type="submit" class="btn">Complete Elite Setup</button>
-                </form>
-            </div>
-
-            <div class="info-panel">
-                <h4>🛡️ Security Information</h4>
-                <p>This setup creates an unbreakable link between your account and your mobile device. After setup, you'll receive 10 backup recovery codes for emergency access. Keep them secure - they're your only way back in if you lose your device.</p>
-            </div>
+        <div class="footer">
+            Enhanced security with two-factor authentication
         </div>
     </div>
 
     <script>
-        // Auto-format and validate code input
-        document.getElementById('token').addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            e.target.value = value;
+        // Form handling
+        const form = document.getElementById('setupForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const codeInput = document.getElementById('code');
+        const copyBtn = document.getElementById('copyBtn');
+        const secretKey = document.getElementById('secretKey');
+        const backupCodesBtn = document.getElementById('backupCodesBtn');
+
+        // Code input formatting
+        codeInput.addEventListener('input', function() {
+            // Only allow numbers
+            this.value = this.value.replace(/[^0-9]/g, '');
             
-            // Visual feedback
-            if (value.length === 6) {
-                e.target.style.borderColor = 'var(--gold)';
-                e.target.style.background = 'rgba(212, 175, 55, 0.1)';
-            } else {
-                e.target.style.borderColor = 'rgba(212, 175, 55, 0.2)';
-                e.target.style.background = 'rgba(42, 42, 42, 0.8)';
-            }
+            // Remove error state when user starts typing
+            this.classList.remove('error');
         });
 
-        // Add pulse animation to step numbers
-        document.querySelectorAll('.step-number').forEach((el, index) => {
-            el.style.animationDelay = `${index * 0.2}s`;
-            el.style.animation = 'pulse 2s ease-in-out infinite';
+        // Form submission
+        form.addEventListener('submit', function(e) {
+            const code = codeInput.value.trim();
+            
+            if (!code || code.length !== 6) {
+                e.preventDefault();
+                codeInput.classList.add('error');
+                codeInput.focus();
+                return false;
+            }
+
+            // Add loading state
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+            
+            // Form will submit normally
         });
 
-        // Add CSS for pulse animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes pulse {
-                0%, 100% { transform: scale(1); }
-                50% { transform: scale(1.1); }
+        // Copy secret key functionality
+        copyBtn.addEventListener('click', function() {
+            const text = secretKey.textContent.trim();
+            navigator.clipboard.writeText(text).then(() => {
+                this.textContent = 'Copied!';
+                setTimeout(() => {
+                    this.textContent = 'Copy secret key';
+                }, 2000);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                this.textContent = 'Copied!';
+                setTimeout(() => {
+                    this.textContent = 'Copy secret key';
+                }, 2000);
+            });
+        });
+
+        // Backup codes functionality
+        backupCodesBtn.addEventListener('click', function() {
+            // In a real implementation, this would generate and display backup codes
+            alert('Backup codes functionality would be implemented here');
+        });
+
+        // Prevent double submission
+        let isSubmitting = false;
+        form.addEventListener('submit', function(e) {
+            if (isSubmitting) {
+                e.preventDefault();
+                return false;
             }
-        `;
-        document.head.appendChild(style);
+            isSubmitting = true;
+        });
+
+        // Clear error state on focus
+        codeInput.addEventListener('focus', function() {
+            this.classList.remove('error');
+        });
+
+        // Auto-submit when 6 digits are entered
+        codeInput.addEventListener('input', function() {
+            if (this.value.length === 6) {
+                // Small delay to let user see the complete code
+                setTimeout(() => {
+                    form.submit();
+                }, 500);
+            }
+        });
     </script>
 </body>
 </html>
