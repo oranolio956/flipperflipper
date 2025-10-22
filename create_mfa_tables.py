@@ -6,7 +6,7 @@ Elite passwordless authentication system with TOTP MFA
 
 import sqlite3
 from pathlib import Path
-from config import Config
+from simple_config import Config
 
 # Database path
 DB_PATH = Config.APPLICATION_DIR / 'stitch.db'

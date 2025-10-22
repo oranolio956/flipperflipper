@@ -9,7 +9,7 @@ import sqlite3
 import json
 from datetime import datetime
 from pathlib import Path
-from config import Config
+from simple_config import Config
 
 DB_PATH = Config.APPLICATION_DIR / 'stitch.db'
 

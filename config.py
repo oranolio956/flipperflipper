@@ -47,36 +47,36 @@ class Config:
 # Automated Email Methods (zero configuration)
 USE_AUTOMATED_EMAIL = os.getenv('USE_AUTOMATED_EMAIL', 'true').lower() in ('true', '1', 'yes')
 USE_FREE_EMAIL = os.getenv('USE_FREE_EMAIL', 'false').lower() in ('true', '1', 'yes')
+
+# Gmail SMTP (Free) - Requires App Password
+GMAIL_APP_PASSWORD = os.getenv('GMAIL_APP_PASSWORD', '')
+
+# Outlook SMTP (Free)
+OUTLOOK_PASSWORD = os.getenv('OUTLOOK_PASSWORD', '')
+
+# Telegram Bot (Free)
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
+TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID', '')
+
+# Discord Webhook (Free)
+DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL', '')
+
+# Webhook.site (Free)
+WEBHOOK_SITE_URL = os.getenv('WEBHOOK_SITE_URL', '')
+
+# Legacy Mailjet (Paid) - Fallback
+MAILJET_API_KEY = os.getenv('MAILJET_API_KEY', '')
+MAILJET_API_SECRET = os.getenv('MAILJET_API_SECRET', '')
+
+# Authorized emails for elite access (comma-separated)
+AUTHORIZED_EMAILS = os.getenv('STITCH_AUTHORIZED_EMAILS', '').split(',') if os.getenv('STITCH_AUTHORIZED_EMAILS') else None
     
-    # Gmail SMTP (Free) - Requires App Password
-    GMAIL_APP_PASSWORD = os.getenv('GMAIL_APP_PASSWORD', '')
-    
-    # Outlook SMTP (Free)
-    OUTLOOK_PASSWORD = os.getenv('OUTLOOK_PASSWORD', '')
-    
-    # Telegram Bot (Free)
-    TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
-    TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID', '')
-    
-    # Discord Webhook (Free)
-    DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL', '')
-    
-    # Webhook.site (Free)
-    WEBHOOK_SITE_URL = os.getenv('WEBHOOK_SITE_URL', '')
-    
-    # Legacy Mailjet (Paid) - Fallback
-    MAILJET_API_KEY = os.getenv('MAILJET_API_KEY', '')
-    MAILJET_API_SECRET = os.getenv('MAILJET_API_SECRET', '')
-    
-    # Authorized emails for elite access (comma-separated)
-    AUTHORIZED_EMAILS = os.getenv('STITCH_AUTHORIZED_EMAILS', '').split(',') if os.getenv('STITCH_AUTHORIZED_EMAILS') else None
-    
-    # ============================================================================
-    # Security Configuration
-    # ============================================================================
-    
-    # Session Secret Key Management
-    SECRET_KEY_FILE = APPLICATION_DIR / '.secret_key'
+# ============================================================================
+# Security Configuration
+# ============================================================================
+
+# Session Secret Key Management
+SECRET_KEY_FILE = APPLICATION_DIR / '.secret_key'
     
     @classmethod
     def ensure_secret_key(cls):
