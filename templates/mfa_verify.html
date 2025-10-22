@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oranolio • MFA Verification</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Two-Factor Authentication</title>
     <style>
         * {
             margin: 0;
@@ -15,397 +12,291 @@
         }
 
         :root {
-            --gold: #d4af37;
-            --gold-light: #f4e5a1;
-            --gold-dark: #b8941e;
-            --black: #0a0a0a;
-            --black-light: #1a1a1a;
-            --black-lighter: #2a2a2a;
-            --white: #ffffff;
-            --gray: #999999;
-            --gray-light: #cccccc;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border: #e5e7eb;
+            --border-focus: #2563eb;
+            --background: #ffffff;
+            --background-secondary: #f9fafb;
+            --error: #dc2626;
+            --success: #059669;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--black);
-            color: var(--white);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: var(--background-secondary);
+            color: var(--text-primary);
             min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
+            line-height: 1.6;
         }
 
-        /* Animated Background */
-        .background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            overflow: hidden;
-        }
-
-        .background::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 30% 60%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
-                        radial-gradient(circle at 70% 30%, rgba(212, 175, 55, 0.06) 0%, transparent 50%);
-            animation: drift 25s ease-in-out infinite;
-        }
-
-        .particles {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        .particle {
-            position: absolute;
-            width: 3px;
-            height: 3px;
-            background: var(--gold);
-            border-radius: 50%;
-            opacity: 0.4;
-            animation: float 18s linear infinite;
-        }
-
-        .particle:nth-child(1) { left: 15%; animation-delay: 0s; }
-        .particle:nth-child(2) { left: 25%; animation-delay: 3s; }
-        .particle:nth-child(3) { left: 35%; animation-delay: 6s; }
-        .particle:nth-child(4) { left: 45%; animation-delay: 9s; }
-        .particle:nth-child(5) { left: 55%; animation-delay: 12s; }
-        .particle:nth-child(6) { left: 65%; animation-delay: 15s; }
-        .particle:nth-child(7) { left: 75%; animation-delay: 18s; }
-
-        @keyframes float {
-            0% {
-                transform: translateY(100vh) scale(0);
-                opacity: 0;
-            }
-            10% {
-                opacity: 0.4;
-            }
-            90% {
-                opacity: 0.4;
-            }
-            100% {
-                transform: translateY(-100vh) scale(1);
-                opacity: 0;
-            }
-        }
-
-        @keyframes drift {
-            0%, 100% { transform: translateX(0px) translateY(0px); }
-            50% { transform: translateX(20px) translateY(-20px); }
-        }
-
-        /* Main Content */
         .container {
-            position: relative;
-            z-index: 10;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
+            padding: 1rem;
         }
 
         .verify-card {
-            background: rgba(26, 26, 26, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            border-radius: 24px;
-            padding: 3rem;
-            max-width: 480px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
             text-align: center;
         }
 
         .header {
-            margin-bottom: 2.5rem;
-        }
-
-        .header h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.2rem;
-            font-weight: 600;
-            color: var(--gold);
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.02em;
-        }
-
-        .header p {
-            color: var(--gray-light);
-            font-size: 1rem;
-            font-weight: 300;
+            margin-bottom: 2rem;
         }
 
         .auth-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            width: 64px;
+            height: 64px;
+            background: var(--primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 2rem;
-            font-size: 2rem;
-            animation: pulse 2s ease-in-out infinite;
+            margin: 0 auto 1.5rem;
+            font-size: 1.5rem;
+            color: white;
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
-            50% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(212, 175, 55, 0); }
+        .title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
         }
 
         .alert {
-            padding: 1.25rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
             font-weight: 500;
-            animation: slideDown 0.3s ease-out;
         }
 
         .alert-error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #fca5a5;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: var(--error);
         }
 
         .alert-success {
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid rgba(34, 197, 94, 0.3);
-            color: #86efac;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: var(--success);
         }
 
         .form-group {
-            margin-bottom: 2rem;
-            text-align: left;
+            margin-bottom: 1.5rem;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 0.75rem;
-            color: var(--gray-light);
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
             font-weight: 500;
-            font-size: 1rem;
-            text-align: center;
+            font-size: 0.875rem;
         }
 
         .form-group input {
             width: 100%;
-            padding: 1.5rem;
-            background: rgba(42, 42, 42, 0.8);
-            border: 2px solid rgba(212, 175, 55, 0.2);
-            border-radius: 16px;
-            color: var(--white);
-            font-size: 2rem;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1.5rem;
             text-align: center;
-            letter-spacing: 8px;
+            letter-spacing: 0.5rem;
             font-family: 'Courier New', monospace;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-weight: bold;
+            font-weight: 600;
+            color: var(--text-primary);
+            background: var(--background);
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
         }
 
         .form-group input:focus {
             outline: none;
-            border-color: var(--gold);
-            background: rgba(42, 42, 42, 1);
-            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
-            transform: scale(1.02);
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .form-group input.valid {
-            border-color: var(--gold);
-            background: rgba(212, 175, 55, 0.1);
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+            border-color: var(--success);
+            background: #f0fdf4;
         }
 
         .help-text {
-            color: var(--gray);
-            font-size: 0.9rem;
-            text-align: center;
-            margin-top: 0.75rem;
-            font-style: italic;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
         }
 
         .btn {
             width: 100%;
-            padding: 1.25rem 2rem;
-            background: linear-gradient(135deg, var(--gold), var(--gold-light));
-            color: var(--black);
+            padding: 0.75rem 1rem;
+            background: var(--primary);
+            color: white;
             border: none;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 1.5rem;
+            transition: background-color 0.15s ease-in-out;
+            margin-bottom: 1rem;
         }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
-            background: linear-gradient(135deg, var(--gold-light), var(--gold));
+            background: var(--primary-hover);
         }
 
         .btn:active {
-            transform: translateY(0);
+            transform: translateY(1px);
         }
 
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
-            transform: none;
         }
 
         .divider {
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
-            margin: 2rem 0;
+            background: var(--border);
+            margin: 1.5rem 0;
         }
 
         .backup-section {
-            padding-top: 1.5rem;
+            text-align: left;
+        }
+
+        .backup-section p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
         }
 
         .backup-link {
-            color: var(--gold);
+            color: var(--primary);
             text-decoration: none;
-            font-size: 0.95rem;
+            font-size: 0.875rem;
             font-weight: 500;
-            transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
         }
 
         .backup-link:hover {
-            color: var(--gold-light);
-            transform: translateY(-1px);
+            text-decoration: underline;
         }
 
         .backup-form {
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
             display: none;
         }
 
         .backup-form.show {
             display: block;
-            animation: slideDown 0.3s ease-out;
         }
 
         .backup-form input {
-            font-size: 1.5rem;
-            letter-spacing: 4px;
+            font-size: 1rem;
+            letter-spacing: 0.25rem;
         }
 
         .back-link {
-            color: var(--gray);
+            color: var(--text-muted);
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
             margin-top: 1rem;
             display: inline-block;
-            transition: color 0.3s ease;
         }
 
         .back-link:hover {
-            color: var(--gold);
+            color: var(--text-secondary);
         }
 
         .security-info {
-            background: rgba(212, 175, 55, 0.05);
-            border: 1px solid rgba(212, 175, 55, 0.15);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-top: 2rem;
+            background: var(--background-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 1.5rem;
             text-align: left;
         }
 
         .security-info h4 {
-            color: var(--gold);
-            margin-bottom: 0.75rem;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
         }
 
         .security-info p {
-            color: var(--gray-light);
-            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
             line-height: 1.5;
         }
 
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            
+        .loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 16px;
+            height: 16px;
+            margin: -8px 0 0 -8px;
+            border: 2px solid transparent;
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
             .verify-card {
-                padding: 2rem 1.5rem;
-            }
-            
-            .header h1 {
-                font-size: 1.8rem;
+                padding: 1.5rem;
+                margin: 0.5rem;
             }
             
             .form-group input {
-                font-size: 1.5rem;
-                letter-spacing: 6px;
-                padding: 1.25rem;
-            }
-            
-            .auth-icon {
-                width: 60px;
-                height: 60px;
-                font-size: 1.5rem;
+                font-size: 1.25rem;
+                letter-spacing: 0.375rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="background">
-        <div class="particles">
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-        </div>
-    </div>
-
     <div class="container">
         <div class="verify-card">
             <div class="header">
                 <div class="auth-icon">🔐</div>
-                <h1>Elite Access Verification</h1>
-                <p>Enter your authenticator code to continue</p>
+                <h1 class="title">Two-Factor Authentication</h1>
+                <p class="subtitle">Enter the 6-digit code from your authenticator app</p>
             </div>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -432,15 +323,15 @@
                     <p class="help-text">Open your authenticator app and enter the current 6-digit code</p>
                 </div>
                 
-                <button type="submit" class="btn" id="verifyBtn">Verify Access</button>
+                <button type="submit" class="btn" id="verifyBtn">Verify Code</button>
             </form>
 
             <div class="divider"></div>
 
             <div class="backup-section">
-                <p style="color: var(--gray); margin-bottom: 1rem; font-size: 0.95rem;">Lost your device?</p>
+                <p>Lost your device?</p>
                 <a href="#" class="backup-link" onclick="showBackupForm(); return false;">
-                    🔑 Use backup recovery code instead
+                    Use backup recovery code instead
                 </a>
             </div>
 
@@ -467,8 +358,8 @@
             </div>
 
             <div class="security-info">
-                <h4>🛡️ Security Notice</h4>
-                <p>This is a protected system with enterprise-grade security. All access attempts are logged and monitored. Your session will expire automatically for security.</p>
+                <h4>Security Notice</h4>
+                <p>This is a protected system with industry-standard security. All access attempts are logged and monitored.</p>
             </div>
         </div>
     </div>
@@ -482,10 +373,8 @@
             // Visual feedback
             if (value.length === 6) {
                 e.target.classList.add('valid');
-                document.getElementById('verifyBtn').disabled = false;
             } else {
                 e.target.classList.remove('valid');
-                document.getElementById('verifyBtn').disabled = false; // Allow partial codes
             }
         });
 
@@ -506,7 +395,7 @@
             document.getElementById('token').focus();
         }
 
-        // Auto-submit when 6 digits entered (optional)
+        // Auto-submit when 6 digits entered
         document.getElementById('token').addEventListener('keyup', function(e) {
             if (e.target.value.length === 6 && e.key === 'Enter') {
                 document.getElementById('verifyForm').submit();
@@ -516,18 +405,9 @@
         // Add loading state on form submit
         document.getElementById('verifyForm').addEventListener('submit', function() {
             const btn = document.getElementById('verifyBtn');
-            btn.innerHTML = 'Verifying...';
+            btn.classList.add('loading');
             btn.disabled = true;
         });
-
-        // Add subtle animation to auth icon
-        const authIcon = document.querySelector('.auth-icon');
-        setInterval(() => {
-            authIcon.style.transform = 'scale(1.1)';
-            setTimeout(() => {
-                authIcon.style.transform = 'scale(1)';
-            }, 200);
-        }, 3000);
     </script>
 </body>
 </html>

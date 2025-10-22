@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oranolio • MFA Setup</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Setup Two-Factor Authentication</title>
     <style>
         * {
             margin: 0;
@@ -15,182 +12,98 @@
         }
 
         :root {
-            --gold: #d4af37;
-            --gold-light: #f4e5a1;
-            --gold-dark: #b8941e;
-            --black: #0a0a0a;
-            --black-light: #1a1a1a;
-            --black-lighter: #2a2a2a;
-            --white: #ffffff;
-            --gray: #999999;
-            --gray-light: #cccccc;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border: #e5e7eb;
+            --border-focus: #2563eb;
+            --background: #ffffff;
+            --background-secondary: #f9fafb;
+            --error: #dc2626;
+            --success: #059669;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--black);
-            color: var(--white);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: var(--background-secondary);
+            color: var(--text-primary);
             min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
+            line-height: 1.6;
         }
 
-        /* Animated Background */
-        .background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            overflow: hidden;
-        }
-
-        .background::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 20%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
-                        radial-gradient(circle at 40% 80%, rgba(212, 175, 55, 0.08) 0%, transparent 50%);
-            animation: drift 20s ease-in-out infinite;
-        }
-
-        .particles {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        .particle {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: var(--gold);
-            border-radius: 50%;
-            opacity: 0.6;
-            animation: float 15s linear infinite;
-        }
-
-        .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
-        .particle:nth-child(2) { left: 20%; animation-delay: 2s; }
-        .particle:nth-child(3) { left: 30%; animation-delay: 4s; }
-        .particle:nth-child(4) { left: 40%; animation-delay: 6s; }
-        .particle:nth-child(5) { left: 50%; animation-delay: 8s; }
-        .particle:nth-child(6) { left: 60%; animation-delay: 10s; }
-        .particle:nth-child(7) { left: 70%; animation-delay: 12s; }
-        .particle:nth-child(8) { left: 80%; animation-delay: 14s; }
-        .particle:nth-child(9) { left: 90%; animation-delay: 16s; }
-
-        @keyframes float {
-            0% {
-                transform: translateY(100vh) scale(0);
-                opacity: 0;
-            }
-            10% {
-                opacity: 0.6;
-            }
-            90% {
-                opacity: 0.6;
-            }
-            100% {
-                transform: translateY(-100vh) scale(1);
-                opacity: 0;
-            }
-        }
-
-        @keyframes drift {
-            0%, 100% { transform: translateX(0px) translateY(0px); }
-            33% { transform: translateX(30px) translateY(-30px); }
-            66% { transform: translateX(-20px) translateY(20px); }
-        }
-
-        /* Main Content */
         .container {
-            position: relative;
-            z-index: 10;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
+            padding: 1rem;
         }
 
         .setup-card {
-            background: rgba(26, 26, 26, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            border-radius: 24px;
-            padding: 3rem;
-            max-width: 600px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
         }
 
         .header {
             text-align: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
         }
 
-        .header h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
+        .title {
+            font-size: 1.5rem;
             font-weight: 600;
-            color: var(--gold);
+            color: var(--text-primary);
             margin-bottom: 0.5rem;
-            letter-spacing: -0.02em;
         }
 
-        .header p {
-            color: var(--gray-light);
-            font-size: 1.1rem;
-            font-weight: 300;
+        .subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
         }
 
         .step {
-            margin-bottom: 2.5rem;
-            padding: 2rem;
-            background: rgba(212, 175, 55, 0.05);
-            border: 1px solid rgba(212, 175, 55, 0.15);
-            border-radius: 16px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .step:hover {
-            border-color: rgba(212, 175, 55, 0.3);
-            background: rgba(212, 175, 55, 0.08);
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--background-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
         }
 
         .step h3 {
-            color: var(--gold);
-            font-size: 1.3rem;
+            color: var(--text-primary);
+            font-size: 1rem;
             font-weight: 600;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
         .step-number {
-            background: var(--gold);
-            color: var(--black);
-            width: 28px;
-            height: 28px;
+            background: var(--primary);
+            color: white;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9rem;
-            font-weight: 700;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
 
         .step p {
-            color: var(--gray-light);
-            line-height: 1.6;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
             margin-bottom: 1rem;
         }
 
@@ -198,15 +111,17 @@
             list-style: none;
             padding: 0;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 0.5rem;
         }
 
         .apps-list li {
-            padding: 0.75rem;
-            background: rgba(212, 175, 55, 0.1);
-            border-radius: 8px;
-            color: var(--white);
+            padding: 0.5rem;
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
             font-weight: 500;
             display: flex;
             align-items: center;
@@ -215,163 +130,138 @@
 
         .apps-list li::before {
             content: "✓";
-            color: var(--gold);
+            color: var(--success);
             font-weight: bold;
         }
 
         .qr-container {
             text-align: center;
-            padding: 2rem;
-            background: var(--white);
-            border-radius: 16px;
-            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin: 1rem 0;
         }
 
         .qr-container img {
             max-width: 100%;
             height: auto;
-            border-radius: 8px;
+            border-radius: 4px;
         }
 
         .manual-code {
-            background: var(--black-lighter);
-            padding: 1.5rem;
-            border-radius: 12px;
+            background: var(--background-secondary);
+            padding: 1rem;
+            border-radius: 4px;
             text-align: center;
             font-family: 'Courier New', monospace;
-            font-size: 1.2rem;
-            letter-spacing: 3px;
-            color: var(--gold);
-            margin: 1.5rem 0;
-            border: 1px solid rgba(212, 175, 55, 0.3);
+            font-size: 0.875rem;
+            letter-spacing: 2px;
+            color: var(--text-primary);
+            margin: 1rem 0;
+            border: 1px solid var(--border);
             word-break: break-all;
         }
 
         .form-group {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 0.75rem;
-            color: var(--gray-light);
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
             font-weight: 500;
-            font-size: 1rem;
+            font-size: 0.875rem;
         }
 
         .form-group input {
             width: 100%;
-            padding: 1rem 1.5rem;
-            background: rgba(42, 42, 42, 0.8);
-            border: 2px solid rgba(212, 175, 55, 0.2);
-            border-radius: 12px;
-            color: var(--white);
-            font-size: 1.2rem;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 1.25rem;
             text-align: center;
-            letter-spacing: 4px;
+            letter-spacing: 0.25rem;
             font-family: 'Courier New', monospace;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            color: var(--text-primary);
+            background: var(--background);
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
         }
 
         .form-group input:focus {
             outline: none;
-            border-color: var(--gold);
-            background: rgba(42, 42, 42, 1);
-            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .btn {
             width: 100%;
-            padding: 1.25rem 2rem;
-            background: linear-gradient(135deg, var(--gold), var(--gold-light));
-            color: var(--black);
+            padding: 0.75rem 1rem;
+            background: var(--primary);
+            color: white;
             border: none;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            transition: background-color 0.15s ease-in-out;
         }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
-            background: linear-gradient(135deg, var(--gold-light), var(--gold));
+            background: var(--primary-hover);
         }
 
         .btn:active {
-            transform: translateY(0);
+            transform: translateY(1px);
         }
 
         .alert {
-            padding: 1.25rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
             font-weight: 500;
-            animation: slideDown 0.3s ease-out;
         }
 
         .alert-error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #fca5a5;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: var(--error);
         }
 
         .alert-success {
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid rgba(34, 197, 94, 0.3);
-            color: #86efac;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: var(--success);
         }
 
         .info-panel {
-            background: rgba(212, 175, 55, 0.05);
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-top: 2rem;
+            background: var(--background-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1rem;
+            margin-top: 1.5rem;
         }
 
         .info-panel h4 {
-            color: var(--gold);
-            margin-bottom: 0.75rem;
-            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
         }
 
         .info-panel p {
-            color: var(--gray-light);
-            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
             line-height: 1.5;
         }
 
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            
+        @media (max-width: 480px) {
             .setup-card {
-                padding: 2rem 1.5rem;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .step {
                 padding: 1.5rem;
+                margin: 0.5rem;
             }
             
             .apps-list {
@@ -381,25 +271,11 @@
     </style>
 </head>
 <body>
-    <div class="background">
-        <div class="particles">
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-        </div>
-    </div>
-
     <div class="container">
         <div class="setup-card">
             <div class="header">
-                <h1>🔒 Elite MFA Setup</h1>
-                <p>Secure your privileged access with authenticator app</p>
+                <h1 class="title">Setup Two-Factor Authentication</h1>
+                <p class="subtitle">Secure your account with an authenticator app</p>
             </div>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -412,7 +288,7 @@
 
             <div class="step">
                 <h3><span class="step-number">1</span>Install Authenticator App</h3>
-                <p>Download one of these elite authenticator apps on your mobile device:</p>
+                <p>Download one of these authenticator apps on your mobile device:</p>
                 <ul class="apps-list">
                     <li>Microsoft Authenticator</li>
                     <li>Google Authenticator</li>
@@ -424,11 +300,11 @@
 
             <div class="step">
                 <h3><span class="step-number">2</span>Scan QR Code</h3>
-                <p>Open your authenticator app and scan this exclusive QR code:</p>
+                <p>Open your authenticator app and scan this QR code:</p>
                 <div class="qr-container">
-                    <img src="{{ qr_code }}" alt="QR Code for Elite MFA Setup">
+                    <img src="{{ qr_code }}" alt="QR Code for MFA Setup">
                 </div>
-                <p style="text-align: center; color: var(--gray); font-size: 0.95rem; margin-top: 1rem;">
+                <p style="text-align: center; color: var(--text-muted); font-size: 0.75rem; margin-top: 0.5rem;">
                     Can't scan? Enter this code manually in your app:
                 </p>
                 <div class="manual-code">{{ secret }}</div>
@@ -453,13 +329,13 @@
                                autocomplete="off">
                     </div>
                     
-                    <button type="submit" class="btn">Complete Elite Setup</button>
+                    <button type="submit" class="btn">Complete Setup</button>
                 </form>
             </div>
 
             <div class="info-panel">
-                <h4>🛡️ Security Information</h4>
-                <p>This setup creates an unbreakable link between your account and your mobile device. After setup, you'll receive 10 backup recovery codes for emergency access. Keep them secure - they're your only way back in if you lose your device.</p>
+                <h4>Security Information</h4>
+                <p>This setup creates a secure link between your account and your mobile device. After setup, you'll receive backup recovery codes for emergency access. Keep them secure - they're your only way back in if you lose your device.</p>
             </div>
         </div>
     </div>
@@ -472,29 +348,13 @@
             
             // Visual feedback
             if (value.length === 6) {
-                e.target.style.borderColor = 'var(--gold)';
-                e.target.style.background = 'rgba(212, 175, 55, 0.1)';
+                e.target.style.borderColor = 'var(--success)';
+                e.target.style.background = '#f0fdf4';
             } else {
-                e.target.style.borderColor = 'rgba(212, 175, 55, 0.2)';
-                e.target.style.background = 'rgba(42, 42, 42, 0.8)';
+                e.target.style.borderColor = 'var(--border)';
+                e.target.style.background = 'var(--background)';
             }
         });
-
-        // Add pulse animation to step numbers
-        document.querySelectorAll('.step-number').forEach((el, index) => {
-            el.style.animationDelay = `${index * 0.2}s`;
-            el.style.animation = 'pulse 2s ease-in-out infinite';
-        });
-
-        // Add CSS for pulse animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes pulse {
-                0%, 100% { transform: scale(1); }
-                50% { transform: scale(1.1); }
-            }
-        `;
-        document.head.appendChild(style);
     </script>
 </body>
 </html>
