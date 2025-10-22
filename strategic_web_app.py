@@ -338,7 +338,7 @@ if __name__ == '__main__':
     print("=" * 50)
     
     # Run the app
-    socketio.run(app, host='0.0.0.0', port=5000, debug=False)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=False, allow_unsafe_werkzeug=True)
 else:
     # Initialize when imported
     init_app()

