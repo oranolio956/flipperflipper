@@ -164,8 +164,7 @@ class stitch_commands_library:
 ################################################################################
 
     def avscan(self):
-        pass
-    # st_print("=== Antivirus Scan ===")
+        # st_print("=== Antivirus Scan ===")
         if windows_client(system=self.cli_os):
             self.pyexec('avscan_win.py',pylib=True)
     # st_print("    {}".format(self.receive()))

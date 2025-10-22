@@ -142,8 +142,6 @@ def assemble_stitch():
     # st_print("[+] Stitch Modules are now complete.")
 
 def win_gen_payload(dist_dir,icon, dest, cpyr, cmpny, ver, name, desc):
-    pass
-
     sys.argv.append('py2exe')
 
     setup(
