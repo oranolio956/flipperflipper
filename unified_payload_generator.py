@@ -12,7 +12,7 @@ import tempfile
 import base64
 import hashlib
 import subprocess
-import configparser
+import configparser as ConfigParser
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, Optional

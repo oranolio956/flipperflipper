@@ -1,4 +1,6 @@
 import os
+import base64
+import zlib
 # -*- coding: utf-8 -*-
 # Copyright (c) 2017, Nathan Lopez
 # Stitch is under the MIT license. See the LICENSE file at the root of the project for the detailed license terms.
