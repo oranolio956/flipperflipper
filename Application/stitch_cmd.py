@@ -6,6 +6,9 @@ import os
 import sys
 import cmd
 import configparser
+import threading
+import socket
+import time
 
 def get_cwd():
     return os.getcwd()
@@ -30,12 +33,13 @@ from .stitch_gen import win_gen_payload, posix_gen_payload, run_exe_gen, assembl
 # (stitch_help contains only usage functions, no specific imports needed)
 
 # Import globals
-from .Stitch_Vars.globals import hist_ini
+from .Stitch_Vars.globals import hist_ini, st_aes_lib, st_tag
 
 # Specific imports from stitch_utils
 from .stitch_utils import (
     run_command, start_command, no_error, encrypt, decrypt, 
-    show_aes, add_aes, windows_client, osx_client, linux_client
+    show_aes, add_aes, windows_client, osx_client, linux_client,
+    display_banner
 )
 
 class stitch_server(cmd.Cmd):

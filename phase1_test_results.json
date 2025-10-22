@@ -1,0 +1,64 @@
+{
+  "start_time": "2025-10-22T21:25:54.341795",
+  "tests": {
+    "payload_generation": {
+      "success": true,
+      "generated_payloads": [
+        {
+          "platform": "linux",
+          "type": "python",
+          "filename": "test_linux_python_linux.py",
+          "path": "/workspace/payloads/output/test_linux_python_linux.py",
+          "size": 1379,
+          "hash": "966b96d17f902c3267bec72dd206d74db7ff851ea8ca344cbaedaddc00f59733",
+          "generated_at": "2025-10-22T21:25:54.444391"
+        },
+        {
+          "platform": "windows",
+          "type": "python",
+          "filename": "test_windows_python_windows.py",
+          "path": "/workspace/payloads/output/test_windows_python_windows.py",
+          "size": 1379,
+          "hash": "966b96d17f902c3267bec72dd206d74db7ff851ea8ca344cbaedaddc00f59733",
+          "generated_at": "2025-10-22T21:25:54.460999"
+        },
+        {
+          "platform": "macos",
+          "type": "python",
+          "filename": "test_macos_python_macos.py",
+          "path": "/workspace/payloads/output/test_macos_python_macos.py",
+          "size": 1379,
+          "hash": "966b96d17f902c3267bec72dd206d74db7ff851ea8ca344cbaedaddc00f59733",
+          "generated_at": "2025-10-22T21:25:54.479242"
+        }
+      ],
+      "errors": []
+    },
+    "server_startup": {
+      "success": true,
+      "server_process_running": true
+    },
+    "server_connection": {
+      "success": false,
+      "error": "Expecting value: line 1 column 1 (char 0)"
+    },
+    "network_monitoring": {
+      "success": false,
+      "port_accessible": false
+    },
+    "system_resources": {
+      "success": true,
+      "resources": {
+        "cpu_percent": 26.1,
+        "memory_total": 16795742208,
+        "memory_available": 15981527040,
+        "memory_percent": 4.8,
+        "disk_total": 135152996352,
+        "disk_free": 121285513216,
+        "disk_percent": 5.4
+      }
+    }
+  },
+  "overall_success": false,
+  "end_time": "2025-10-22T21:25:55.530885"
+}
