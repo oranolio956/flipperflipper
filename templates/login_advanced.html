@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>///RESTRICTED///</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        
+        :root {
+            --primary: #00ffaa;
+            --secondary: #0099ff;
+            --danger: #ff0055;
+            --bg-dark: #0a0a0f;
+            --bg-light: #1a1a2e;
+        }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--bg-dark);
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+        
+        /* Particle canvas background */
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        /* Main wrapper */
+        .auth-wrapper {
+            position: relative;
+            z-index: 10;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+        
+        /* Glitch effect */
+        @keyframes glitch {
+            0%, 100% {
+                text-shadow: 
+                    0.05em 0 0 rgba(255, 0, 85, 0.75),
+                    -0.05em -0.025em 0 rgba(0, 255, 170, 0.75),
+                    0.025em 0.05em 0 rgba(0, 153, 255, 0.75);
+            }
+            14% {
+                text-shadow: 
+                    0.05em 0 0 rgba(255, 0, 85, 0.75),
+                    -0.05em -0.025em 0 rgba(0, 255, 170, 0.75),
+                    0.025em 0.05em 0 rgba(0, 153, 255, 0.75);
+            }
+            15% {
+                text-shadow: 
+                    -0.05em -0.025em 0 rgba(255, 0, 85, 0.75),
+                    0.025em 0.025em 0 rgba(0, 255, 170, 0.75),
+                    -0.05em -0.05em 0 rgba(0, 153, 255, 0.75);
+            }
+            49% {
+                text-shadow: 
+                    -0.05em -0.025em 0 rgba(255, 0, 85, 0.75),
+                    0.025em 0.025em 0 rgba(0, 255, 170, 0.75),
+                    -0.05em -0.05em 0 rgba(0, 153, 255, 0.75);
+            }
+            50% {
+                text-shadow: 
+                    0.025em 0.05em 0 rgba(255, 0, 85, 0.75),
+                    0.05em 0 0 rgba(0, 255, 170, 0.75),
+                    0 -0.05em 0 rgba(0, 153, 255, 0.75);
+            }
+            99% {
+                text-shadow: 
+                    0.025em 0.05em 0 rgba(255, 0, 85, 0.75),
+                    0.05em 0 0 rgba(0, 255, 170, 0.75),
+                    0 -0.05em 0 rgba(0, 153, 255, 0.75);
+            }
+        }
+        
+        /* Auth card */
+        .auth-card {
+            width: 420px;
+            background: linear-gradient(135deg, 
+                rgba(26, 26, 46, 0.9) 0%, 
+                rgba(10, 10, 15, 0.9) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 255, 170, 0.1);
+            position: relative;
+            transform-style: preserve-3d;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotateX(0); }
+            50% { transform: translateY(-10px) rotateX(2deg); }
+        }
+        
+        /* Card glow effect */
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, 
+                var(--primary), 
+                var(--secondary), 
+                var(--primary), 
+                var(--secondary));
+            background-size: 400% 400%;
+            opacity: 0;
+            z-index: -1;
+            animation: gradient-border 15s ease infinite;
+            transition: opacity 0.3s ease;
+        }
+        
+        .auth-card:hover::before {
+            opacity: 0.3;
+        }
+        
+        @keyframes gradient-border {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Header section */
+        .auth-header {
+            padding: 30px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 255, 170, 0.1);
+            position: relative;
+        }
+        
+        .org-logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+        
+        /* Animated hexagon logo */
+        .hex-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            animation: rotate 20s linear infinite;
+        }
+        
+        .hex {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            opacity: 0.1;
+            clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+        }
+        
+        .hex:nth-child(2) {
+            transform: scale(0.8);
+            animation: rotate-reverse 15s linear infinite;
+            opacity: 0.2;
+        }
+        
+        .hex:nth-child(3) {
+            transform: scale(0.6);
+            animation: rotate 10s linear infinite;
+            opacity: 0.3;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes rotate-reverse {
+            0% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
+        }
+        
+        .org-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: 4px;
+            margin-bottom: 5px;
+            animation: glitch 2s infinite;
+        }
+        
+        .access-level {
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: var(--primary);
+            opacity: 0.7;
+        }
+        
+        /* Auth body */
+        .auth-body {
+            padding: 40px 30px;
+        }
+        
+        /* Input groups */
+        .input-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        .input-label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(0, 255, 170, 0.6);
+            margin-bottom: 8px;
+        }
+        
+        .input-field {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 255, 170, 0.1);
+            padding: 14px 45px 14px 15px;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 
+                0 0 30px rgba(0, 255, 170, 0.1),
+                inset 0 0 10px rgba(0, 255, 170, 0.05);
+        }
+        
+        /* Input icons */
+        .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(0, 255, 170, 0.3);
+            transition: color 0.3s ease;
+        }
+        
+        .input-field:focus ~ .input-icon {
+            color: var(--primary);
+        }
+        
+        /* Biometric button */
+        .biometric-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 170, 0.1) 0%, 
+                rgba(0, 153, 255, 0.1) 100%);
+            border: 1px solid rgba(0, 255, 170, 0.3);
+            color: var(--primary);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .biometric-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, 
+                rgba(0, 255, 170, 0.3) 0%, 
+                transparent 70%);
+            transform: translate(-50%, -50%);
+            transition: width 0.5s ease, height 0.5s ease;
+        }
+        
+        .biometric-btn:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 170, 0.2);
+        }
+        
+        .biometric-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .biometric-btn:active {
+            transform: translateY(0);
+        }
+        
+        .biometric-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Footer */
+        .auth-footer {
+            padding: 20px 30px;
+            border-top: 1px solid rgba(0, 255, 170, 0.1);
+            text-align: center;
+        }
+        
+        .security-info {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.3);
+            letter-spacing: 1px;
+        }
+        
+        .ip-trace {
+            margin-top: 10px;
+            font-size: 9px;
+            color: var(--danger);
+            opacity: 0.5;
+            letter-spacing: 2px;
+        }
+        
+        /* Loading state */
+        .auth-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 15, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .auth-loading.active {
+            display: flex;
+        }
+        
+        .loading-container {
+            text-align: center;
+        }
+        
+        .loading-hex {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+            animation: rotate 1s linear infinite;
+        }
+        
+        .loading-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--primary);
+            animation: pulse 1s ease infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        /* Error state */
+        .error-alert {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(255, 0, 85, 0.1);
+            border: 1px solid rgba(255, 0, 85, 0.3);
+            color: var(--danger);
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: none;
+            animation: shake 0.5s ease;
+        }
+        
+        .error-alert.show {
+            display: block;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        /* Success state */
+        .success-alert {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(0, 255, 170, 0.1);
+            border: 1px solid rgba(0, 255, 170, 0.3);
+            color: var(--primary);
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: none;
+        }
+        
+        .success-alert.show {
+            display: block;
+        }
+        
+        /* Corner decorations */
+        .corner-decoration {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 1px solid rgba(0, 255, 170, 0.3);
+        }
+        
+        .corner-decoration.top-left {
+            top: -1px;
+            left: -1px;
+            border-right: none;
+            border-bottom: none;
+        }
+        
+        .corner-decoration.top-right {
+            top: -1px;
+            right: -1px;
+            border-left: none;
+            border-bottom: none;
+        }
+        
+        .corner-decoration.bottom-left {
+            bottom: -1px;
+            left: -1px;
+            border-right: none;
+            border-top: none;
+        }
+        
+        .corner-decoration.bottom-right {
+            bottom: -1px;
+            right: -1px;
+            border-left: none;
+            border-top: none;
+        }
+        
+        /* Data streams effect */
+        .data-stream {
+            position: fixed;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            color: rgba(0, 255, 170, 0.1);
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .data-stream.vertical {
+            writing-mode: vertical-rl;
+            animation: stream-down 20s linear infinite;
+        }
+        
+        @keyframes stream-down {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 480px) {
+            .auth-card {
+                width: 90%;
+                margin: 20px;
+            }
+            
+            .auth-body {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particle canvas -->
+    <canvas id="particles-canvas"></canvas>
+    
+    <!-- Data streams background -->
+    <div class="data-stream vertical" style="left: 5%;">01001110 01100101 01111000 01110101 01110011</div>
+    <div class="data-stream vertical" style="left: 15%; animation-delay: 3s;">PROTOCOL_OMEGA_INITIATED</div>
+    <div class="data-stream vertical" style="left: 85%; animation-delay: 7s;">CLEARANCE_LEVEL_VERIFIED</div>
+    <div class="data-stream vertical" style="left: 95%; animation-delay: 5s;">10110001 11010010 00101110</div>
+    
+    <!-- Main wrapper -->
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <!-- Corner decorations -->
+            <div class="corner-decoration top-left"></div>
+            <div class="corner-decoration top-right"></div>
+            <div class="corner-decoration bottom-left"></div>
+            <div class="corner-decoration bottom-right"></div>
+            
+            <!-- Header -->
+            <div class="auth-header">
+                <div class="org-logo">
+                    <div class="hex-container">
+                        <div class="hex"></div>
+                        <div class="hex"></div>
+                        <div class="hex"></div>
+                    </div>
+                </div>
+                <div class="org-name">NEXUS</div>
+                <div class="access-level">LEVEL Ω CLEARANCE</div>
+            </div>
+            
+            <!-- Body -->
+            <div class="auth-body">
+                <form id="authForm">
+                    <div class="input-group">
+                        <label class="input-label">Email Address</label>
+                        <input type="email" class="input-field" id="email" 
+                               autocomplete="off" spellcheck="false" required>
+                        <span class="input-icon">◈</span>
+                    </div>
+                    
+                    <button type="submit" class="biometric-btn" id="sendCodeBtn">
+                        Request Access Code
+                    </button>
+                    
+                    <div class="error-alert" id="errorAlert">
+                        Authentication Failed - Access Denied
+                    </div>
+                    
+                    <div class="success-alert" id="successAlert">
+                        Verification code sent to your email
+                    </div>
+                </form>
+                
+                <!-- Verification form (hidden initially) -->
+                <form id="verifyForm" style="display: none;">
+                    <div class="input-group">
+                        <label class="input-label">Verification Code</label>
+                        <input type="text" class="input-field" id="code" 
+                               autocomplete="off" maxlength="6" required>
+                        <span class="input-icon">◉</span>
+                    </div>
+                    
+                    <button type="submit" class="biometric-btn" id="verifyBtn">
+                        Verify Access Code
+                    </button>
+                    
+                    <div class="error-alert" id="verifyErrorAlert">
+                        Invalid verification code
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Footer -->
+            <div class="auth-footer">
+                <div class="security-info">
+                    System Protected by Quantum Encryption
+                </div>
+                <div class="ip-trace" id="ipTrace">
+                    TRACE ACTIVE • -- : -- : --
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading overlay -->
+    <div class="auth-loading" id="authLoading">
+        <div class="loading-container">
+            <div class="loading-hex"></div>
+            <div class="loading-text">Verifying Clearance</div>
+        </div>
+    </div>
+    
+    <script>
+        // Particle background
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const particles = [];
+        const particleCount = 100;
+        
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.radius = Math.random() * 2;
+                this.opacity = Math.random() * 0.5 + 0.1;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                if (this.x < 0 || this.x > canvas.width) this.vx = -this.vx;
+                if (this.y < 0 || this.y > canvas.height) this.vy = -this.vy;
+            }
+            
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0, 255, 170, ${this.opacity})`;
+                ctx.fill();
+            }
+        }
+        
+        // Create particles
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+        
+        // Draw connections
+        function drawConnections() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 100) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(0, 255, 170, ${0.1 * (1 - distance / 100)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+        
+        // Animation loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+            
+            drawConnections();
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+        
+        // Window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        // Update IP trace time
+        function updateTrace() {
+            const now = new Date();
+            const time = now.toTimeString().split(' ')[0];
+            document.getElementById('ipTrace').textContent = `TRACE ACTIVE • ${time}`;
+        }
+        
+        setInterval(updateTrace, 1000);
+        updateTrace();
+        
+        // Form handling
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const errorAlert = document.getElementById('errorAlert');
+            const successAlert = document.getElementById('successAlert');
+            const loading = document.getElementById('authLoading');
+            const sendBtn = document.getElementById('sendCodeBtn');
+            
+            errorAlert.classList.remove('show');
+            successAlert.classList.remove('show');
+            loading.classList.add('active');
+            sendBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/send_code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    successAlert.classList.add('show');
+                    document.getElementById('authForm').style.display = 'none';
+                    document.getElementById('verifyForm').style.display = 'block';
+                    document.getElementById('verifyForm').dataset.email = email;
+                } else {
+                    errorAlert.textContent = data.error || 'Failed to send verification code';
+                    errorAlert.classList.add('show');
+                }
+            } catch (error) {
+                errorAlert.textContent = 'Network error. Please try again.';
+                errorAlert.classList.add('show');
+            } finally {
+                loading.classList.remove('active');
+                sendBtn.disabled = false;
+            }
+        });
+        
+        // Verification form handling
+        document.getElementById('verifyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('verifyForm').dataset.email;
+            const code = document.getElementById('code').value;
+            const errorAlert = document.getElementById('verifyErrorAlert');
+            const loading = document.getElementById('authLoading');
+            const verifyBtn = document.getElementById('verifyBtn');
+            
+            errorAlert.classList.remove('show');
+            loading.classList.add('active');
+            verifyBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/verify_code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, code })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = data.redirect || '/dashboard';
+                } else {
+                    errorAlert.textContent = data.error || 'Invalid verification code';
+                    errorAlert.classList.add('show');
+                    document.getElementById('code').value = '';
+                }
+            } catch (error) {
+                errorAlert.textContent = 'Network error. Please try again.';
+                errorAlert.classList.add('show');
+            } finally {
+                loading.classList.remove('active');
+                verifyBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

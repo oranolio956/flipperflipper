@@ -3,312 +3,637 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Oranolio RAT - Login</title>
-    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <title>Access Terminal • Clearance Required</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@200;400;700&display=swap');
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
-        :root {
-            --bg-dark: #0a0e27;
-            --bg-light: #151b35;
-            --card-bg: #1a2142;
-            --primary: #00d9ff;
-            --secondary: #667eea;
-            --text-primary: #ffffff;
-            --text-secondary: #a0aec0;
-            --border: #2d3748;
-            --success: #48bb78;
-            --warning: #f6ad55;
-            --danger: #f56565;
-        }
-
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1f3a 100%);
-            color: var(--text-primary);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
+            font-family: 'JetBrains Mono', monospace;
+            background: #000;
+            color: #fff;
+            height: 100vh;
             overflow: hidden;
+            position: relative;
         }
-
-        /* Animated background */
-        body::before {
-            content: '';
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(0, 217, 255, 0.1) 1px, transparent 1px);
+        
+        /* Animated grid background */
+        .grid-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
             background-size: 50px 50px;
-            animation: gridMove 20s linear infinite;
-            opacity: 0.3;
+            animation: grid-move 10s linear infinite;
+            z-index: 1;
         }
-
-        @keyframes gridMove {
+        
+        @keyframes grid-move {
             0% { transform: translate(0, 0); }
             100% { transform: translate(50px, 50px); }
         }
-
-        .login-container {
-            position: relative;
-            z-index: 1;
+        
+        /* Scanning line effect */
+        .scan-line {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 450px;
-            padding: 2rem;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(0, 255, 136, 0.8), 
+                transparent);
+            animation: scan 4s linear infinite;
+            z-index: 2;
         }
-
-        .login-box {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 1rem;
-            padding: 3rem;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        
+        @keyframes scan {
+            0% { transform: translateY(-100vh); }
+            100% { transform: translateY(100vh); }
+        }
+        
+        /* Main container */
+        .container {
+            position: relative;
+            z-index: 10;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Login terminal */
+        .terminal {
+            width: 90%;
+            max-width: 480px;
+            background: linear-gradient(135deg, 
+                rgba(10, 10, 10, 0.95) 0%, 
+                rgba(20, 20, 20, 0.95) 100%);
+            border: 1px solid rgba(0, 255, 136, 0.1);
             backdrop-filter: blur(10px);
+            box-shadow: 
+                0 0 100px rgba(0, 255, 136, 0.05),
+                inset 0 0 20px rgba(0, 0, 0, 0.5);
         }
-
-        .logo {
+        
+        /* Terminal header */
+        .terminal-header {
+            background: linear-gradient(90deg, 
+                rgba(0, 255, 136, 0.1) 0%, 
+                transparent 50%, 
+                rgba(0, 255, 136, 0.1) 100%);
+            border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .terminal-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: rgba(0, 255, 136, 0.7);
+        }
+        
+        .terminal-status {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(0, 255, 136, 0.8);
+            animation: pulse-dot 2s infinite;
+        }
+        
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+        
+        /* Terminal body */
+        .terminal-body {
+            padding: 40px 30px;
+        }
+        
+        /* Organization mark */
+        .org-mark {
             text-align: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 40px;
         }
-
-        .logo h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.5rem;
-            text-shadow: 0 0 30px rgba(0, 217, 255, 0.3);
-        }
-
-        .logo p {
-            color: var(--text-secondary);
-            font-size: 1rem;
-        }
-
-        .alert {
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1.5rem;
-            font-size: 0.95rem;
-            animation: slideIn 0.3s ease;
-        }
-
-        .alert-error {
-            background: rgba(245, 101, 101, 0.15);
-            border: 1px solid var(--danger);
-            color: var(--danger);
-        }
-
-        .alert-success {
-            background: rgba(72, 187, 120, 0.15);
-            border: 1px solid var(--success);
-            color: var(--success);
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            font-weight: 500;
-        }
-
-        input[type="text"],
-        input[type="password"] {
-            width: 100%;
-            padding: 0.875rem 1rem;
-            background: var(--bg-light);
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            color: var(--text-primary);
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
-        }
-
-        .password-field {
+        
+        .org-symbol {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
             position: relative;
         }
-
-        .toggle-password {
-            position: absolute;
-            right: 0.75rem;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1.2rem;
-            padding: 0.5rem;
-            opacity: 0.6;
-            transition: opacity 0.2s;
-        }
-
-        .toggle-password:hover {
-            opacity: 1;
-        }
-
-        .btn {
+        
+        /* Geometric symbol */
+        .symbol-hex {
             width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            border: none;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 1rem;
+            height: 100%;
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 136, 0.1) 0%, 
+                rgba(0, 255, 136, 0.05) 100%);
+            clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+            animation: rotate-slow 20s linear infinite;
+        }
+        
+        .symbol-inner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            height: 70%;
+            background: rgba(0, 0, 0, 0.9);
+            clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+        }
+        
+        @keyframes rotate-slow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .org-text {
+            font-size: 11px;
+            font-weight: 200;
+            letter-spacing: 4px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 5px;
         }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 217, 255, 0.3);
+        
+        .clearance-level {
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: rgba(0, 255, 136, 0.5);
         }
-
-        .btn:active {
-            transform: translateY(0);
+        
+        /* Form styling */
+        .access-form {
+            position: relative;
         }
-
-        .login-info {
-            margin-top: 2rem;
-            padding: 1.25rem;
-            background: rgba(0, 217, 255, 0.05);
-            border: 1px solid rgba(0, 217, 255, 0.2);
-            border-radius: 0.5rem;
+        
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 10px;
+        }
+        
+        .form-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 255, 136, 0.1);
+            color: rgba(255, 255, 255, 0.9);
+            padding: 12px 15px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(0, 255, 136, 0.3);
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 
+                0 0 20px rgba(0, 255, 136, 0.1),
+                inset 0 0 5px rgba(0, 255, 136, 0.05);
+        }
+        
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+        
+        /* Access button */
+        .access-btn {
+            width: 100%;
+            background: transparent;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            color: rgba(0, 255, 136, 0.8);
+            padding: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+        
+        .access-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(0, 255, 136, 0.2), 
+                transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .access-btn:hover {
+            border-color: rgba(0, 255, 136, 0.6);
+            color: rgba(0, 255, 136, 1);
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+        
+        .access-btn:hover::before {
+            left: 100%;
+        }
+        
+        .access-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Security notice */
+        .security-notice {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
             text-align: center;
         }
-
-        .login-info p {
-            margin: 0.5rem 0;
-            font-size: 0.9rem;
+        
+        .notice-text {
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.2);
+            letter-spacing: 1px;
+            line-height: 1.6;
         }
-
-        .login-info strong {
-            color: var(--primary);
+        
+        .trace-warning {
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 8px;
+            color: rgba(255, 100, 100, 0.4);
+            letter-spacing: 1px;
         }
-
-        .warning {
-            color: var(--warning) !important;
-            font-weight: 600;
-            margin-top: 0.75rem !important;
+        
+        /* Error message */
+        .error-message {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255, 0, 0, 0.05);
+            border: 1px solid rgba(255, 0, 0, 0.2);
+            color: rgba(255, 100, 100, 0.8);
+            font-size: 10px;
+            letter-spacing: 1px;
+            display: none;
         }
-
-        /* Mobile responsive */
-        @media (max-width: 768px) {
-            .login-container {
-                padding: 1rem;
+        
+        .error-message.show {
+            display: block;
+            animation: error-flash 0.5s ease;
+        }
+        
+        @keyframes error-flash {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Success message */
+        .success-message {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            color: rgba(0, 255, 136, 0.8);
+            font-size: 10px;
+            letter-spacing: 1px;
+            display: none;
+        }
+        
+        .success-message.show {
+            display: block;
+            animation: success-flash 0.5s ease;
+        }
+        
+        @keyframes success-flash {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Loading state */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .loading-overlay.active {
+            display: flex;
+        }
+        
+        .loading-text {
+            font-size: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: rgba(0, 255, 136, 0.8);
+            animation: loading-pulse 1s ease infinite;
+        }
+        
+        @keyframes loading-pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+        
+        /* Coordinates display */
+        .coordinates {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            font-size: 9px;
+            color: rgba(0, 255, 136, 0.3);
+            letter-spacing: 1px;
+            z-index: 10;
+        }
+        
+        /* Time display */
+        .system-time {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 9px;
+            color: rgba(0, 255, 136, 0.3);
+            letter-spacing: 1px;
+            z-index: 10;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .terminal {
+                margin: 20px;
+                width: calc(100% - 40px);
             }
-
-            .login-box {
-                padding: 2rem 1.5rem;
-            }
-
-            .logo h1 {
-                font-size: 2rem;
+            
+            .terminal-body {
+                padding: 30px 20px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-box">
-            <div class="logo">
-                <h1>⚡ Oranolio</h1>
-                <p>Remote Administration Tool</p>
+    <!-- Animated background -->
+    <div class="grid-background"></div>
+    <div class="scan-line"></div>
+    
+    <!-- Coordinates -->
+    <div class="coordinates" id="coordinates">
+        <span id="coords">LAT: -- | LONG: --</span>
+    </div>
+    
+    <!-- System time -->
+    <div class="system-time" id="system-time">
+        <span id="time">--:--:-- UTC</span>
+    </div>
+    
+    <!-- Main container -->
+    <div class="container">
+        <div class="terminal">
+            <!-- Terminal header -->
+            <div class="terminal-header">
+                <div class="terminal-title">Secure Access Terminal v7.3.1</div>
+                <div class="terminal-status">
+                    <div class="status-dot"></div>
+                    <div class="status-dot" style="animation-delay: 0.5s"></div>
+                    <div class="status-dot" style="animation-delay: 1s"></div>
+                </div>
             </div>
             
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">{{ message }}</div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-            
-            <form method="POST" action="{{ url_for('login') }}" id="loginForm">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required autofocus autocomplete="username" placeholder="Enter your username">
+            <!-- Terminal body -->
+            <div class="terminal-body">
+                <!-- Organization mark -->
+                <div class="org-mark">
+                    <div class="org-symbol">
+                        <div class="symbol-hex"></div>
+                        <div class="symbol-inner"></div>
+                    </div>
+                    <div class="org-text">Nexus Protocol</div>
+                    <div class="clearance-level">Clearance Level Ω Required</div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <div class="password-field">
-                        <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="Enter your password">
-                        <button type="button" class="toggle-password" onclick="togglePassword()">👁️</button>
+                <!-- Login form -->
+                <form class="access-form" id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" class="form-input" id="email" 
+                               placeholder="Enter your email address" 
+                               autocomplete="off" spellcheck="false" required>
+                    </div>
+                    
+                    <button type="submit" class="access-btn" id="sendCodeBtn">
+                        Request Access Code
+                    </button>
+                    
+                    <div class="error-message" id="errorMessage">
+                        ACCESS DENIED - Invalid credentials detected
+                    </div>
+                    
+                    <div class="success-message" id="successMessage">
+                        Verification code sent to your email
+                    </div>
+                </form>
+                
+                <!-- Verification form (hidden initially) -->
+                <form class="access-form" id="verifyForm" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Verification Code</label>
+                        <input type="text" class="form-input" id="code" 
+                               placeholder="Enter 6-digit code" 
+                               autocomplete="off" maxlength="6" required>
+                    </div>
+                    
+                    <button type="submit" class="access-btn" id="verifyBtn">
+                        Verify Access Code
+                    </button>
+                    
+                    <div class="error-message" id="verifyErrorMessage">
+                        Invalid verification code
+                    </div>
+                </form>
+                
+                <!-- Security notice -->
+                <div class="security-notice">
+                    <div class="notice-text">
+                        This system is restricted to authorized personnel only.
+                        <br>
+                        All access attempts are monitored and logged.
+                    </div>
+                    <div class="trace-warning">
+                        SESSION TRACED • IP LOGGED • ID VERIFIED
                     </div>
                 </div>
-                
-                <button type="submit" class="btn btn-primary">Login</button>
-            </form>
-            
-            <div class="login-info">
-                <p><strong>Login Credentials:</strong></p>
-                <p>Use the username and password from your Replit Secrets</p>
-                <p style="color: var(--primary); font-weight: 600; margin-top: 0.75rem;">Username starts with: or...</p>
-                <p class="warning">⚠️ Check Secrets tab for your credentials!</p>
             </div>
         </div>
     </div>
     
-    <script nonce="{{ g.csp_nonce }}">
-        function togglePassword() {
-            const passwordField = document.getElementById('password');
-            const button = document.querySelector('.toggle-password');
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text';
-                button.textContent = '🙈';
-            } else {
-                passwordField.type = 'password';
-                button.textContent = '👁️';
-            }
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-text">Authenticating...</div>
+    </div>
+    
+    <script>
+        // Update time
+        function updateTime() {
+            const now = new Date();
+            const hours = String(now.getUTCHours()).padStart(2, '0');
+            const minutes = String(now.getUTCMinutes()).padStart(2, '0');
+            const seconds = String(now.getUTCSeconds()).padStart(2, '0');
+            document.getElementById('time').textContent = `${hours}:${minutes}:${seconds} UTC`;
         }
-
-        // Form validation feedback
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
+        
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        // Fake coordinates (for effect)
+        function generateCoords() {
+            const lat = (Math.random() * 180 - 90).toFixed(4);
+            const long = (Math.random() * 360 - 180).toFixed(4);
+            document.getElementById('coords').textContent = `LAT: ${lat} | LONG: ${long}`;
+        }
+        
+        generateCoords();
+        setInterval(generateCoords, 5000);
+        
+        // Form handling
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
             
-            if (!username || !password) {
-                e.preventDefault();
-                alert('Please enter both username and password');
-                return false;
+            const email = document.getElementById('email').value;
+            const errorMsg = document.getElementById('errorMessage');
+            const successMsg = document.getElementById('successMessage');
+            const loading = document.getElementById('loadingOverlay');
+            const sendBtn = document.getElementById('sendCodeBtn');
+            
+            // Clear previous messages
+            errorMsg.classList.remove('show');
+            successMsg.classList.remove('show');
+            
+            // Show loading
+            loading.classList.add('active');
+            sendBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/send_code', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show success message
+                    successMsg.classList.add('show');
+                    
+                    // Show verification form
+                    document.getElementById('loginForm').style.display = 'none';
+                    document.getElementById('verifyForm').style.display = 'block';
+                    
+                    // Store email for verification
+                    document.getElementById('verifyForm').dataset.email = email;
+                } else {
+                    // Show error
+                    errorMsg.textContent = data.error || 'Failed to send verification code';
+                    errorMsg.classList.add('show');
+                }
+            } catch (error) {
+                errorMsg.textContent = 'Network error. Please try again.';
+                errorMsg.classList.add('show');
+            } finally {
+                loading.classList.remove('active');
+                sendBtn.disabled = false;
             }
         });
+        
+        // Verification form handling
+        document.getElementById('verifyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('verifyForm').dataset.email;
+            const code = document.getElementById('code').value;
+            const errorMsg = document.getElementById('verifyErrorMessage');
+            const loading = document.getElementById('loadingOverlay');
+            const verifyBtn = document.getElementById('verifyBtn');
+            
+            // Clear previous error
+            errorMsg.classList.remove('show');
+            
+            // Show loading
+            loading.classList.add('active');
+            verifyBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/verify_code', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, code })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Redirect to dashboard
+                    window.location.href = data.redirect || '/dashboard';
+                } else {
+                    // Show error
+                    errorMsg.textContent = data.error || 'Invalid verification code';
+                    errorMsg.classList.add('show');
+                    document.getElementById('code').value = '';
+                }
+            } catch (error) {
+                errorMsg.textContent = 'Network error. Please try again.';
+                errorMsg.classList.add('show');
+            } finally {
+                loading.classList.remove('active');
+                verifyBtn.disabled = false;
+            }
+        });
+        
+        // Console warning for extra effect
+        console.log('%cUNAUTHORIZED ACCESS DETECTED', 'color: #00ff88; font-size: 20px; font-weight: bold;');
+        console.log('%cThis system is monitored. Your IP has been logged.', 'color: #ff4444; font-size: 12px;');
+        console.log('%cAttempting to breach this system is a violation of international law.', 'color: #ffaa00; font-size: 10px;');
     </script>
 </body>
 </html>
