@@ -2935,6 +2935,9 @@ def download_file(filename):
 # ============================================================================
 # Strategic Command Center Integration
 # ============================================================================
+# Initialize strategic command center
+from strategic_command_center import init_strategic_center
+strategic_center = init_strategic_center()
 @app.route('/strategic')
 @login_required
 def strategic_command_center():

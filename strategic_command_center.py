@@ -29,13 +29,16 @@ import logging
 sys.path.insert(0, '/workspace')
 
 try:
-    from web_app_real import get_stitch_server
     from Core.elite_executor import EliteCommandExecutor
-    from websocket_extensions import register_websocket_events
     STITCH_AVAILABLE = True
 except ImportError as e:
-    print(f"Warning: Some imports not available: {e}")
+    print(f"Warning: Elite executor not available: {e}")
     STITCH_AVAILABLE = False
+
+# We'll get the stitch server from the web app when needed
+def get_stitch_server():
+    """Get stitch server - will be set by web app"""
+    return None
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

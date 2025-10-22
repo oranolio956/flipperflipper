@@ -122,6 +122,20 @@ body {
     color: var(--text-primary);
 }
 
+/* Strategic Center Link - Special styling */
+.nav-link.strategic-link {
+    background: linear-gradient(135deg, rgba(0, 255, 0, 0.1), rgba(0, 200, 0, 0.05));
+    border-left: 3px solid #00ff00;
+    font-weight: 600;
+}
+
+.nav-link.strategic-link:hover {
+    background: linear-gradient(135deg, rgba(0, 255, 0, 0.2), rgba(0, 200, 0, 0.1));
+    border-left-color: #00ff00;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+    transform: translateX(6px);
+}
+
 .nav-link.active {
     background: rgba(0, 217, 255, 0.1);
     color: var(--primary);
