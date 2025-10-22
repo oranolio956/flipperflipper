@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Strategic Command Center - No Bullshit Design</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style_real.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/strategic.css') }}">
     <script nonce="{{ g.csp_nonce }}" src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script nonce="{{ g.csp_nonce }}" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -17,6 +18,7 @@
         <header class="top-bar">
             <div class="top-bar-content">
                 <div class="system-stats">
+                    <a href="/" class="back-btn">← BACK TO DASHBOARD</a>
                     <span id="targetCount">🎯 0 TARGETS</span>
                     <span id="commandCount">⚡ 0 CMDS</span>
                     <span id="fileCount">📁 0 FILES</span>
@@ -239,6 +241,7 @@
     </div>
 
     <!-- Scripts -->
+    <script nonce="{{ g.csp_nonce }}" src="{{ url_for('static', filename='js/app_real.js') }}"></script>
     <script nonce="{{ g.csp_nonce }}" src="{{ url_for('static', filename='js/strategic.js') }}"></script>
 </body>
 </html>

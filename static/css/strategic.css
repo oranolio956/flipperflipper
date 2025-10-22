@@ -71,6 +71,22 @@ body {
     flex-shrink: 0;
 }
 
+.back-btn {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: bold;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: 1px solid var(--primary);
+    background-color: transparent;
+    transition: all 0.2s ease;
+    margin-right: var(--spacing-md);
+}
+
+.back-btn:hover {
+    background-color: var(--primary);
+    color: var(--bg-primary);
+}
+
 .top-bar-content {
     display: flex;
     justify-content: space-between;

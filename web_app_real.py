@@ -2938,6 +2938,9 @@ def download_file(filename):
 # Initialize strategic command center
 from strategic_command_center import init_strategic_center
 strategic_center = init_strategic_center()
+
+# Set the stitch server in strategic center
+strategic_center.stitch_server = get_stitch_server()
 @app.route('/strategic')
 @login_required
 def strategic_command_center():
@@ -2949,6 +2952,10 @@ def strategic_command_center():
         # Get strategic center instance
         strategic_center = get_strategic_center()
         
+        # Ensure stitch server is set
+        if not strategic_center.stitch_server:
+            strategic_center.stitch_server = get_stitch_server()
+        
         # Get current targets and stats
         targets = strategic_center.get_targets()
         stats = strategic_center.get_system_stats()
@@ -2958,7 +2965,7 @@ def strategic_command_center():
                              stats=stats)
     except Exception as e:
         log_debug(f"Strategic Command Center error: {str(e)}", "ERROR", "Strategic")
-        flash('Strategic Command Center is temporarily unavailable.', 'error')
+        flash(f'Strategic Command Center error: {str(e)}', 'error')
         return redirect(url_for('index'))
 
 @app.route('/api/strategic/targets')
@@ -2968,6 +2975,11 @@ def api_strategic_targets():
     try:
         from strategic_command_center import get_strategic_center
         strategic_center = get_strategic_center()
+        
+        # Ensure stitch server is set
+        if not strategic_center.stitch_server:
+            strategic_center.stitch_server = get_stitch_server()
+        
         targets = strategic_center.get_targets()
         return jsonify({
             'success': True,
@@ -2975,6 +2987,7 @@ def api_strategic_targets():
             'count': len(targets)
         })
     except Exception as e:
+        log_debug(f"Strategic targets API error: {str(e)}", "ERROR", "Strategic")
         return jsonify({
             'success': False,
             'error': str(e)
@@ -3125,6 +3138,10 @@ def handle_disconnect():
 def handle_ping():
     emit('pong', {'timestamp': datetime.now().isoformat()})
 
+# Register strategic WebSocket events
+from strategic_websocket import register_strategic_websocket_events
+register_strategic_websocket_events(socketio, logger)
+
 # Strategic Command Center WebSocket Events
 @socketio.on('strategic_connect')
 def handle_strategic_connect():
@@ -3135,6 +3152,10 @@ def handle_strategic_connect():
     try:
         from strategic_command_center import get_strategic_center
         strategic_center = get_strategic_center()
+        
+        # Ensure stitch server is set
+        if not strategic_center.stitch_server:
+            strategic_center.stitch_server = get_stitch_server()
         
         # Send initial data
         targets = strategic_center.get_targets()

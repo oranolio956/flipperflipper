@@ -38,7 +38,12 @@ except ImportError as e:
 # We'll get the stitch server from the web app when needed
 def get_stitch_server():
     """Get stitch server - will be set by web app"""
-    return None
+    try:
+        # Try to import and get the stitch server
+        from web_app_real import get_stitch_server as _get_stitch_server
+        return _get_stitch_server()
+    except ImportError:
+        return None
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
