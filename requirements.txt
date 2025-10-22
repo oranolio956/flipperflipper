@@ -1,5 +1,5 @@
 # Core Stitch C2 Framework Dependencies
-# Updated with all missing dependencies found during testing
+# Complete requirements for login, 2FA, and free email system
 
 # Web Framework
 flask>=3.1.2
@@ -7,15 +7,18 @@ flask-socketio>=5.5.1
 flask-wtf>=1.2.2
 flask-limiter>=4.0.0
 
-# Cryptography
-pycryptodome>=3.23.0
+# Authentication & Security
+pyotp>=2.9.0
+qrcode>=8.0
 cryptography>=46.0.0
+pycryptodome>=3.23.0
+
+# Email & Communication
+requests>=2.32.5
+smtplib  # Built-in Python module
 
 # System Monitoring
 psutil>=7.1.1
-
-# HTTP Requests
-requests>=2.32.5
 
 # Terminal Colors
 colorama>=0.4.6

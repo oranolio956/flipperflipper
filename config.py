@@ -37,12 +37,35 @@ class Config:
     c2_port = int(os.getenv('C2_PORT', '4447'))
     
     # ============================================================================
-    # Email Configuration (Mailjet)
+    # Email Configuration (Multiple Free Methods)
     # ============================================================================
-    MAILJET_API_KEY = os.getenv('MAILJET_API_KEY', '84032521e82910b9bf33686b9da4a724')
-    MAILJET_API_SECRET = os.getenv('MAILJET_API_SECRET', '')
+    
+    # Primary email settings
     FROM_EMAIL = os.getenv('FROM_EMAIL', 'brooketogo98@gmail.com')
     FROM_NAME = os.getenv('FROM_NAME', 'Oranolio Security')
+    
+    # Free Email Methods (choose one or more)
+    USE_FREE_EMAIL = os.getenv('USE_FREE_EMAIL', 'true').lower() in ('true', '1', 'yes')
+    
+    # Gmail SMTP (Free) - Requires App Password
+    GMAIL_APP_PASSWORD = os.getenv('GMAIL_APP_PASSWORD', '')
+    
+    # Outlook SMTP (Free)
+    OUTLOOK_PASSWORD = os.getenv('OUTLOOK_PASSWORD', '')
+    
+    # Telegram Bot (Free)
+    TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
+    TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID', '')
+    
+    # Discord Webhook (Free)
+    DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL', '')
+    
+    # Webhook.site (Free)
+    WEBHOOK_SITE_URL = os.getenv('WEBHOOK_SITE_URL', '')
+    
+    # Legacy Mailjet (Paid) - Fallback
+    MAILJET_API_KEY = os.getenv('MAILJET_API_KEY', '')
+    MAILJET_API_SECRET = os.getenv('MAILJET_API_SECRET', '')
     
     # Authorized emails for elite access (comma-separated)
     AUTHORIZED_EMAILS = os.getenv('STITCH_AUTHORIZED_EMAILS', '').split(',') if os.getenv('STITCH_AUTHORIZED_EMAILS') else None
