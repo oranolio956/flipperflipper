@@ -7,7 +7,7 @@ INFO:strategic_web_app:📡 Real-time broadcasting started
 INFO:strategic_web_app:🎯 Strategic WebSocket events registered
 INFO:strategic_web_app:🎯 Strategic Command Center Web App initialized
 WARNING:werkzeug:Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
-Warning: Some imports not available: No module named 'Crypto'
+Warning: Some imports not available: No module named 'flask_limiter'
 🎯 Strategic Command Center - Starting...
 ==================================================
 URL: http://localhost:5000
@@ -20,8 +20,5 @@ INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a
  * Running on http://127.0.0.1:5000
  * Running on http://172.30.0.2:5000
 INFO:werkzeug:[33mPress CTRL+C to quit[0m
-INFO:werkzeug:127.0.0.1 - - [22/Oct/2025 17:53:29] "GET / HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [22/Oct/2025 17:53:33] "GET /static/css/strategic.css HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [22/Oct/2025 17:53:36] "GET /static/js/strategic.js HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [22/Oct/2025 17:53:41] "GET /api/targets HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [22/Oct/2025 17:53:45] "GET /api/system_stats HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [22/Oct/2025 18:10:19] "GET /api/targets HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [22/Oct/2025 18:10:33] "GET /api/system_stats HTTP/1.1" 200 -

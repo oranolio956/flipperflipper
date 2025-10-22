@@ -1,21 +1,2 @@
-2025-10-22 18:06:19,966 - Application.stitch_cmd - INFO - Starting Stitch
-2025-10-22 18:06:19,966 - Application.stitch_cmd - INFO - Exiting Stitch due to an exception:
-name 'display_banner' is not defined
-Traceback (most recent call last):
-  File "/workspace/Application/stitch_cmd.py", line 701, in server_main
-    st = stitch_server()
-  File "/workspace/Application/stitch_cmd.py", line 97, in __init__
-    display_banner()
-    ^^^^^^^^^^^^^^
-NameError: name 'display_banner' is not defined
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/workspace/main.py", line 9, in <module>
-    server_main()
-    ~~~~~~~~~~~^^
-  File "/workspace/Application/stitch_cmd.py", line 710, in server_main
-    st.do_exit()
-    ^^
-UnboundLocalError: cannot access local variable 'st' where it is not associated with a value
+2025-10-22 18:09:26,047 - Application.stitch_cmd - INFO - Starting Stitch
+[Stitch] /workspace 
