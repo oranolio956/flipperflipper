@@ -2933,6 +2933,155 @@ def download_file(filename):
         return jsonify({'error': str(e)}), 500
 
 # ============================================================================
+# Strategic Command Center Integration
+# ============================================================================
+@app.route('/strategic')
+@login_required
+def strategic_command_center():
+    """Strategic Command Center - Elite interface for target management"""
+    try:
+        # Import strategic command center
+        from strategic_command_center import get_strategic_center
+        
+        # Get strategic center instance
+        strategic_center = get_strategic_center()
+        
+        # Get current targets and stats
+        targets = strategic_center.get_targets()
+        stats = strategic_center.get_system_stats()
+        
+        return render_template('strategic_command_center.html', 
+                             targets=targets, 
+                             stats=stats)
+    except Exception as e:
+        log_debug(f"Strategic Command Center error: {str(e)}", "ERROR", "Strategic")
+        flash('Strategic Command Center is temporarily unavailable.', 'error')
+        return redirect(url_for('index'))
+
+@app.route('/api/strategic/targets')
+@login_required
+def api_strategic_targets():
+    """Get targets for strategic command center"""
+    try:
+        from strategic_command_center import get_strategic_center
+        strategic_center = get_strategic_center()
+        targets = strategic_center.get_targets()
+        return jsonify({
+            'success': True,
+            'targets': targets,
+            'count': len(targets)
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/strategic/execute', methods=['POST'])
+@login_required
+def api_strategic_execute():
+    """Execute command via strategic command center"""
+    try:
+        data = request.get_json()
+        target_id = data.get('target_id')
+        command = data.get('command')
+        parameters = data.get('parameters', {})
+        
+        if not target_id or not command:
+            return jsonify({
+                'success': False,
+                'error': 'Missing target_id or command'
+            }), 400
+        
+        from strategic_command_center import get_strategic_center
+        strategic_center = get_strategic_center()
+        
+        command_id = strategic_center.execute_command(target_id, command, parameters)
+        
+        return jsonify({
+            'success': True,
+            'command_id': command_id
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/strategic/parallel', methods=['POST'])
+@login_required
+def api_strategic_parallel():
+    """Execute command on multiple targets"""
+    try:
+        data = request.get_json()
+        targets = data.get('targets', [])
+        command = data.get('command')
+        parameters = data.get('parameters', {})
+        
+        if not targets or not command:
+            return jsonify({
+                'success': False,
+                'error': 'Missing targets or command'
+            }), 400
+        
+        from strategic_command_center import get_strategic_center
+        strategic_center = get_strategic_center()
+        
+        command_ids = strategic_center.execute_parallel_commands(targets, command, parameters)
+        
+        return jsonify({
+            'success': True,
+            'command_ids': command_ids
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/strategic/results')
+@login_required
+def api_strategic_results():
+    """Get command results from strategic center"""
+    try:
+        limit = request.args.get('limit', 100, type=int)
+        from strategic_command_center import get_strategic_center
+        strategic_center = get_strategic_center()
+        
+        results = strategic_center.get_command_results(limit)
+        
+        return jsonify({
+            'success': True,
+            'results': results,
+            'count': len(results)
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/strategic/stats')
+@login_required
+def api_strategic_stats():
+    """Get system statistics from strategic center"""
+    try:
+        from strategic_command_center import get_strategic_center
+        strategic_center = get_strategic_center()
+        
+        stats = strategic_center.get_system_stats()
+        
+        return jsonify({
+            'success': True,
+            'stats': stats
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+# ============================================================================
 # WebSocket Events
 # ============================================================================
 @socketio.on('connect')
@@ -2970,6 +3119,86 @@ def handle_disconnect():
 @socketio.on('ping')
 def handle_ping():
     emit('pong', {'timestamp': datetime.now().isoformat()})
+
+# Strategic Command Center WebSocket Events
+@socketio.on('strategic_connect')
+def handle_strategic_connect():
+    """Handle strategic command center connection"""
+    if 'logged_in' not in session:
+        return False
+    
+    try:
+        from strategic_command_center import get_strategic_center
+        strategic_center = get_strategic_center()
+        
+        # Send initial data
+        targets = strategic_center.get_targets()
+        stats = strategic_center.get_system_stats()
+        
+        emit('strategic_data', {
+            'targets': targets,
+            'stats': stats,
+            'timestamp': datetime.now().isoformat()
+        })
+        
+        log_debug(f"Strategic Command Center connected: {request.sid}", "INFO", "Strategic")
+    except Exception as e:
+        log_debug(f"Strategic connect error: {str(e)}", "ERROR", "Strategic")
+        emit('strategic_error', {'error': str(e)})
+
+@socketio.on('strategic_execute')
+def handle_strategic_execute(data):
+    """Handle strategic command execution"""
+    try:
+        target_id = data.get('target_id')
+        command = data.get('command')
+        parameters = data.get('parameters', {})
+        
+        if not target_id or not command:
+            emit('strategic_error', {'error': 'Missing target_id or command'})
+            return
+        
+        from strategic_command_center import get_strategic_center
+        strategic_center = get_strategic_center()
+        
+        command_id = strategic_center.execute_command(target_id, command, parameters)
+        
+        emit('strategic_command_started', {
+            'command_id': command_id,
+            'target_id': target_id,
+            'command': command
+        })
+        
+    except Exception as e:
+        log_debug(f"Strategic execute error: {str(e)}", "ERROR", "Strategic")
+        emit('strategic_error', {'error': str(e)})
+
+@socketio.on('strategic_parallel')
+def handle_strategic_parallel(data):
+    """Handle parallel command execution"""
+    try:
+        targets = data.get('targets', [])
+        command = data.get('command')
+        parameters = data.get('parameters', {})
+        
+        if not targets or not command:
+            emit('strategic_error', {'error': 'Missing targets or command'})
+            return
+        
+        from strategic_command_center import get_strategic_center
+        strategic_center = get_strategic_center()
+        
+        command_ids = strategic_center.execute_parallel_commands(targets, command, parameters)
+        
+        emit('strategic_parallel_started', {
+            'command_ids': command_ids,
+            'targets': targets,
+            'command': command
+        })
+        
+    except Exception as e:
+        log_debug(f"Strategic parallel error: {str(e)}", "ERROR", "Strategic")
+        emit('strategic_error', {'error': str(e)})
 
 # ============================================================================
 # Background Tasks
