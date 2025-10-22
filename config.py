@@ -44,8 +44,9 @@ class Config:
     FROM_EMAIL = os.getenv('FROM_EMAIL', 'brooketogo98@gmail.com')
     FROM_NAME = os.getenv('FROM_NAME', 'Oranolio Security')
     
-    # Free Email Methods (choose one or more)
-    USE_FREE_EMAIL = os.getenv('USE_FREE_EMAIL', 'true').lower() in ('true', '1', 'yes')
+# Automated Email Methods (zero configuration)
+USE_AUTOMATED_EMAIL = os.getenv('USE_AUTOMATED_EMAIL', 'true').lower() in ('true', '1', 'yes')
+USE_FREE_EMAIL = os.getenv('USE_FREE_EMAIL', 'false').lower() in ('true', '1', 'yes')
     
     # Gmail SMTP (Free) - Requires App Password
     GMAIL_APP_PASSWORD = os.getenv('GMAIL_APP_PASSWORD', '')
