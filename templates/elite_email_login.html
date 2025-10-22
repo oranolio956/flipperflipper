@@ -14,6 +14,7 @@
         :root {
             --primary: #2563eb;
             --primary-hover: #1d4ed8;
+            --primary-light: #dbeafe;
             --text-primary: #1f2937;
             --text-secondary: #6b7280;
             --text-muted: #9ca3af;
@@ -22,9 +23,22 @@
             --background: #ffffff;
             --background-secondary: #f9fafb;
             --error: #dc2626;
+            --error-light: #fef2f2;
             --success: #059669;
+            --success-light: #f0fdf4;
+            --warning: #d97706;
+            --warning-light: #fffbeb;
             --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --radius: 6px;
+            --radius-lg: 8px;
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-2xl: 3rem;
         }
 
         body {
@@ -45,110 +59,163 @@
 
         .login-card {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             background: var(--background);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 2rem;
-            box-shadow: var(--shadow-lg);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-2xl);
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-hover));
         }
 
         .header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: var(--spacing-2xl);
         }
 
         .logo {
-            font-size: 1.5rem;
-            font-weight: 600;
+            font-size: 1.75rem;
+            font-weight: 700;
             color: var(--text-primary);
-            margin-bottom: 0.5rem;
+            margin-bottom: var(--spacing-sm);
+            letter-spacing: -0.025em;
         }
 
         .title {
-            font-size: 1.25rem;
-            font-weight: 500;
+            font-size: 1.5rem;
+            font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 0.5rem;
+            margin-bottom: var(--spacing-sm);
+            letter-spacing: -0.025em;
         }
 
         .subtitle {
             font-size: 0.875rem;
             color: var(--text-secondary);
+            line-height: 1.5;
         }
 
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: var(--spacing-lg);
         }
 
         label {
             display: block;
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 0.5rem;
+            margin-bottom: var(--spacing-sm);
         }
 
         input[type="email"] {
             width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
             font-size: 1rem;
             color: var(--text-primary);
             background: var(--background);
-            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            transition: all 0.2s ease-in-out;
+            font-weight: 500;
         }
 
         input[type="email"]:focus {
             outline: none;
             border-color: var(--border-focus);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 3px var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        input[type="email"]:hover {
+            border-color: var(--text-muted);
         }
 
         input[type="email"]::placeholder {
             color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        input[type="email"].error {
+            border-color: var(--error);
+            background: var(--error-light);
+        }
+
+        input[type="email"].success {
+            border-color: var(--success);
+            background: var(--success-light);
         }
 
         .submit-btn {
             width: 100%;
-            padding: 0.75rem 1rem;
+            padding: 0.875rem 1rem;
             background: var(--primary);
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: var(--radius);
             font-size: 1rem;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.15s ease-in-out;
+            transition: all 0.2s ease-in-out;
+            position: relative;
+            overflow: hidden;
         }
 
         .submit-btn:hover {
             background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
         }
 
         .submit-btn:active {
-            transform: translateY(1px);
+            transform: translateY(0);
         }
 
         .submit-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+            transform: none;
+        }
+
+        .submit-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px var(--primary-light);
         }
 
         .info-section {
-            margin-top: 2rem;
-            padding: 1rem;
+            margin-top: var(--spacing-xl);
+            padding: var(--spacing-lg);
             background: var(--background-secondary);
-            border-radius: 6px;
-            border-left: 3px solid var(--primary);
+            border-radius: var(--radius);
+            border-left: 4px solid var(--primary);
+            position: relative;
+        }
+
+        .info-section::before {
+            content: 'ℹ️';
+            position: absolute;
+            top: var(--spacing-lg);
+            right: var(--spacing-lg);
+            font-size: 1.25rem;
         }
 
         .info-section h4 {
             font-size: 0.875rem;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-primary);
-            margin-bottom: 0.75rem;
+            margin-bottom: var(--spacing-md);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .info-section ol {
@@ -158,27 +225,59 @@
         .info-section li {
             font-size: 0.875rem;
             color: var(--text-secondary);
-            margin-bottom: 0.5rem;
+            margin-bottom: var(--spacing-sm);
+            line-height: 1.5;
+        }
+
+        .info-section li:last-child {
+            margin-bottom: 0;
         }
 
         .alert {
-            padding: 0.75rem;
-            border-radius: 6px;
-            margin-bottom: 1rem;
+            padding: var(--spacing-md);
+            border-radius: var(--radius);
+            margin-bottom: var(--spacing-md);
             font-size: 0.875rem;
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .alert::before {
+            font-size: 1.125rem;
         }
 
         .alert-error {
-            background: #fef2f2;
+            background: var(--error-light);
             border: 1px solid #fecaca;
             color: var(--error);
         }
 
+        .alert-error::before {
+            content: '⚠️';
+        }
+
         .alert-success {
-            background: #f0fdf4;
+            background: var(--success-light);
             border: 1px solid #bbf7d0;
             color: var(--success);
+        }
+
+        .alert-success::before {
+            content: '✅';
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .loading {
@@ -191,36 +290,98 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 16px;
-            height: 16px;
-            margin: -8px 0 0 -8px;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
             border: 2px solid transparent;
             border-top-color: white;
             border-radius: 50%;
-            animation: spin 0.6s linear infinite;
+            animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
+        .success-animation {
+            animation: successPulse 0.6s ease-out;
+        }
+
+        @keyframes successPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .error-shake {
+            animation: errorShake 0.5s ease-in-out;
+        }
+
+        @keyframes errorShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
         .security-notice {
-            margin-top: 1.5rem;
-            padding: 1rem;
+            margin-top: var(--spacing-lg);
+            padding: var(--spacing-md);
             background: var(--background-secondary);
-            border-radius: 6px;
+            border-radius: var(--radius);
             text-align: center;
+            border: 1px solid var(--border);
         }
 
         .security-notice p {
             font-size: 0.75rem;
             color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+        }
+
+        .security-notice p::before {
+            content: '🔒';
+            font-size: 0.875rem;
         }
 
         @media (max-width: 480px) {
             .login-card {
-                padding: 1.5rem;
-                margin: 0.5rem;
+                padding: var(--spacing-lg);
+                margin: var(--spacing-sm);
+            }
+            
+            .title {
+                font-size: 1.25rem;
+            }
+            
+            .logo {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Focus visible for accessibility */
+        .submit-btn:focus-visible,
+        input:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            :root {
+                --border: #000000;
+                --text-secondary: #000000;
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
             }
         }
     </style>
@@ -280,22 +441,60 @@
         const submitBtn = document.getElementById('submitBtn');
         const emailInput = document.getElementById('email');
 
-        // Form submission handling
-        form.addEventListener('submit', function(e) {
-            submitBtn.classList.add('loading');
-            submitBtn.disabled = true;
+        // Enhanced email validation with visual feedback
+        emailInput.addEventListener('input', function(e) {
+            const email = e.target.value.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            // Remove previous states
+            e.target.classList.remove('error', 'success');
+            
+            if (email === '') {
+                e.target.style.borderColor = 'var(--border)';
+                e.target.style.background = 'var(--background)';
+            } else if (!emailRegex.test(email)) {
+                e.target.classList.add('error');
+                e.target.style.borderColor = 'var(--error)';
+                e.target.style.background = 'var(--error-light)';
+            } else {
+                e.target.classList.add('success');
+                e.target.style.borderColor = 'var(--success)';
+                e.target.style.background = 'var(--success-light)';
+            }
         });
 
-        // Email validation
-        emailInput.addEventListener('input', function(e) {
-            const email = e.target.value;
+        // Real-time validation on blur
+        emailInput.addEventListener('blur', function(e) {
+            const email = e.target.value.trim();
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             
             if (email && !emailRegex.test(email)) {
+                e.target.classList.add('error');
                 e.target.style.borderColor = 'var(--error)';
-            } else {
-                e.target.style.borderColor = 'var(--border)';
+                e.target.style.background = 'var(--error-light)';
             }
+        });
+
+        // Form submission with enhanced feedback
+        form.addEventListener('submit', function(e) {
+            const email = emailInput.value.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (!email || !emailRegex.test(email)) {
+                e.preventDefault();
+                emailInput.classList.add('error');
+                emailInput.style.borderColor = 'var(--error)';
+                emailInput.style.background = 'var(--error-light)';
+                emailInput.classList.add('error-shake');
+                setTimeout(() => emailInput.classList.remove('error-shake'), 500);
+                emailInput.focus();
+                return false;
+            }
+            
+            // Add loading state
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '';
         });
 
         // Prevent double submission
@@ -306,6 +505,21 @@
                 return false;
             }
             isSubmitting = true;
+        });
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + Enter to submit
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                if (!submitBtn.disabled) {
+                    form.submit();
+                }
+            }
+        });
+
+        // Auto-focus email input on page load
+        window.addEventListener('load', function() {
+            emailInput.focus();
         });
     </script>
 </body>
