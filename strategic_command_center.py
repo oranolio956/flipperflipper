@@ -228,8 +228,29 @@ class StrategicCommandCenter:
         """Get real target information from Stitch system"""
         try:
             # Get target information from the real Stitch system
-            from web_app_real import get_target_info
-            return get_target_info(target_id)
+            import configparser
+            config = configparser.ConfigParser()
+            config.read('/workspace/Application/Stitch_Vars/hist_ini')
+            
+            target_info = {
+                'ip': target_id,
+                'hostname': target_id,
+                'os': 'Unknown',
+                'cpu_percent': 0.0,
+                'memory_percent': 0.0,
+                'network_speed': 0.0,
+                'health_score': 100,
+                'connection_type': 'tcp',
+                'capabilities': []
+            }
+            
+            # Get real target info from config
+            if target_id in config.sections():
+                target_info['hostname'] = config.get(target_id, 'hostname', fallback=target_id)
+                target_info['os'] = config.get(target_id, 'os', fallback='Unknown')
+                target_info['user'] = config.get(target_id, 'user', fallback='Unknown')
+            
+            return target_info
         except Exception as e:
             logger.error(f"Error getting target info for {target_id}: {e}")
             return {
@@ -329,10 +350,13 @@ class StrategicCommandCenter:
                     from web_app_real import execute_real_command
                     output = execute_real_command(command, target_id, parameters)
                     
+                    # Check if output indicates success or failure
+                    success = not output.startswith('❌') and not output.startswith('⚠️')
+                    
                     result = {
-                        'success': True,
+                        'success': success,
                         'output': output,
-                        'error': ''
+                        'error': '' if success else output
                     }
                 except Exception as e:
                     result = {
@@ -448,18 +472,33 @@ class StrategicCommandCenter:
         file_op.status = "in_progress"
         try:
             if self.stitch_server and file_op.target_id in self.stitch_server.inf_sock:
-                # Import the real file upload function
-                from web_app_real import upload_file_to_target
-                
                 # Get file content from Redis
                 file_data = self.redis_client.get(f"file_content_{file_op.target_id}_{file_op.filename}")
                 if file_data:
                     file_content = bytes.fromhex(file_data)
-                    result = upload_file_to_target(file_op.target_id, file_op.filename, file_content, file_op.path)
                     
-                    if result.get('success'):
-                        file_op.status = "completed"
-                        file_op.progress = 100.0
+                    # Use real Stitch file upload
+                    from web_app_real import stitch_lib
+                    from web_app_real import get_connection_aes_key
+                    
+                    # Get AES key for this connection
+                    aes_key = get_connection_aes_key(file_op.target_id)
+                    if aes_key:
+                        # Upload file using Stitch system
+                        result = stitch_lib.upload_file(
+                            self.stitch_server.inf_sock[file_op.target_id],
+                            file_content,
+                            file_op.filename,
+                            file_op.path,
+                            aes_key
+                        )
+                        
+                        if result:
+                            file_op.status = "completed"
+                            file_op.progress = 100.0
+                        else:
+                            file_op.status = "failed"
+                            file_op.progress = 0.0
                     else:
                         file_op.status = "failed"
                         file_op.progress = 0.0
@@ -479,17 +518,28 @@ class StrategicCommandCenter:
         file_op.status = "in_progress"
         try:
             if self.stitch_server and file_op.target_id in self.stitch_server.inf_sock:
-                # Import the real file download function
-                from web_app_real import download_file_from_target
+                # Use real Stitch file download
+                from web_app_real import stitch_lib
+                from web_app_real import get_connection_aes_key
                 
-                result = download_file_from_target(file_op.target_id, file_op.path)
-                
-                if result.get('success'):
-                    file_op.status = "completed"
-                    file_op.progress = 100.0
-                    # Store file content in Redis
-                    if 'content' in result:
-                        self.redis_client.set(f"file_content_{file_op.target_id}_{file_op.filename}", result['content'].hex())
+                # Get AES key for this connection
+                aes_key = get_connection_aes_key(file_op.target_id)
+                if aes_key:
+                    # Download file using Stitch system
+                    file_content = stitch_lib.download_file(
+                        self.stitch_server.inf_sock[file_op.target_id],
+                        file_op.path,
+                        aes_key
+                    )
+                    
+                    if file_content:
+                        file_op.status = "completed"
+                        file_op.progress = 100.0
+                        # Store file content in Redis
+                        self.redis_client.set(f"file_content_{file_op.target_id}_{file_op.filename}", file_content.hex())
+                    else:
+                        file_op.status = "failed"
+                        file_op.progress = 0.0
                 else:
                     file_op.status = "failed"
                     file_op.progress = 0.0
