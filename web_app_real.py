@@ -523,69 +523,7 @@ def login():
 
 # Legacy login route removed - using webhook-based authentication only
 
-@app.route('/verify-email', methods=['GET', 'POST'])
-def verify_email():
-    """Elite email verification page"""
-    email = session.get('email_verify_pending')
-    
-    if not email:
-        flash('Invalid email verification session', 'error')
-        return redirect(url_for('login'))
-    
-    # Check session timeout (15 minutes)
-    verify_time = session.get('email_verify_time')
-    if verify_time:
-        elapsed = (datetime.now() - datetime.fromisoformat(verify_time)).total_seconds()
-        if elapsed > 900:  # 15 minutes
-            session.pop('email_verify_pending', None)
-            session.pop('email_verify_time', None)
-            session.pop('email_verify_ip', None)
-            flash('Email verification session expired. Please try again.', 'error')
-            return redirect(url_for('login'))
-    
-    if request.method == 'POST':
-        code = request.form.get('code', '').strip()
-        client_ip = get_remote_address()
-        
-        if not code:
-            flash('Verification code is required', 'error')
-            return render_template('elite_email_verify.html', email=email)
-        
-        # Import email verification
-        from email_auth import verify_code, log_email_auth_event, record_failed_attempt
-        
-        if verify_code(email, code):
-            # Clear email verification session
-            session.pop('email_verify_pending', None)
-            session.pop('email_verify_time', None)
-            session.pop('email_verify_ip', None)
-            
-            # Log success
-            log_email_auth_event(email, 'code_verified', client_ip, request.headers.get('User-Agent', ''), success=True)
-            
-            # Check MFA status
-            from mfa_database import get_user_mfa_status
-            mfa_status = get_user_mfa_status(email)
-            
-            if not mfa_status['enabled']:
-                # Setup MFA
-                session['mfa_setup_email'] = email
-                session['mfa_setup_time'] = datetime.now().isoformat()
-                session['mfa_setup_ip'] = client_ip
-                return redirect(url_for('mfa_setup'))
-            else:
-                # Verify MFA
-                session['mfa_verify_email'] = email
-                session['mfa_verify_time'] = datetime.now().isoformat()
-                session['mfa_verify_ip'] = client_ip
-                return redirect(url_for('mfa_verify'))
-        else:
-            # Failed verification
-            record_failed_attempt(email, code)
-            log_email_auth_event(email, 'code_verify_failed', client_ip, request.headers.get('User-Agent', ''), success=False)
-            flash('Invalid or expired verification code', 'error')
-    
-    return render_template('elite_email_verify.html', email=email)
+# Legacy verify-email route removed - using webhook-based authentication only
 
 @app.route('/mfa/setup', methods=['GET', 'POST'])
 def mfa_setup():
