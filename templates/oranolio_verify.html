@@ -3,411 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oranolio RATX - Verify Access</title>
+    <title>Verify Email - Oranolio RATX</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* ============================================================================
-           CSS Reset & Base Styles
-           ============================================================================ */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        :root {
-            /* Refined Color Palette - Calm and Professional */
-            --background: #FAFBFC;
-            --card-background: #FFFFFF;
-            --primary-accent: #3B82F6;
-            --primary-hover: #2563EB;
-            --primary-light: #EFF6FF;
-            --text-primary: #111827;
-            --text-secondary: #6B7280;
-            --text-muted: #9CA3AF;
-            --border: #E5E7EB;
-            --border-focus: #3B82F6;
-            --error: #DC2626;
-            --error-light: #FEF2F2;
-            --success: #059669;
-            --success-light: #ECFDF5;
-            --warning: #D97706;
-            --warning-light: #FFFBEB;
-            
-            /* Refined Shadows - Subtle and Professional */
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            
-            /* Refined Border Radius */
-            --radius-sm: 6px;
-            --radius: 8px;
-            --radius-lg: 12px;
-            --radius-xl: 16px;
-            
-            /* Typography Scale - Improved Hierarchy */
-            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            --font-size-xs: 12px;
-            --font-size-sm: 14px;
-            --font-size-base: 16px;
-            --font-size-lg: 18px;
-            --font-size-xl: 20px;
-            --font-size-2xl: 24px;
-            --font-size-3xl: 30px;
-            
-            /* Refined Spacing System - 4px base unit */
-            --spacing-1: 4px;
-            --spacing-2: 8px;
-            --spacing-3: 12px;
-            --spacing-4: 16px;
-            --spacing-5: 20px;
-            --spacing-6: 24px;
-            --spacing-8: 32px;
-            --spacing-10: 40px;
-            --spacing-12: 48px;
-            --spacing-16: 64px;
-            --spacing-20: 80px;
-        }
-
-        /* Dark theme support */
-        [data-theme="dark"] {
-            --background: #0F172A;
-            --card-background: #1E293B;
-            --text-primary: #F8FAFC;
-            --text-secondary: #CBD5E1;
-            --text-muted: #94A3B8;
-            --border: #334155;
-            --primary-light: #1E3A8A;
-        }
-
-        body {
-            font-family: var(--font-family);
-            background: var(--background);
-            color: var(--text-primary);
-            line-height: 1.5;
-            min-height: 100vh;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            font-size: var(--font-size-base);
-        }
-
-        /* ============================================================================
-           Layout & Container - Optimized for Single Viewport
-           ============================================================================ */
-        .container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: var(--spacing-4);
-            position: relative;
-        }
-
-        .background-pattern {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            background: 
-                radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.02) 0%, transparent 50%);
-            pointer-events: none;
-        }
-
-        .verify-card {
-            width: 100%;
-            max-width: 400px;
-            background: var(--card-background);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-xl);
-            padding: var(--spacing-8);
-            box-shadow: var(--shadow-lg);
-            position: relative;
-            z-index: 1;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .verify-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-xl);
-        }
-
-        /* ============================================================================
-           Header & Branding - Refined Typography
-           ============================================================================ */
-        .header {
-            text-align: center;
-            margin-bottom: var(--spacing-8);
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: var(--spacing-3);
-            margin-bottom: var(--spacing-6);
-        }
-
-        .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--primary-accent), var(--primary-hover));
-            border-radius: var(--radius-lg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: var(--font-size-xl);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-
-        .brand-name {
-            font-size: var(--font-size-2xl);
-            font-weight: 700;
-            color: var(--text-primary);
-            letter-spacing: -0.025em;
-        }
-
-        .verification-icon {
-            width: 64px;
-            height: 64px;
-            margin: 0 auto var(--spacing-6);
-            background: linear-gradient(135deg, var(--primary-light), var(--primary-accent));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: var(--font-size-3xl);
-            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.2);
-            animation: iconPulse 3s ease-in-out infinite;
-        }
-
-        @keyframes iconPulse {
-            0%, 100% { transform: scale(1); box-shadow: 0 8px 25px rgba(59, 130, 246, 0.2); }
-            50% { transform: scale(1.05); box-shadow: 0 12px 35px rgba(59, 130, 246, 0.3); }
-        }
-
-        .card-title {
-            font-size: var(--font-size-xl);
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: var(--spacing-2);
-            letter-spacing: -0.025em;
-        }
-
-        .card-subtitle {
-            font-size: var(--font-size-sm);
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-
-        .email-display {
-            color: var(--primary-accent);
-            font-weight: 600;
-        }
-
-        /* ============================================================================
-           Form Elements - Enhanced UX
-           ============================================================================ */
-        .form-group {
-            margin-bottom: var(--spacing-6);
-        }
-
-        .form-label {
-            display: block;
-            font-size: var(--font-size-sm);
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: var(--spacing-4);
-            text-align: center;
-        }
-
-        .code-input-container {
-            display: flex;
-            gap: var(--spacing-3);
-            justify-content: center;
-            margin: var(--spacing-6) 0;
-        }
-
-        .code-input {
-            width: 48px;
-            height: 56px;
-            text-align: center;
-            font-size: var(--font-size-xl);
-            font-weight: 600;
-            font-family: 'Courier New', monospace;
-            border: 2px solid var(--border);
-            border-radius: var(--radius);
-            background: var(--card-background);
-            color: var(--text-primary);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            outline: none;
-        }
-
-        .code-input:focus {
-            border-color: var(--border-focus);
-            box-shadow: 0 0 0 3px var(--primary-light);
-            transform: scale(1.05);
-        }
-
-        .code-input.filled {
-            border-color: var(--success);
-            background: var(--success-light);
-        }
-
-        .code-input.error {
-            border-color: var(--error);
-            background: var(--error-light);
-            animation: shake 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-4px); }
-            75% { transform: translateX(4px); }
-        }
-
-        /* ============================================================================
-           Buttons - Refined Design System
-           ============================================================================ */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: var(--spacing-4) var(--spacing-6);
-            border: none;
-            border-radius: var(--radius);
-            font-size: var(--font-size-base);
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            min-height: 48px;
-            outline: none;
-        }
-
-        .btn:focus-visible {
-            outline: 2px solid var(--primary-accent);
+        *:focus-visible {
+            outline: 2px solid #635BFF;
             outline-offset: 2px;
         }
 
-        .btn-primary {
+        html {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #F6F9FC;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            color: #0A2540;
+            font-size: 16px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .verify-container {
+            background: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06), 0 4px 6px rgba(0, 0, 0, 0.04);
+            max-width: 440px;
             width: 100%;
-            background: var(--primary-accent);
-            color: white;
-            box-shadow: var(--shadow);
+            padding: 32px 24px;
+            animation: fadeIn 0.3s ease-out;
         }
 
-        .btn-primary:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: var(--primary-accent);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            background: var(--primary-light);
-            border-color: var(--primary-accent);
-        }
-
-        /* ============================================================================
-           Loading States - Refined Animations
-           ============================================================================ */
-        .loading {
-            position: relative;
-            color: transparent;
-        }
-
-        .loading::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 20px;
-            height: 20px;
-            margin: -10px 0 0 -10px;
-            border: 2px solid transparent;
-            border-top-color: currentColor;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* ============================================================================
-           Messages & Alerts - Refined Design
-           ============================================================================ */
-        .alert {
-            padding: var(--spacing-4);
-            border-radius: var(--radius);
-            margin-bottom: var(--spacing-4);
-            font-size: var(--font-size-sm);
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-3);
-            animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .alert-error {
-            background: var(--error-light);
-            border: 1px solid #FECACA;
-            color: var(--error);
-        }
-
-        .alert-success {
-            background: var(--success-light);
-            border: 1px solid #BBF7D0;
-            color: var(--success);
-        }
-
-        .alert-warning {
-            background: var(--warning-light);
-            border: 1px solid #FED7AA;
-            color: var(--warning);
-        }
-
-        .error-message {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-2);
-            font-size: var(--font-size-sm);
-            color: var(--error);
-            margin-top: var(--spacing-2);
-            animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-align: center;
-        }
-
-        @keyframes slideDown {
+        @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(-8px);
+                transform: translateY(10px);
             }
             to {
                 opacity: 1;
@@ -415,575 +61,338 @@
             }
         }
 
-        /* ============================================================================
-           Timer & Status - Refined Design
-           ============================================================================ */
-        .timer-section {
-            background: var(--primary-light);
-            border-radius: var(--radius);
-            padding: var(--spacing-4);
-            margin: var(--spacing-6) 0;
+        @media (min-width: 640px) {
+            body {
+                padding: 24px;
+            }
+            
+            .verify-container {
+                padding: 48px 40px;
+            }
+        }
+
+        .header {
+            margin-bottom: 32px;
+        }
+
+        .logo {
+            width: 48px;
+            height: 48px;
+            background: #635BFF;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            font-size: 24px;
+        }
+
+        h1 {
+            color: #0A2540;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: #425466;
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        .email-display {
+            background: #F6F9FC;
+            border: 1px solid #E3E8EE;
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: #0A2540;
+            font-weight: 500;
             text-align: center;
         }
 
-        .timer-label {
-            font-size: var(--font-size-xs);
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: var(--spacing-2);
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 14px;
         }
 
-        .timer-display {
-            font-size: var(--font-size-lg);
-            font-weight: 700;
-            color: var(--primary-accent);
-            font-family: 'Courier New', monospace;
+        .alert-error {
+            background: #FFF0F0;
+            border: 1px solid #FFD6D6;
+            color: #DF1B41;
         }
 
-        .timer-warning {
-            color: var(--warning);
+        .alert-success {
+            background: #E6F9F0;
+            border: 1px solid #B3F0D6;
+            color: #00A86B;
         }
 
-        .timer-expired {
-            color: var(--error);
+        .alert-info {
+            background: #E6F3FF;
+            border: 1px solid #B3D9FF;
+            color: #0066CC;
         }
 
-        /* ============================================================================
-           Trust Indicators - Subtle and Professional
-           ============================================================================ */
-        .trust-indicators {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: var(--spacing-6);
-            padding-top: var(--spacing-4);
-            border-top: 1px solid var(--border);
+        .form-group {
+            margin-bottom: 24px;
         }
 
-        .trust-item {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-2);
-            font-size: var(--font-size-xs);
-            color: var(--text-muted);
+        label {
+            display: block;
+            color: #0A2540;
             font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
         }
 
-        .trust-icon {
-            width: 14px;
-            height: 14px;
-            fill: var(--success);
+        input {
+            width: 100%;
+            height: 48px;
+            padding: 0 12px;
+            border: 1px solid #E3E8EE;
+            border-radius: 6px;
+            font-size: 20px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.15s ease;
+            color: #0A2540;
+            background: #FFFFFF;
+            text-align: center;
+            letter-spacing: 0.5em;
+            font-weight: 600;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
         }
 
-        /* ============================================================================
-           Resend Section - Refined Layout
-           ============================================================================ */
+        @media (min-width: 640px) {
+            input {
+                height: 40px;
+                font-size: 18px;
+            }
+        }
+
+        input:hover {
+            border-color: #CBD2D9;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #635BFF;
+            box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.1);
+        }
+
+        input::placeholder {
+            color: #8898AA;
+            letter-spacing: normal;
+            font-weight: 400;
+        }
+
+        .btn {
+            width: 100%;
+            height: 48px;
+            padding: 0 16px;
+            background: #635BFF;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        @media (min-width: 640px) {
+            .btn {
+                height: 40px;
+                font-size: 14px;
+            }
+        }
+
+        .btn:hover {
+            background: #5851DF;
+            box-shadow: 0 2px 4px rgba(99, 91, 255, 0.2);
+        }
+
+        .btn:active {
+            background: #4F46BA;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin-left: -8px;
+            margin-top: -8px;
+            border: 2px solid #FFFFFF;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spinner 0.6s linear infinite;
+        }
+
+        @keyframes spinner {
+            to { transform: rotate(360deg); }
+        }
+
         .resend-section {
             text-align: center;
-            margin-top: var(--spacing-6);
-            padding-top: var(--spacing-4);
-            border-top: 1px solid var(--border);
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #E3E8EE;
         }
 
         .resend-text {
-            font-size: var(--font-size-sm);
-            color: var(--text-muted);
-            margin-bottom: var(--spacing-3);
+            color: #6B7C93;
+            font-size: 14px;
+            margin-bottom: 12px;
         }
 
-        .resend-timer {
-            font-size: var(--font-size-xs);
-            color: var(--text-muted);
-            margin-top: var(--spacing-3);
+        .btn-secondary {
+            background: #FFFFFF;
+            color: #635BFF;
+            border: 1px solid #E3E8EE;
+            height: 48px;
         }
 
-        .resend-timer.active {
-            color: var(--warning);
+        .btn-secondary:hover {
+            background: #F6F9FC;
+            border-color: #635BFF;
+            box-shadow: none;
         }
 
-        /* ============================================================================
-           Responsive Design - Mobile First
-           ============================================================================ */
-        @media (max-width: 480px) {
-            .container {
-                padding: var(--spacing-3);
-            }
-            
-            .verify-card {
-                padding: var(--spacing-6);
-                margin: var(--spacing-2);
-            }
-            
-            .brand-name {
-                font-size: var(--font-size-xl);
-            }
-            
-            .code-input {
-                width: 40px;
-                height: 48px;
-                font-size: var(--font-size-lg);
-            }
-            
-            .verification-icon {
-                width: 56px;
-                height: 56px;
-                font-size: var(--font-size-2xl);
+        .btn-secondary:active {
+            background: #E3E8EE;
+        }
+
+        @media (min-width: 640px) {
+            .btn-secondary {
+                height: 40px;
             }
         }
 
-        @media (max-width: 360px) {
-            .verify-card {
-                padding: var(--spacing-5);
-            }
-            
-            .code-input-container {
-                gap: var(--spacing-2);
-            }
-            
-            .code-input {
-                width: 36px;
-                height: 44px;
-                font-size: var(--font-size-base);
-            }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            color: #635BFF;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
         }
 
-        /* ============================================================================
-           Accessibility - Enhanced Support
-           ============================================================================ */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-        }
-
-        /* High contrast mode support */
-        @media (prefers-contrast: high) {
-            :root {
-                --border: #000000;
-                --text-secondary: #000000;
-            }
-        }
-
-        /* Reduced motion support */
-        @media (prefers-reduced-motion: reduce) {
-            * {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-            }
+        .back-link:hover {
+            color: #5851DF;
         }
     </style>
 </head>
 <body>
-    <div class="background-pattern"></div>
-    
-    <div class="container">
-        <div class="verify-card">
-            <!-- Header -->
-            <div class="header">
-                <div class="logo">
-                    <div class="logo-icon">O</div>
-                    <span class="brand-name">Oranolio RATX</span>
-                </div>
-                <div class="verification-icon">📧</div>
-                <h1 class="card-title">Check Your Email</h1>
-                <p class="card-subtitle">
-                    We've sent a 6-digit verification code to<br>
-                    <span class="email-display">{{ email }}</span>
-                </p>
+    <div class="verify-container">
+        <div class="header">
+            <div class="logo">✉️</div>
+            <h1>Check your email</h1>
+            <p class="subtitle">We sent a verification code to</p>
+        </div>
+
+        <div class="email-display">{{ email }}</div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" id="verifyForm">
+            {{ csrf_token() }}
+            <input type="hidden" name="email" value="{{ email }}">
+            
+            <div class="form-group">
+                <label for="code">Verification code</label>
+                <input type="text" 
+                       id="code" 
+                       name="code" 
+                       required 
+                       autofocus
+                       maxlength="6"
+                       pattern="[0-9]{6}"
+                       placeholder="000000"
+                       autocomplete="one-time-code">
             </div>
 
-            <!-- Flash Messages -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">{{ message }}</div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+            <button type="submit" class="btn" id="submitBtn">
+                Verify
+            </button>
+        </form>
 
-            <!-- Timer Section -->
-            <div class="timer-section">
-                <div class="timer-label">Code Expires In</div>
-                <div class="timer-display" id="timer">10:00</div>
-            </div>
-
-            <!-- Verification Form -->
-            <form method="POST" id="verifyForm">
+        <div class="resend-section">
+            <p class="resend-text">Didn't receive the code?</p>
+            <form method="POST" action="{{ url_for('auth.resend_code') }}" id="resendForm">
                 {{ csrf_token() }}
                 <input type="hidden" name="email" value="{{ email }}">
-                
-                <div class="form-group">
-                    <label for="code" class="form-label">Enter Verification Code</label>
-                    <div class="code-input-container" role="group" aria-label="6-digit verification code">
-                        <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" aria-label="Digit 1 of 6">
-                        <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" aria-label="Digit 2 of 6">
-                        <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" aria-label="Digit 3 of 6">
-                        <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" aria-label="Digit 4 of 6">
-                        <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" aria-label="Digit 5 of 6">
-                        <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" aria-label="Digit 6 of 6">
-                    </div>
-                    <input type="hidden" name="code" id="fullCode">
-                </div>
-
-                <button type="submit" class="btn btn-primary" id="verifyBtn">
-                    Verify Code
+                <button type="submit" class="btn btn-secondary" id="resendBtn">
+                    Resend code
                 </button>
             </form>
-
-            <!-- Resend Section -->
-            <div class="resend-section">
-                <p class="resend-text">Didn't receive the code?</p>
-                <button type="button" class="btn btn-secondary" id="resendBtn">
-                    Resend Code
-                </button>
-                <div class="resend-timer" id="resendTimer" style="display: none;">
-                    Resend available in <span id="countdown">30</span>s
-                </div>
-            </div>
-
-            <!-- Trust Indicators -->
-            <div class="trust-indicators">
-                <div class="trust-item">
-                    <svg class="trust-icon" viewBox="0 0 24 24">
-                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
-                    </svg>
-                    <span>SSL Secured</span>
-                </div>
-                <div class="trust-item">
-                    <svg class="trust-icon" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                    </svg>
-                    <span>2FA Protected</span>
-                </div>
-                <div class="trust-item">
-                    <svg class="trust-icon" viewBox="0 0 24 24">
-                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
-                    </svg>
-                    <span>GDPR Compliant</span>
-                </div>
-            </div>
+            <a href="{{ url_for('auth.login') }}" class="back-link">← Back to login</a>
         </div>
     </div>
 
     <script>
-        // ============================================================================
-        // DOM Elements - Preserve all critical selectors
-        // ============================================================================
-        const verifyForm = document.getElementById('verifyForm');
-        const verifyBtn = document.getElementById('verifyBtn');
+        const form = document.getElementById('verifyForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const codeInput = document.getElementById('code');
+        const resendForm = document.getElementById('resendForm');
         const resendBtn = document.getElementById('resendBtn');
-        const codeInputs = document.querySelectorAll('.code-input');
-        const fullCodeInput = document.getElementById('fullCode');
-        const timerElement = document.getElementById('timer');
-        const resendTimer = document.getElementById('resendTimer');
-        const countdownElement = document.getElementById('countdown');
 
-        // ============================================================================
-        // State Management - Preserve existing logic
-        // ============================================================================
-        let timeLeft = 600; // 10 minutes in seconds
-        let resendCountdown = 0;
-        let resendInterval = null;
-        let timerInterval = null;
+        // Auto-format code input (numbers only)
+        codeInput.addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        });
 
-        // ============================================================================
-        // Timer Management - Enhanced UX
-        // ============================================================================
-        function startTimer() {
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                updateTimerDisplay();
-                
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    timerElement.textContent = 'Expired';
-                    timerElement.classList.add('timer-expired');
-                    verifyBtn.disabled = true;
-                    verifyBtn.textContent = 'Code Expired';
-                } else if (timeLeft <= 60) {
-                    timerElement.classList.add('timer-warning');
-                }
-            }, 1000);
-        }
-
-        function updateTimerDisplay() {
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-        }
-
-        function startResendCountdown() {
-            resendCountdown = 30;
-            resendBtn.disabled = true;
-            resendTimer.style.display = 'block';
-            resendTimer.classList.add('active');
-            
-            resendInterval = setInterval(() => {
-                resendCountdown--;
-                countdownElement.textContent = resendCountdown;
-                
-                if (resendCountdown <= 0) {
-                    clearInterval(resendInterval);
-                    resendBtn.disabled = false;
-                    resendTimer.style.display = 'none';
-                    resendTimer.classList.remove('active');
-                }
-            }, 1000);
-        }
-
-        // ============================================================================
-        // Code Input Management - Enhanced UX
-        // ============================================================================
-        function setupCodeInputs() {
-            codeInputs.forEach((input, index) => {
-                input.addEventListener('input', function(e) {
-                    const value = e.target.value;
-                    
-                    // Only allow numbers
-                    if (!/^\d$/.test(value)) {
-                        e.target.value = '';
-                        return;
-                    }
-                    
-                    // Move to next input
-                    if (value && index < codeInputs.length - 1) {
-                        codeInputs[index + 1].focus();
-                    }
-                    
-                    // Update full code
-                    updateFullCode();
-                    
-                    // Check if all inputs are filled
-                    if (isCodeComplete()) {
-                        verifyBtn.disabled = false;
-                        verifyBtn.classList.remove('loading');
-                    }
-                });
-                
-                input.addEventListener('keydown', function(e) {
-                    // Handle backspace
-                    if (e.key === 'Backspace' && !e.target.value && index > 0) {
-                        codeInputs[index - 1].focus();
-                    }
-                    
-                    // Handle paste
-                    if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
-                        e.preventDefault();
-                        handlePaste(e);
-                    }
-                });
-                
-                input.addEventListener('paste', handlePaste);
-            });
-        }
-
-        function updateFullCode() {
-            const code = Array.from(codeInputs).map(input => input.value).join('');
-            fullCodeInput.value = code;
-        }
-
-        function isCodeComplete() {
-            return codeInputs.every(input => input.value.length === 1);
-        }
-
-        function clearCodeInputs() {
-            codeInputs.forEach(input => {
-                input.value = '';
-                input.classList.remove('filled', 'error');
-            });
-            updateFullCode();
-        }
-
-        function showCodeError() {
-            codeInputs.forEach(input => {
-                input.classList.add('error');
-            });
-            setTimeout(() => {
-                codeInputs.forEach(input => {
-                    input.classList.remove('error');
-                });
-            }, 500);
-        }
-
-        function handlePaste(e) {
-            e.preventDefault();
-            const pastedData = (e.clipboardData || window.clipboardData).getData('text');
-            const numbers = pastedData.replace(/\D/g, '').slice(0, 6);
-            
-            numbers.split('').forEach((digit, index) => {
-                if (codeInputs[index]) {
-                    codeInputs[index].value = digit;
-                }
-            });
-            
-            updateFullCode();
-            
-            // Focus last filled input or next empty
-            const lastFilledIndex = numbers.length - 1;
-            const nextEmptyIndex = Math.min(lastFilledIndex + 1, codeInputs.length - 1);
-            codeInputs[nextEmptyIndex].focus();
-        }
-
-        // ============================================================================
-        // Form Submission - Preserve all API calls and endpoints
-        // ============================================================================
-        verifyForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const code = fullCodeInput.value;
+        // Form submission
+        form.addEventListener('submit', function(e) {
+            const code = codeInput.value.trim();
             
             if (code.length !== 6) {
-                showCodeError();
-                announceError('Please enter all 6 digits of the verification code');
-                return;
+                e.preventDefault();
+                alert('Please enter a 6-digit code');
+                codeInput.focus();
+                return false;
             }
             
-            // Show loading state
-            verifyBtn.classList.add('loading');
-            verifyBtn.disabled = true;
-            verifyBtn.textContent = 'Verifying...';
-            
-            // Make actual API call - preserve exact endpoint
-            fetch('/oranolio/verify', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrf_token]').value
-                },
-                body: JSON.stringify({ code: code })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Redirect to dashboard
-                    window.location.href = data.redirect_url || '/dashboard';
-                } else {
-                    showCodeError();
-                    announceError(data.message || 'Invalid verification code');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showCodeError();
-                announceError('Network error. Please try again.');
-            })
-            .finally(() => {
-                // Reset button
-                verifyBtn.classList.remove('loading');
-                verifyBtn.disabled = false;
-                verifyBtn.textContent = 'Verify Code';
-            });
+            // Add loading state
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '';
         });
 
-        resendBtn.addEventListener('click', function() {
-            if (resendBtn.disabled) return;
-            
+        // Resend form submission
+        resendForm.addEventListener('submit', function(e) {
             resendBtn.classList.add('loading');
             resendBtn.disabled = true;
-            resendBtn.textContent = 'Sending...';
-            
-            // Make actual API call - preserve exact endpoint
-            fetch('/oranolio/resend', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrf_token]').value
-                },
-                body: JSON.stringify({})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    clearCodeInputs();
-                    startResendCountdown();
-                    
-                    // Reset timer
-                    timeLeft = 600;
-                    updateTimerDisplay();
-                    timerElement.classList.remove('timer-warning', 'timer-expired');
-                    startTimer();
-                } else {
-                    announceError(data.message || 'Failed to resend code');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                announceError('Network error. Please try again.');
-            })
-            .finally(() => {
-                resendBtn.classList.remove('loading');
-                resendBtn.disabled = false;
-                resendBtn.textContent = 'Resend Code';
-            });
+            resendBtn.textContent = '';
         });
 
-        // ============================================================================
-        // Accessibility Enhancements - Enhanced support
-        // ============================================================================
-        function announceError(message) {
-            const announcementDiv = document.createElement('div');
-            announcementDiv.setAttribute('aria-live', 'assertive');
-            announcementDiv.setAttribute('aria-atomic', 'true');
-            announcementDiv.className = 'sr-only';
-            announcementDiv.textContent = message;
-            
-            document.body.appendChild(announcementDiv);
-            
-            setTimeout(() => {
-                document.body.removeChild(announcementDiv);
-            }, 3000);
-        }
-
-        function announceSuccess(message) {
-            const announcementDiv = document.createElement('div');
-            announcementDiv.setAttribute('aria-live', 'polite');
-            announcementDiv.setAttribute('aria-atomic', 'true');
-            announcementDiv.className = 'sr-only';
-            announcementDiv.textContent = message;
-            
-            document.body.appendChild(announcementDiv);
-            
-            setTimeout(() => {
-                document.body.removeChild(announcementDiv);
-            }, 3000);
-        }
-
-        // ============================================================================
-        // Keyboard Shortcuts - Enhanced support
-        // ============================================================================
-        document.addEventListener('keydown', function(e) {
-            // Ctrl/Cmd + Enter to submit
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                verifyForm.dispatchEvent(new Event('submit'));
-            }
-        });
-
-        // ============================================================================
-        // Initialization - Enhanced setup
-        // ============================================================================
-        document.addEventListener('DOMContentLoaded', function() {
-            setupCodeInputs();
-            startTimer();
-            startResendCountdown();
-            
-            // Auto-focus first code input
-            codeInputs[0].focus();
-        });
-
-        // ============================================================================
-        // Cleanup - Enhanced cleanup
-        // ============================================================================
-        window.addEventListener('beforeunload', function() {
-            if (timerInterval) clearInterval(timerInterval);
-            if (resendInterval) clearInterval(resendInterval);
+        // Auto-focus code input on page load
+        window.addEventListener('load', function() {
+            codeInput.focus();
         });
     </script>
 </body>

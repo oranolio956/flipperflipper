@@ -47,6 +47,13 @@ Application/Stitch_Vars/st_aes_lib.ini
 Application/Stitch_Vars/stitch_config.ini
 Application/Stitch_Vars/history.ini
 
+# Runtime files
+*.log
+*.db
+server.log
+logs/
+*.backup
+
 # SSL certificates (auto-generated and custom)
 certs/
 *.pem

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}Oranolio C2{% endblock %}</title>
+    
+    <!-- Stripe-inspired CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-bolt"></i>
+                <span>Oranolio</span>
+            </div>
+            <div class="version">v2.0</div>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('dashboard.overview') }}" class="nav-item {% if request.endpoint == 'dashboard.overview' %}active{% endif %}">
+                <i class="fas fa-home"></i>
+                <span>Overview</span>
+            </a>
+            
+            <a href="{{ url_for('dashboard.targets') }}" class="nav-item {% if request.endpoint == 'dashboard.targets' %}active{% endif %}">
+                <i class="fas fa-crosshairs"></i>
+                <span>Targets</span>
+                <span class="badge" id="active-targets-count">0</span>
+            </a>
+            
+            <a href="{{ url_for('dashboard.commands') }}" class="nav-item {% if request.endpoint == 'dashboard.commands' %}active{% endif %}">
+                <i class="fas fa-terminal"></i>
+                <span>Commands</span>
+            </a>
+            
+            <a href="{{ url_for('dashboard.files') }}" class="nav-item {% if request.endpoint == 'dashboard.files' %}active{% endif %}">
+                <i class="fas fa-folder"></i>
+                <span>Files</span>
+            </a>
+            
+            <a href="{{ url_for('dashboard.credentials') }}" class="nav-item {% if request.endpoint == 'dashboard.credentials' %}active{% endif %}">
+                <i class="fas fa-key"></i>
+                <span>Credentials</span>
+            </a>
+            
+            <a href="{{ url_for('dashboard.keylogs') }}" class="nav-item {% if request.endpoint == 'dashboard.keylogs' %}active{% endif %}">
+                <i class="fas fa-keyboard"></i>
+                <span>Keylogs</span>
+            </a>
+            
+            <a href="{{ url_for('dashboard.logs') }}" class="nav-item {% if request.endpoint == 'dashboard.logs' %}active{% endif %}">
+                <i class="fas fa-list"></i>
+                <span>System Logs</span>
+            </a>
+            
+            <div class="nav-divider"></div>
+            
+            <a href="{{ url_for('dashboard.settings') }}" class="nav-item {% if request.endpoint == 'dashboard.settings' %}active{% endif %}">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+            
+            <a href="{{ url_for('dashboard.help') }}" class="nav-item {% if request.endpoint == 'dashboard.help' %}active{% endif %}">
+                <i class="fas fa-question-circle"></i>
+                <span>Help</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i>
+                <span>{{ session.get('username', 'Admin') }}</span>
+            </div>
+            <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+            </div>
+            
+            <div class="top-bar-right">
+                <!-- Connection Status -->
+                <div class="connection-status" id="connectionStatus">
+                    <i class="fas fa-circle"></i>
+                    <span>Connected</span>
+                </div>
+                
+                <!-- Notifications -->
+                <div class="notifications-dropdown">
+                    <button class="notifications-btn" id="notificationsBtn">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notificationBadge">0</span>
+                    </button>
+                    <div class="notifications-panel" id="notificationsPanel">
+                        <div class="notifications-header">
+                            <h3>Notifications</h3>
+                            <button class="mark-all-read" id="markAllRead">Mark all read</button>
+                        </div>
+                        <div class="notifications-list" id="notificationsList">
+                            <div class="no-notifications">No new notifications</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">
+                            <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                            <span>{{ message }}</span>
+                            <button class="close-flash" onclick="this.parentElement.remove()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <!-- Page Content -->
+        <div class="page-content">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+    
+    <!-- Socket.IO for real-time updates -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    
+    <!-- Base JavaScript -->
+    <script nonce="{{ g.csp_nonce }}">
+        // Initialize Socket.IO
+        const socket = io({
+            transports: ['websocket', 'polling']
+        });
+        
+        // Connection status
+        socket.on('connect', function() {
+            updateConnectionStatus(true);
+        });
+        
+        socket.on('disconnect', function() {
+            updateConnectionStatus(false);
+        });
+        
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connectionStatus');
+            if (connected) {
+                statusEl.classList.add('connected');
+                statusEl.classList.remove('disconnected');
+                statusEl.querySelector('span').textContent = 'Connected';
+            } else {
+                statusEl.classList.add('disconnected');
+                statusEl.classList.remove('connected');
+                statusEl.querySelector('span').textContent = 'Disconnected';
+            }
+        }
+        
+        // Mobile menu toggle
+        document.getElementById('mobileMenuToggle')?.addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('mobile-open');
+        });
+        
+        // Notifications dropdown
+        document.getElementById('notificationsBtn')?.addEventListener('click', function() {
+            document.getElementById('notificationsPanel').classList.toggle('show');
+        });
+        
+        // Close notifications when clicking outside
+        document.addEventListener('click', function(e) {
+            const notificationsDropdown = document.querySelector('.notifications-dropdown');
+            if (notificationsDropdown && !notificationsDropdown.contains(e.target)) {
+                document.getElementById('notificationsPanel').classList.remove('show');
+            }
+        });
+        
+        // Mark all notifications as read
+        document.getElementById('markAllRead')?.addEventListener('click', function() {
+            fetch('/api/notifications/mark-all-read', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+                }
+            }).then(() => {
+                document.getElementById('notificationsList').innerHTML = '<div class="no-notifications">No new notifications</div>';
+                document.getElementById('notificationBadge').textContent = '0';
+            });
+        });
+        
+        // Auto-hide flash messages after 5 seconds
+        setTimeout(function() {
+            document.querySelectorAll('.flash-message').forEach(function(msg) {
+                msg.style.opacity = '0';
+                setTimeout(function() { msg.remove(); }, 300);
+            });
+        }, 5000);
+        
+        // CSRF token for all AJAX requests
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+        
+        // Helper function for API calls
+        async function apiCall(url, method = 'GET', data = null) {
+            const options = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                }
+            };
+            
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            
+            const response = await fetch(url, options);
+            return await response.json();
+        }
+        
+        // Update active targets count
+        async function updateTargetsCount() {
+            try {
+                const data = await apiCall('/api/targets/count');
+                document.getElementById('active-targets-count').textContent = data.count || 0;
+            } catch (error) {
+                console.error('Failed to update targets count:', error);
+            }
+        }
+        
+        // Update targets count on page load and every 30 seconds
+        updateTargetsCount();
+        setInterval(updateTargetsCount, 30000);
+        
+        // Listen for new target connections
+        socket.on('target_connected', function(data) {
+            updateTargetsCount();
+            showNotification('New target connected: ' + data.hostname, 'success');
+        });
+        
+        socket.on('target_disconnected', function(data) {
+            updateTargetsCount();
+            showNotification('Target disconnected: ' + data.hostname, 'warning');
+        });
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notificationsList = document.getElementById('notificationsList');
+            const badge = document.getElementById('notificationBadge');
+            
+            // Remove "no notifications" message
+            const noNotifications = notificationsList.querySelector('.no-notifications');
+            if (noNotifications) {
+                noNotifications.remove();
+            }
+            
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = 'notification-item notification-' + type;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                <div class="notification-content">
+                    <p>${message}</p>
+                    <span class="notification-time">Just now</span>
+                </div>
+            `;
+            
+            notificationsList.insertBefore(notification, notificationsList.firstChild);
+            
+            // Update badge
+            const currentCount = parseInt(badge.textContent) || 0;
+            badge.textContent = currentCount + 1;
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
