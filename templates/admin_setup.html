@@ -198,11 +198,14 @@
 
         <form id="setupForm">
             <input type="hidden" name="token" value="{{ token }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
             
             <div class="form-group">
                 <label for="username">Admin Username</label>
                 <input type="text" id="username" name="username" required 
-                       minlength="3" placeholder="admin" autocomplete="username">
+                       minlength="3" maxlength="32" pattern="[a-zA-Z0-9_]+" 
+                       placeholder="admin" autocomplete="username"
+                       title="3-32 alphanumeric characters and underscore only">
             </div>
 
             <div class="form-group">
@@ -210,7 +213,10 @@
                 <input type="password" id="password" name="password" required 
                        minlength="12" placeholder="Enter strong password" autocomplete="new-password">
                 <div class="password-requirements">
-                    Minimum 12 characters, mix of letters, numbers, and symbols
+                    • Minimum 12 characters<br>
+                    • Uppercase and lowercase letters<br>
+                    • At least one number<br>
+                    • At least one special character (!@#$%^&*)
                 </div>
             </div>
 
@@ -235,6 +241,28 @@
         const submitBtn = document.getElementById('submitBtn');
         const errorMessage = document.getElementById('errorMessage');
         const successMessage = document.getElementById('successMessage');
+        const passwordInput = document.getElementById('password');
+
+        // Password strength validation
+        function validatePasswordStrength(password) {
+            const errors = [];
+            if (password.length < 12) errors.push('At least 12 characters');
+            if (!/[A-Z]/.test(password)) errors.push('One uppercase letter');
+            if (!/[a-z]/.test(password)) errors.push('One lowercase letter');
+            if (!/[0-9]/.test(password)) errors.push('One number');
+            if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) errors.push('One special character');
+            return errors;
+        }
+
+        // Real-time password validation
+        passwordInput.addEventListener('input', (e) => {
+            const errors = validatePasswordStrength(e.target.value);
+            if (errors.length > 0) {
+                passwordInput.setCustomValidity('Missing: ' + errors.join(', '));
+            } else {
+                passwordInput.setCustomValidity('');
+            }
+        });
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -256,6 +284,14 @@
                 return;
             }
             
+            // Validate password strength
+            const strengthErrors = validatePasswordStrength(password);
+            if (strengthErrors.length > 0) {
+                errorMessage.textContent = 'Password requirements not met: ' + strengthErrors.join(', ');
+                errorMessage.style.display = 'block';
+                return;
+            }
+            
             // Disable button
             submitBtn.disabled = true;
             submitBtn.textContent = 'Creating Account...';
@@ -263,7 +299,10 @@
             try {
                 const response = await fetch('/admin/setup', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
                 });
                 
                 const data = await response.json();

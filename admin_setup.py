@@ -8,7 +8,8 @@ import os
 import sys
 import secrets
 import sqlite3
-import hashlib
+import bcrypt
+import re
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -47,6 +48,9 @@ class AdminSetupManager:
                 password_hash TEXT NOT NULL,
                 created_at TEXT NOT NULL,
                 setup_token TEXT,
+                last_login TEXT,
+                failed_attempts INTEGER DEFAULT 0,
+                locked_until TEXT,
                 FOREIGN KEY (setup_token) REFERENCES setup_tokens(token)
             )
         ''')
@@ -124,8 +128,24 @@ class AdminSetupManager:
         if not valid:
             return False, message
         
-        # Hash password
-        password_hash = hashlib.sha256(password.encode()).hexdigest()
+        # Validate username (alphanumeric + underscore only)
+        if not re.match(r'^[a-zA-Z0-9_]{3,32}$', username):
+            return False, "Username must be 3-32 alphanumeric characters"
+        
+        # Validate password strength
+        if len(password) < 12:
+            return False, "Password must be at least 12 characters"
+        if not re.search(r'[A-Z]', password):
+            return False, "Password must contain uppercase letter"
+        if not re.search(r'[a-z]', password):
+            return False, "Password must contain lowercase letter"
+        if not re.search(r'[0-9]', password):
+            return False, "Password must contain number"
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+            return False, "Password must contain special character"
+        
+        # Hash password with bcrypt (proper password hashing)
+        password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
