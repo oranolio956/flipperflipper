@@ -532,8 +532,8 @@ def login():
 # Legacy MFA verify route removed - using webhook-based authentication only
     
 # Legacy MFA code removed - using webhook-based authentication only
-    if 'mfa_verify_email' not in session:
-        flash('Invalid MFA verification session', 'error')
+# Legacy MFA code removed - using webhook-based authentication only
+# Legacy MFA code removed - using webhook-based authentication only
         return redirect(url_for('login'))
     
     email = session['mfa_verify_email']
