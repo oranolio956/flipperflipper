@@ -1,0 +1,38 @@
+2025-10-23 16:47:59,466 - main_entry - INFO - Initializing Oranolio RAT - Elite C2 Framework...
+2025-10-23 16:47:59,467 - main_entry - INFO - Initializing databases...
+2025-10-23 16:47:59,474 - initialize_databases - INFO - Starting database initialization...
+2025-10-23 16:47:59,475 - initialize_databases - INFO - Initializing email database: /workspace/data/email_auth.db
+2025-10-23 16:47:59,479 - initialize_databases - INFO - Email database initialized successfully
+2025-10-23 16:47:59,479 - initialize_databases - INFO - Initializing MFA database: /workspace/data/mfa_auth.db
+2025-10-23 16:47:59,481 - initialize_databases - INFO - MFA database initialized successfully
+2025-10-23 16:47:59,481 - initialize_databases - INFO - Initializing webhook database: /workspace/data/webhook_auth.db
+2025-10-23 16:47:59,485 - initialize_databases - INFO - Webhook database initialized successfully
+2025-10-23 16:47:59,485 - initialize_databases - INFO - Initializing session database: /workspace/data/sessions.db
+2025-10-23 16:47:59,486 - initialize_databases - INFO - Session database initialized successfully
+2025-10-23 16:47:59,486 - initialize_databases - INFO - Initializing command history database: /workspace/data/command_history.db
+2025-10-23 16:47:59,486 - initialize_databases - INFO - Command history database initialized successfully
+2025-10-23 16:47:59,486 - initialize_databases - INFO - Initializing metrics database: /workspace/data/metrics.db
+2025-10-23 16:47:59,487 - initialize_databases - INFO - Metrics database initialized successfully
+2025-10-23 16:47:59,487 - initialize_databases - INFO - Initializing audit log database: /workspace/data/audit_log.db
+2025-10-23 16:47:59,487 - initialize_databases - INFO - Audit log database initialized successfully
+2025-10-23 16:47:59,487 - initialize_databases - INFO - All databases initialized successfully!
+2025-10-23 16:47:59,488 - initialize_databases - INFO - ✓ email_auth.db exists
+2025-10-23 16:47:59,488 - initialize_databases - INFO - ✓ mfa_auth.db exists
+2025-10-23 16:47:59,488 - initialize_databases - INFO - ✓ webhook_auth.db exists
+2025-10-23 16:47:59,488 - initialize_databases - INFO - ✓ sessions.db exists
+2025-10-23 16:47:59,488 - initialize_databases - INFO - ✓ command_history.db exists
+2025-10-23 16:47:59,488 - initialize_databases - INFO - ✓ metrics.db exists
+2025-10-23 16:47:59,488 - initialize_databases - INFO - ✓ audit_log.db exists
+2025-10-23 16:47:59,488 - main_entry - INFO - Databases initialized successfully
+2025-10-23 16:47:59,488 - main_entry - INFO - Initializing SSL certificates...
+2025-10-23 16:47:59,735 - ssl_utils - INFO - Self-signed certificate generated: certs/server.crt
+2025-10-23 16:47:59,735 - main_entry - INFO - SSL certificates initialized successfully
+2025-10-23 16:47:59,735 - main_entry - INFO - Initializing system components...
+2025-10-23 16:47:59,780 - main_entry - ERROR - Component initialization failed: No module named 'validators'
+2025-10-23 16:47:59,780 - main_entry - ERROR - System initialization failed: No module named 'validators'
+2025-10-23 16:47:59,780 - main_entry - INFO - Starting Oranolio RAT - Elite C2 Framework...
+2025-10-23 16:47:59,780 - main_entry - INFO - Starting native protocol bridge...
+2025-10-23 16:47:59,780 - main_entry - ERROR - Failed to start native protocol bridge: 'native_bridge'
+2025-10-23 16:47:59,780 - main_entry - ERROR - Failed to start services: 'native_bridge'
+2025-10-23 16:47:59,780 - main_entry - INFO - Shutting down system...
+2025-10-23 16:47:59,780 - main_entry - INFO - System shutdown completed

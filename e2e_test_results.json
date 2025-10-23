@@ -1,0 +1,91 @@
+{
+  "total_tests": 12,
+  "passed_tests": 10,
+  "success_rate": 83.33333333333334,
+  "results": [
+    {
+      "test": "Server Health Check",
+      "success": true,
+      "message": "Status: 200",
+      "duration": 0.01608586311340332,
+      "timestamp": "2025-10-23T16:51:29.572129"
+    },
+    {
+      "test": "Login Page Access",
+      "success": false,
+      "message": "Login page content missing",
+      "duration": 0.015831947326660156,
+      "timestamp": "2025-10-23T16:51:29.588166"
+    },
+    {
+      "test": "Invalid Login",
+      "success": true,
+      "message": "Properly rejected: Invalid access key format",
+      "duration": 0.0038111209869384766,
+      "timestamp": "2025-10-23T16:51:29.592142"
+    },
+    {
+      "test": "Create Access Key",
+      "success": true,
+      "message": "Using test key: orat_test_key_for_e2...",
+      "duration": 0.0065457820892333984,
+      "timestamp": "2025-10-23T16:51:29.598744"
+    },
+    {
+      "test": "Valid Login",
+      "success": true,
+      "message": "Login successful: Login successful",
+      "duration": 0.0029730796813964844,
+      "timestamp": "2025-10-23T16:51:29.604141"
+    },
+    {
+      "test": "Dashboard Access",
+      "success": true,
+      "message": "Dashboard loads correctly",
+      "duration": 0.007745265960693359,
+      "timestamp": "2025-10-23T16:51:29.612008"
+    },
+    {
+      "test": "Dashboard Stats API",
+      "success": true,
+      "message": "Stats: {'active_agents': 0, 'commands_executed_24h': 0, 'data_transferred_24h_mb': 0, 'total_payloads': 0}",
+      "duration": 0.0025796890258789062,
+      "timestamp": "2025-10-23T16:51:29.614712"
+    },
+    {
+      "test": "Dashboard Agents API",
+      "success": true,
+      "message": "Agents: 0 found",
+      "duration": 0.0032339096069335938,
+      "timestamp": "2025-10-23T16:51:29.618043"
+    },
+    {
+      "test": "Command Execution",
+      "success": true,
+      "message": "Command queued: Command 'echo 'E2E test command'' queued for agent test_agent",
+      "duration": 0.002348661422729492,
+      "timestamp": "2025-10-23T16:51:29.620489"
+    },
+    {
+      "test": "Logout",
+      "success": true,
+      "message": "Logout successful",
+      "duration": 0.0034139156341552734,
+      "timestamp": "2025-10-23T16:51:29.623952"
+    },
+    {
+      "test": "WebSocket Connection",
+      "success": false,
+      "message": "Error: server rejected WebSocket connection: HTTP 404",
+      "duration": 0.06210184097290039,
+      "timestamp": "2025-10-23T16:51:29.686104"
+    },
+    {
+      "test": "Error Handling",
+      "success": true,
+      "message": "404 handled correctly",
+      "duration": 0.002742767333984375,
+      "timestamp": "2025-10-23T16:51:29.688882"
+    }
+  ]
+}
