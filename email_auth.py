@@ -11,7 +11,7 @@ import hashlib
 import secrets
 from datetime import datetime, timedelta
 from pathlib import Path
-from config import Config
+from simple_config import Config
 from automated_email_service import automated_email_service
 
 DB_PATH = Config.APPLICATION_DIR / 'stitch.db'

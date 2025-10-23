@@ -1,49 +1,49 @@
 #!/usr/bin/env python3
 """
-Simple Configuration for MFA Testing
+Simple configuration for testing
 """
 
 import os
 from pathlib import Path
-from datetime import timedelta
 
 class Config:
-    # Basic app settings
-    APP_NAME = "Oranolio RAT"
-    APP_VERSION = "1.1.0"
+    """Simple configuration class"""
     
-    # Directories
+    # Base directories
     BASE_DIR = Path(__file__).parent
     APPLICATION_DIR = BASE_DIR / "Application"
-    LOGS_DIR = BASE_DIR / "Logs"
-    TEMP_DIR = BASE_DIR / "Temp"
-    UPLOADS_DIR = BASE_DIR / "Uploads"
-    DOWNLOADS_DIR = BASE_DIR / "Downloads"
     
-    # Server settings
-    HOST = os.getenv('STITCH_HOST', '0.0.0.0')
-    PORT = int(os.getenv('STITCH_PORT', '5000'))
-    DEBUG = os.getenv('STITCH_DEBUG', 'false').lower() in ('true', '1', 'yes')
+    # Server Configuration
+    HOST = '0.0.0.0'
+    PORT = 5000
+    DEBUG = False
+    STITCH_SERVER_PORT = 4040
     
-    # Email settings
-    FROM_EMAIL = os.getenv('FROM_EMAIL', 'test@example.com')
-    FROM_NAME = os.getenv('FROM_NAME', 'Test Security')
-    
-    # Automated email
-    USE_AUTOMATED_EMAIL = os.getenv('USE_AUTOMATED_EMAIL', 'true').lower() in ('true', '1', 'yes')
+    # Email Configuration
+    FROM_EMAIL = 'brooketogo98@gmail.com'
+    FROM_NAME = 'Oranolio Security'
+    USE_AUTOMATED_EMAIL = True
+    AUTHORIZED_EMAILS = ['brooketogo98@gmail.com']
     
     # Security
-    SECRET_KEY = os.getenv('STITCH_SECRET_KEY', 'dev-secret-key-change-in-production')
+    SECRET_KEY = 'test-secret-key-for-development-only'
     
-    # Session settings
+    # Session Configuration
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
     SESSION_TIMEOUT_MINUTES = 30
-    PERMANENT_SESSION_LIFETIME = timedelta(minutes=SESSION_TIMEOUT_MINUTES)
     
-    # Rate limiting
+    # Rate Limiting
     MAX_LOGIN_ATTEMPTS = 5
     LOGIN_LOCKOUT_MINUTES = 15
+    COMMANDS_PER_MINUTE = 60
+    EXECUTIONS_PER_MINUTE = 30
+    API_POLLING_PER_HOUR = 1000
+    DEFAULT_RATE_LIMIT_DAY = 10000
+    DEFAULT_RATE_LIMIT_HOUR = 1000
     
-    # Database
-    SQLITE_DB_FILE = APPLICATION_DIR / 'stitch.db'
+    # Logging
+    MAX_DEBUG_LOGS = 1000
+    MAX_COMMAND_HISTORY = 1000
+    DEFAULT_LOG_FETCH_LIMIT = 100
+    DEFAULT_HISTORY_FETCH_LIMIT = 100

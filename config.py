@@ -78,8 +78,8 @@ AUTHORIZED_EMAILS = os.getenv('STITCH_AUTHORIZED_EMAILS', '').split(',') if os.g
 # Session Secret Key Management
 SECRET_KEY_FILE = APPLICATION_DIR / '.secret_key'
     
-    @classmethod
-    def ensure_secret_key(cls):
+@classmethod
+def ensure_secret_key(cls):
         """Ensure a persistent secret key exists"""
         # First check environment variable
         secret_key = os.getenv('STITCH_SECRET_KEY')
