@@ -69,6 +69,9 @@ from Core.crypto_system import get_crypto, init_crypto
 from Core.memory_protection import get_memory_protection
 from Core.advanced_evasion import apply_evasions
 
+# Import webhook authentication system
+from webhook_auth_routes import register_webhook_auth_routes
+
 # ============================================================================
 # Configuration - Now loaded from Config module
 # ============================================================================
@@ -206,6 +209,9 @@ app.config['WTF_CSRF_SSL_STRICT'] = Config.WTF_CSRF_SSL_STRICT
 
 # Initialize CSRF Protection
 csrf = CSRFProtect(app)
+
+# Register webhook authentication routes
+register_webhook_auth_routes(app)
 
 # Print configuration status
 # Startup information (commented for production)
@@ -509,10 +515,17 @@ def index():
     return render_template('dashboard_real.html')
 
 @app.route('/login', methods=['GET', 'POST'])
-@limiter.limit("5 per minute")  # Rate limit: 5 attempts per minute per IP
 def login():
     """
-    Elite Passwordless Login - Email + MFA Authentication
+    Redirect to webhook-based authentication
+    """
+    return redirect(url_for('webhook_auth.webhook_login'))
+
+@app.route('/legacy-login', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")  # Rate limit: 5 attempts per minute per IP
+def legacy_login():
+    """
+    Legacy Email + MFA Authentication (kept for fallback)
     
     Flow:
     1. User enters email address (no password needed)
