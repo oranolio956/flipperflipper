@@ -114,14 +114,16 @@ class DatabaseInitializer:
             # API keys
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS api_keys (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id TEXT PRIMARY KEY,
                     user_id INTEGER NOT NULL,
-                    api_key TEXT UNIQUE NOT NULL,
                     name TEXT NOT NULL,
-                    is_active BOOLEAN DEFAULT TRUE,
+                    key_hash TEXT NOT NULL,
+                    permissions TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     last_used TIMESTAMP,
                     expires_at TIMESTAMP,
+                    is_active BOOLEAN DEFAULT TRUE,
+                    usage_count INTEGER DEFAULT 0,
                     FOREIGN KEY (user_id) REFERENCES users (id)
                 )
             ''')
@@ -130,7 +132,7 @@ class DatabaseInitializer:
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_users_email ON users (email)')
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_verification_tokens_token ON verification_tokens (token)')
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token ON password_reset_tokens (token)')
-            cursor.execute('CREATE INDEX IF NOT EXISTS idx_api_keys_key ON api_keys (api_key)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_api_keys_key_hash ON api_keys (key_hash)')
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_api_keys_user_id ON api_keys (user_id)')
             
             conn.commit()
