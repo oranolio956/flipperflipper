@@ -6,7 +6,7 @@ Elite passwordless authentication system
 
 import sqlite3
 from pathlib import Path
-from simple_config import Config
+from config import Config
 
 DB_PATH = Config.APPLICATION_DIR / 'stitch.db'
 

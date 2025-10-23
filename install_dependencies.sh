@@ -1,45 +1,43 @@
 #!/bin/bash
-# Stitch C2 Framework - Dependency Installation Script
-# This script installs all required dependencies
+# Oranolio RAT - Dependency Installation Script
 
-set -e
+echo "🚀 Installing Oranolio RAT Dependencies..."
+echo "=========================================="
 
-echo "🔧 Installing Stitch C2 Framework Dependencies..."
+# Update package lists
+echo "📦 Updating package lists..."
+sudo apt-get update -qq
 
-# Check if Python 3 is available
-if ! command -v python3 &> /dev/null; then
-    echo "❌ Python 3 is required but not installed."
-    exit 1
-fi
+# Install Python3 and pip if not already installed
+echo "🐍 Installing Python3 and pip..."
+sudo apt-get install -y python3 python3-pip python3-venv
 
-# Check if pip is available
-if ! command -v pip3 &> /dev/null; then
-    echo "❌ pip3 is required but not installed."
-    exit 1
-fi
+# Install system dependencies
+echo "🔧 Installing system dependencies..."
+sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev
 
-# Upgrade pip first
-echo "📦 Upgrading pip..."
-python3 -m pip install --upgrade pip
+# Create virtual environment (optional but recommended)
+echo "📁 Creating virtual environment..."
+python3 -m venv venv
+source venv/bin/activate
 
-# Install requirements
-echo "📦 Installing core dependencies..."
-pip3 install -r requirements.txt
+# Install Python dependencies
+echo "📚 Installing Python packages..."
+pip install --upgrade pip
+pip install -r requirements.txt
 
-# Verify installation
-echo "✅ Verifying installation..."
-python3 -c "
-import flask
-import flask_socketio
-import Crypto
-import psutil
-import requests
-import colorama
-import mss
-import pexpect
-import pyxhook
-print('✅ All dependencies installed successfully!')
-"
+# Setup database
+echo "🗄️  Setting up database..."
+python3 create_email_tables.py
+python3 create_mfa_tables.py
 
-echo "🎉 Stitch C2 Framework dependencies installed successfully!"
-echo "🚀 You can now run: python3 START_SYSTEM.py"
+echo ""
+echo "✅ Installation Complete!"
+echo "========================="
+echo "🚀 To start the system:"
+echo "   python3 start_system_fixed.py"
+echo ""
+echo "📱 Web Interface: http://localhost:5000"
+echo "🔌 Stitch Server: localhost:4040"
+echo "📧 Test Email: brooketogo98@gmail.com"
+echo ""

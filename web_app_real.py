@@ -50,7 +50,7 @@ from Application.stitch_gen import (
 from ssl_utils import get_ssl_context
 
 # Import the new enhanced modules
-from simple_config import Config
+from config import Config
 from web_app_enhancements import integrate_enhancements, connection_manager, metrics_collector
 from auth_utils import (
     api_key_manager, api_key_or_login_required,

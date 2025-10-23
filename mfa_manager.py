@@ -16,7 +16,7 @@ import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from cryptography.fernet import Fernet
-from simple_config import Config
+from config import Config
 
 class MFAManager:
     """
