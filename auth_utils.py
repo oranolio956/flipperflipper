@@ -1,589 +1,784 @@
 #!/usr/bin/env python3
 """
-Authentication utilities for API keys and failed login alerts
+Authentication Utilities for Oranolio RAT - Elite C2 Framework
+Provides comprehensive authentication, authorization, and session management
 """
+
 import os
-import json
+import sys
 import hashlib
 import secrets
 import time
-import smtplib
-import requests
+import sqlite3
 import logging
 from datetime import datetime, timedelta
+from typing import Optional, Dict, Any, List
 from functools import wraps
-from pathlib import Path
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from flask import request, jsonify, g, session
-from werkzeug.security import check_password_hash, generate_password_hash
-from config import Config
+from dataclasses import dataclass
+import jwt
+import pyotp
+import qrcode
+import io
+import base64
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Failed login tracking
-failed_login_attempts = {}
-failed_login_lock = {}
+@dataclass
+class User:
+    """User data structure"""
+    id: int
+    email: str
+    is_active: bool
+    is_verified: bool
+    created_at: datetime
+    last_login: Optional[datetime] = None
+    failed_login_attempts: int = 0
+    locked_until: Optional[datetime] = None
+    api_key: Optional[str] = None
+    api_key_created: Optional[datetime] = None
 
-class APIKeyManager:
-    """Manage API keys for authentication"""
+@dataclass
+class APIKey:
+    """API Key data structure"""
+    id: str
+    user_id: int
+    name: str
+    key_hash: str
+    permissions: List[str]
+    created_at: datetime
+    last_used: Optional[datetime] = None
+    expires_at: Optional[datetime] = None
+    is_active: bool = True
+    usage_count: int = 0
+
+class AuthenticationManager:
+    """Manages user authentication and authorization"""
     
-    def __init__(self):
-        self.api_keys_file = Config.API_KEYS_FILE
-        self.api_keys = self._load_api_keys()
-    
-    def _load_api_keys(self):
-        """Load API keys from file"""
-        if self.api_keys_file.exists():
-            try:
-                with open(self.api_keys_file, 'r') as f:
-                    return json.load(f)
-            except Exception as e:
-                logger.error(f"Failed to load API keys: {e}")
-        return {}
-    
-    def _save_api_keys(self):
-        """Save API keys to file"""
-        try:
-            # Ensure directory exists
-            self.api_keys_file.parent.mkdir(parents=True, exist_ok=True)
-            
-            with open(self.api_keys_file, 'w') as f:
-                json.dump(self.api_keys, f, indent=2)
-            
-            # Set restricted permissions
-            try:
-                os.chmod(self.api_keys_file, 0o600)
-            except Exception:
-                pass  # Windows doesn't support chmod
-                
-        except Exception as e:
-            logger.error(f"Failed to save API keys: {e}")
-    
-    def generate_api_key(self, name, description=""):
-        """Generate a new API key"""
-        api_key = secrets.token_urlsafe(32)
-        key_hash = hashlib.sha256(api_key.encode()).hexdigest()
+    def __init__(self, db_path: str = "data/email_auth.db"):
+        self.db_path = db_path
+        self.session_timeout = 3600  # 1 hour
+        self.max_login_attempts = 5
+        self.lockout_duration = 900  # 15 minutes
+        self.jwt_secret = os.getenv('JWT_SECRET', secrets.token_urlsafe(32))
+        self.jwt_algorithm = 'HS256'
         
-        self.api_keys[key_hash] = {
-            'name': name,
-            'description': description,
-            'created_at': datetime.now().isoformat(),
-            'last_used': None,
-            'usage_count': 0
+        # Ensure database exists
+        self._ensure_database()
+    
+    def _ensure_database(self):
+        """Ensure the authentication database exists"""
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+        
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        # Create users table if not exists
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                salt TEXT NOT NULL,
+                is_active BOOLEAN DEFAULT 1,
+                is_verified BOOLEAN DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_login TIMESTAMP,
+                failed_login_attempts INTEGER DEFAULT 0,
+                locked_until TIMESTAMP,
+                api_key TEXT UNIQUE,
+                api_key_created TIMESTAMP
+            )
+        ''')
+        
+        # Create API keys table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS api_keys (
+                id TEXT PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                key_hash TEXT NOT NULL,
+                permissions TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_used TIMESTAMP,
+                expires_at TIMESTAMP,
+                is_active BOOLEAN DEFAULT 1,
+                usage_count INTEGER DEFAULT 0,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        ''')
+        
+        # Create login attempts table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS login_attempts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL,
+                ip_address TEXT NOT NULL,
+                success BOOLEAN NOT NULL,
+                attempted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                user_agent TEXT
+            )
+        ''')
+        
+        conn.commit()
+        conn.close()
+    
+    def _hash_password(self, password: str, salt: str = None) -> tuple:
+        """Hash a password with salt"""
+        if salt is None:
+            salt = secrets.token_hex(32)
+        
+        # Use PBKDF2 with SHA-256
+        password_hash = hashlib.pbkdf2_hmac(
+            'sha256',
+            password.encode('utf-8'),
+            salt.encode('utf-8'),
+            100000  # 100,000 iterations
+        )
+        
+        return password_hash.hex(), salt
+    
+    def _verify_password(self, password: str, password_hash: str, salt: str) -> bool:
+        """Verify a password against its hash"""
+        computed_hash, _ = self._hash_password(password, salt)
+        return computed_hash == password_hash
+    
+    def create_user(self, email: str, password: str, full_name: str = None) -> bool:
+        """Create a new user"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Check if user already exists
+            cursor.execute("SELECT id FROM users WHERE email = ?", (email,))
+            if cursor.fetchone():
+                return False
+            
+            # Hash password
+            password_hash, salt = self._hash_password(password)
+            
+            # Create user
+            cursor.execute('''
+                INSERT INTO users (email, password_hash, salt, created_at)
+                VALUES (?, ?, ?, ?)
+            ''', (email, password_hash, salt, datetime.now()))
+            
+            conn.commit()
+            conn.close()
+            
+            logger.info(f"User created: {email}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error creating user: {e}")
+            return False
+    
+    def authenticate_user(self, email: str, password: str, ip_address: str = None, user_agent: str = None) -> Optional[User]:
+        """Authenticate a user with email and password"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Get user data
+            cursor.execute('''
+                SELECT id, email, password_hash, salt, is_active, is_verified,
+                       created_at, last_login, failed_login_attempts, locked_until,
+                       api_key, api_key_created
+                FROM users WHERE email = ?
+            ''', (email,))
+            
+            user_data = cursor.fetchone()
+            if not user_data:
+                self._log_login_attempt(email, ip_address, False, user_agent)
+                return None
+            
+            user_id, email, password_hash, salt, is_active, is_verified, created_at, last_login, failed_attempts, locked_until, api_key, api_key_created = user_data
+            
+            # Check if account is locked
+            if locked_until and datetime.now() < datetime.fromisoformat(locked_until):
+                self._log_login_attempt(email, ip_address, False, user_agent)
+                return None
+            
+            # Check if account is active
+            if not is_active:
+                self._log_login_attempt(email, ip_address, False, user_agent)
+                return None
+            
+            # Verify password
+            if not self._verify_password(password, password_hash, salt):
+                # Increment failed attempts
+                failed_attempts += 1
+                if failed_attempts >= self.max_login_attempts:
+                    locked_until = datetime.now() + timedelta(seconds=self.lockout_duration)
+                    cursor.execute('''
+                        UPDATE users SET failed_login_attempts = ?, locked_until = ?
+                        WHERE id = ?
+                    ''', (failed_attempts, locked_until, user_id))
+                else:
+                    cursor.execute('''
+                        UPDATE users SET failed_login_attempts = ?
+                        WHERE id = ?
+                    ''', (failed_attempts, user_id))
+                
+                conn.commit()
+                self._log_login_attempt(email, ip_address, False, user_agent)
+                return None
+            
+            # Reset failed attempts and update last login
+            cursor.execute('''
+                UPDATE users SET failed_login_attempts = 0, locked_until = NULL, last_login = ?
+                WHERE id = ?
+            ''', (datetime.now(), user_id))
+            
+            conn.commit()
+            conn.close()
+            
+            # Log successful login
+            self._log_login_attempt(email, ip_address, True, user_agent)
+            
+            # Create user object
+            user = User(
+                id=user_id,
+                email=email,
+                is_active=bool(is_active),
+                is_verified=bool(is_verified),
+                created_at=datetime.fromisoformat(created_at) if created_at else datetime.now(),
+                last_login=datetime.fromisoformat(last_login) if last_login else None,
+                api_key=api_key,
+                api_key_created=datetime.fromisoformat(api_key_created) if api_key_created else None
+            )
+            
+            logger.info(f"User authenticated: {email}")
+            return user
+            
+        except Exception as e:
+            logger.error(f"Error authenticating user: {e}")
+            return None
+    
+    def _log_login_attempt(self, email: str, ip_address: str, success: bool, user_agent: str = None):
+        """Log a login attempt"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                INSERT INTO login_attempts (email, ip_address, success, user_agent)
+                VALUES (?, ?, ?, ?)
+            ''', (email, ip_address, success, user_agent))
+            
+            conn.commit()
+            conn.close()
+            
+        except Exception as e:
+            logger.error(f"Error logging login attempt: {e}")
+    
+    def create_api_key(self, user_id: int, name: str, permissions: List[str] = None, expires_in_days: int = 365) -> Optional[str]:
+        """Create an API key for a user"""
+        try:
+            if permissions is None:
+                permissions = ['read', 'write']
+            
+            # Generate API key
+            api_key = secrets.token_urlsafe(32)
+            key_hash = hashlib.sha256(api_key.encode()).hexdigest()
+            
+            # Calculate expiration
+            expires_at = datetime.now() + timedelta(days=expires_in_days)
+            
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Create API key record
+            key_id = secrets.token_urlsafe(16)
+            cursor.execute('''
+                INSERT INTO api_keys (id, user_id, name, key_hash, permissions, expires_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (key_id, user_id, name, key_hash, ','.join(permissions), expires_at))
+            
+            conn.commit()
+            conn.close()
+            
+            logger.info(f"API key created for user {user_id}: {name}")
+            return api_key
+            
+        except Exception as e:
+            logger.error(f"Error creating API key: {e}")
+            return None
+    
+    def validate_api_key(self, api_key: str) -> Optional[User]:
+        """Validate an API key and return the associated user"""
+        try:
+            key_hash = hashlib.sha256(api_key.encode()).hexdigest()
+            
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Get API key and user data
+            cursor.execute('''
+                SELECT u.id, u.email, u.is_active, u.is_verified, u.created_at,
+                       u.last_login, u.api_key, u.api_key_created,
+                       ak.permissions, ak.expires_at, ak.is_active
+                FROM users u
+                JOIN api_keys ak ON u.id = ak.user_id
+                WHERE ak.key_hash = ? AND ak.is_active = 1
+            ''', (key_hash,))
+            
+            result = cursor.fetchone()
+            if not result:
+                conn.close()
+                return None
+            
+            user_id, email, is_active, is_verified, created_at, last_login, user_api_key, api_key_created, permissions, expires_at, key_active = result
+            
+            # Check if API key is expired
+            if expires_at and datetime.now() > datetime.fromisoformat(expires_at):
+                conn.close()
+                return None
+            
+            # Update last used and usage count
+            cursor.execute('''
+                UPDATE api_keys SET last_used = ?, usage_count = usage_count + 1
+                WHERE key_hash = ?
+            ''', (datetime.now(), key_hash))
+            
+            conn.commit()
+            conn.close()
+            
+            # Create user object
+            user = User(
+                id=user_id,
+                email=email,
+                is_active=bool(is_active),
+                is_verified=bool(is_verified),
+                created_at=datetime.fromisoformat(created_at) if created_at else datetime.now(),
+                last_login=datetime.fromisoformat(last_login) if last_login else None,
+                api_key=user_api_key,
+                api_key_created=datetime.fromisoformat(api_key_created) if api_key_created else None
+            )
+            
+            return user
+            
+        except Exception as e:
+            logger.error(f"Error validating API key: {e}")
+            return None
+    
+    def get_user_by_id(self, user_id: int) -> Optional[User]:
+        """Get user by ID"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                SELECT id, email, is_active, is_verified, created_at, last_login,
+                       failed_login_attempts, locked_until, api_key, api_key_created
+                FROM users WHERE id = ?
+            ''', (user_id,))
+            
+            user_data = cursor.fetchone()
+            conn.close()
+            
+            if not user_data:
+                return None
+            
+            user_id, email, is_active, is_verified, created_at, last_login, failed_attempts, locked_until, api_key, api_key_created = user_data
+            
+            return User(
+                id=user_id,
+                email=email,
+                is_active=bool(is_active),
+                is_verified=bool(is_verified),
+                created_at=datetime.fromisoformat(created_at) if created_at else datetime.now(),
+                last_login=datetime.fromisoformat(last_login) if last_login else None,
+                failed_login_attempts=failed_attempts,
+                locked_until=datetime.fromisoformat(locked_until) if locked_until else None,
+                api_key=api_key,
+                api_key_created=datetime.fromisoformat(api_key_created) if api_key_created else None
+            )
+            
+        except Exception as e:
+            logger.error(f"Error getting user by ID: {e}")
+            return None
+
+class SessionManager:
+    """Manages user sessions"""
+    
+    def __init__(self, secret_key: str):
+        self.secret_key = secret_key
+        self.algorithm = 'HS256'
+        self.session_timeout = 3600  # 1 hour
+    
+    def create_session_token(self, user: User) -> str:
+        """Create a JWT session token for a user"""
+        payload = {
+            'user_id': user.id,
+            'email': user.email,
+            'iat': datetime.utcnow(),
+            'exp': datetime.utcnow() + timedelta(seconds=self.session_timeout)
         }
         
-        self._save_api_keys()
-        return api_key
+        return jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
     
-    def validate_api_key(self, api_key):
-        """Validate an API key"""
-        if not api_key:
+    def validate_session_token(self, token: str) -> Optional[User]:
+        """Validate a JWT session token and return the user"""
+        try:
+            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
+            user_id = payload.get('user_id')
+            
+            if not user_id:
+                return None
+            
+            # Get user from database
+            auth_manager = AuthenticationManager()
+            return auth_manager.get_user_by_id(user_id)
+            
+        except jwt.ExpiredSignatureError:
+            return None
+        except jwt.InvalidTokenError:
+            return None
+        except Exception as e:
+            logger.error(f"Error validating session token: {e}")
+            return None
+
+class MFAManager:
+    """Manages Multi-Factor Authentication"""
+    
+    def __init__(self, db_path: str = "data/mfa_auth.db"):
+        self.db_path = db_path
+        self._ensure_database()
+    
+    def _ensure_database(self):
+        """Ensure the MFA database exists"""
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+        
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        # Create MFA settings table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS mfa_settings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                mfa_type TEXT NOT NULL CHECK (mfa_type IN ('totp', 'email', 'sms')),
+                secret_key TEXT,
+                backup_codes TEXT,
+                is_enabled BOOLEAN DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        ''')
+        
+        conn.commit()
+        conn.close()
+    
+    def setup_totp(self, user_id: int) -> tuple:
+        """Setup TOTP for a user"""
+        try:
+            # Generate secret key
+            secret = pyotp.random_base32()
+            
+            # Create TOTP object
+            totp = pyotp.TOTP(secret)
+            
+            # Generate provisioning URI
+            provisioning_uri = totp.provisioning_uri(
+                name=f"user_{user_id}@oranolio.local",
+                issuer_name="Oranolio RAT"
+            )
+            
+            # Generate QR code
+            qr = qrcode.QRCode(version=1, box_size=10, border=5)
+            qr.add_data(provisioning_uri)
+            qr.make(fit=True)
+            
+            img = qr.make_image(fill_color="black", back_color="white")
+            
+            # Convert to base64
+            buffer = io.BytesIO()
+            img.save(buffer, format='PNG')
+            qr_code_base64 = base64.b64encode(buffer.getvalue()).decode()
+            
+            # Save to database
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                INSERT OR REPLACE INTO mfa_settings (user_id, mfa_type, secret_key, is_enabled)
+                VALUES (?, ?, ?, ?)
+            ''', (user_id, 'totp', secret, 0))
+            
+            conn.commit()
+            conn.close()
+            
+            return secret, qr_code_base64
+            
+        except Exception as e:
+            logger.error(f"Error setting up TOTP: {e}")
+            return None, None
+    
+    def verify_totp(self, user_id: int, token: str) -> bool:
+        """Verify a TOTP token"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                SELECT secret_key FROM mfa_settings
+                WHERE user_id = ? AND mfa_type = 'totp' AND is_enabled = 1
+            ''', (user_id,))
+            
+            result = cursor.fetchone()
+            conn.close()
+            
+            if not result:
+                return False
+            
+            secret_key = result[0]
+            totp = pyotp.TOTP(secret_key)
+            
+            return totp.verify(token, valid_window=1)
+            
+        except Exception as e:
+            logger.error(f"Error verifying TOTP: {e}")
             return False
-        
-        key_hash = hashlib.sha256(api_key.encode()).hexdigest()
-        
-        if key_hash in self.api_keys:
-            # Update usage statistics
-            self.api_keys[key_hash]['last_used'] = datetime.now().isoformat()
-            self.api_keys[key_hash]['usage_count'] += 1
-            self._save_api_keys()
-            return True
-        
-        return False
     
-    def revoke_api_key(self, api_key):
-        """Revoke an API key"""
-        key_hash = hashlib.sha256(api_key.encode()).hexdigest()
-        
-        if key_hash in self.api_keys:
-            del self.api_keys[key_hash]
-            self._save_api_keys()
+    def enable_mfa(self, user_id: int, mfa_type: str) -> bool:
+        """Enable MFA for a user"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                UPDATE mfa_settings SET is_enabled = 1, updated_at = ?
+                WHERE user_id = ? AND mfa_type = ?
+            ''', (datetime.now(), user_id, mfa_type))
+            
+            conn.commit()
+            conn.close()
+            
             return True
-        
-        return False
-    
-    def list_api_keys(self):
-        """List all API keys (without exposing actual keys)"""
-        return [{
-            'name': info['name'],
-            'description': info['description'],
-            'created_at': info['created_at'],
-            'last_used': info['last_used'],
-            'usage_count': info['usage_count']
-        } for info in self.api_keys.values()]
+            
+        except Exception as e:
+            logger.error(f"Error enabling MFA: {e}")
+            return False
 
-# Global API key manager instance
-api_key_manager = APIKeyManager()
+# Global instances
+auth_manager = AuthenticationManager()
+session_manager = SessionManager(os.getenv('JWT_SECRET', secrets.token_urlsafe(32)))
+mfa_manager = MFAManager()
 
-def api_key_required(f):
-    """Decorator for endpoints that require API key authentication"""
+# Decorator functions
+def login_required(f):
+    """Decorator to require login for a route"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not Config.ENABLE_API_KEYS:
-            # API keys not enabled, fall back to session auth
-            if 'user' not in session:
+        from flask import session, redirect, url_for, request, jsonify
+        
+        # Check session
+        if 'user_id' not in session:
+            if request.is_json:
                 return jsonify({'error': 'Authentication required'}), 401
-            return f(*args, **kwargs)
+            return redirect(url_for('auth.login'))
         
-        # Check for API key in header
-        api_key = request.headers.get(Config.API_KEY_HEADER)
+        # Validate session token if present
+        token = session.get('session_token')
+        if token:
+            user = session_manager.validate_session_token(token)
+            if not user:
+                session.clear()
+                if request.is_json:
+                    return jsonify({'error': 'Invalid session'}), 401
+                return redirect(url_for('auth.login'))
         
-        if api_key and api_key_manager.validate_api_key(api_key):
-            g.api_authenticated = True
-            return f(*args, **kwargs)
-        
-        # Fall back to session authentication
-        if 'user' in session:
-            return f(*args, **kwargs)
-        
-        return jsonify({'error': 'Invalid or missing API key'}), 401
-    
+        return f(*args, **kwargs)
     return decorated_function
 
 def api_key_or_login_required(f):
-    """Decorator that accepts either API key or session authentication"""
+    """Decorator to require either API key or login"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Check API key first
-        if Config.ENABLE_API_KEYS:
-            api_key = request.headers.get(Config.API_KEY_HEADER)
-            if api_key and api_key_manager.validate_api_key(api_key):
-                g.api_authenticated = True
+        from flask import request, jsonify, session
+        
+        # Check for API key in header
+        api_key = request.headers.get('X-API-Key')
+        if api_key:
+            user = auth_manager.validate_api_key(api_key)
+            if user:
+                g.current_user = user
                 return f(*args, **kwargs)
         
-        # Check session authentication
-        if 'user' in session:
-            return f(*args, **kwargs)
+        # Check session
+        if 'user_id' in session:
+            user_id = session['user_id']
+            user = auth_manager.get_user_by_id(user_id)
+            if user:
+                g.current_user = user
+                return f(*args, **kwargs)
         
         return jsonify({'error': 'Authentication required'}), 401
-    
     return decorated_function
 
-class FailedLoginAlerter:
-    """Handle failed login alerts via email or webhook"""
-    
-    @staticmethod
-    def send_email_alert(ip_address, username, attempt_count):
-        """Send email alert for failed login attempts"""
-        if not Config.ALERT_EMAIL or not Config.SMTP_HOST:
-            return
+def track_failed_login(email: str, ip_address: str, user_agent: str = None):
+    """Track a failed login attempt"""
+    auth_manager._log_login_attempt(email, ip_address, False, user_agent)
+
+def is_login_locked(email: str) -> bool:
+    """Check if an email is locked due to too many failed attempts"""
+    try:
+        conn = sqlite3.connect(auth_manager.db_path)
+        cursor = conn.cursor()
         
-        try:
-            msg = MIMEMultipart('alternative')
-            msg['Subject'] = f"[SECURITY] Failed Login Alert - {Config.APP_NAME}"
-            msg['From'] = Config.SMTP_USER or 'noreply@localhost'
-            msg['To'] = Config.ALERT_EMAIL
-            
-            text = f"""
-            SECURITY ALERT: Multiple Failed Login Attempts
-            
-            Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-            IP Address: {ip_address}
-            Username Attempted: {username}
-            Failed Attempts: {attempt_count}
-            
-            Action Taken: Account temporarily locked for {Config.LOGIN_LOCKOUT_MINUTES} minutes
-            
-            If this was not you, please review your security settings immediately.
-            """
-            
-            html = f"""
-            <html>
-              <body>
-                <h2 style="color: #dc2626;">SECURITY ALERT: Multiple Failed Login Attempts</h2>
-                <table style="border-collapse: collapse; width: 100%; max-width: 500px;">
-                  <tr>
-                    <td style="padding: 8px; border: 1px solid #ddd;"><strong>Time:</strong></td>
-                    <td style="padding: 8px; border: 1px solid #ddd;">{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px; border: 1px solid #ddd;"><strong>IP Address:</strong></td>
-                    <td style="padding: 8px; border: 1px solid #ddd;">{ip_address}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px; border: 1px solid #ddd;"><strong>Username:</strong></td>
-                    <td style="padding: 8px; border: 1px solid #ddd;">{username}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px; border: 1px solid #ddd;"><strong>Failed Attempts:</strong></td>
-                    <td style="padding: 8px; border: 1px solid #ddd;">{attempt_count}</td>
-                  </tr>
-                </table>
-                <p><strong>Action Taken:</strong> Account temporarily locked for {Config.LOGIN_LOCKOUT_MINUTES} minutes</p>
-                <p style="color: #666;">If this was not you, please review your security settings immediately.</p>
-              </body>
-            </html>
-            """
-            
-            part1 = MIMEText(text, 'plain')
-            part2 = MIMEText(html, 'html')
-            
-            msg.attach(part1)
-            msg.attach(part2)
-            
-            # Send email
-            with smtplib.SMTP(Config.SMTP_HOST, Config.SMTP_PORT) as server:
-                if Config.SMTP_USE_TLS:
-                    server.starttls()
-                if Config.SMTP_USER and Config.SMTP_PASSWORD:
-                    server.login(Config.SMTP_USER, Config.SMTP_PASSWORD)
-                server.send_message(msg)
-                
-            logger.info(f"Failed login alert email sent to {Config.ALERT_EMAIL}")
-            
-        except Exception as e:
-            logger.error(f"Failed to send email alert: {e}")
-    
-    @staticmethod
-    def send_webhook_alert(ip_address, username, attempt_count):
-        """Send webhook alert for failed login attempts"""
-        if not Config.ALERT_WEBHOOK_URL:
-            return
+        cursor.execute('''
+            SELECT locked_until FROM users WHERE email = ?
+        ''', (email,))
         
-        try:
-            payload = {
-                'event': 'failed_login_alert',
-                'timestamp': datetime.now().isoformat(),
-                'app': Config.APP_NAME,
-                'details': {
-                    'ip_address': ip_address,
-                    'username': username,
-                    'failed_attempts': attempt_count,
-                    'lockout_minutes': Config.LOGIN_LOCKOUT_MINUTES
-                }
-            }
-            
-            response = requests.post(
-                Config.ALERT_WEBHOOK_URL,
-                json=payload,
-                timeout=10
-            )
-            
-            if response.status_code == 200:
-                logger.info(f"Failed login webhook alert sent successfully")
-            else:
-                logger.error(f"Webhook alert failed with status {response.status_code}")
-                
-        except Exception as e:
-            logger.error(f"Failed to send webhook alert: {e}")
+        result = cursor.fetchone()
+        conn.close()
+        
+        if not result or not result[0]:
+            return False
+        
+        locked_until = datetime.fromisoformat(result[0])
+        return datetime.now() < locked_until
+        
+    except Exception as e:
+        logger.error(f"Error checking login lock: {e}")
+        return False
 
-def track_failed_login(ip_address, username):
-    """Track failed login attempts and trigger alerts if needed"""
-    global failed_login_attempts
-    
-    # Initialize tracking for this IP
-    if ip_address not in failed_login_attempts:
-        failed_login_attempts[ip_address] = []
-    
-    # Add this attempt
-    failed_login_attempts[ip_address].append({
-        'username': username,
-        'timestamp': datetime.now()
-    })
-    
-    # Clean old attempts (outside the lockout window)
-    cutoff_time = datetime.now() - timedelta(minutes=Config.LOGIN_LOCKOUT_MINUTES)
-    failed_login_attempts[ip_address] = [
-        attempt for attempt in failed_login_attempts[ip_address]
-        if attempt['timestamp'] > cutoff_time
-    ]
-    
-    # Check if we've exceeded the threshold
-    attempt_count = len(failed_login_attempts[ip_address])
-    
-    if attempt_count >= Config.FAILED_LOGIN_THRESHOLD and Config.ENABLE_FAILED_LOGIN_ALERTS:
-        # Send alerts
-        FailedLoginAlerter.send_email_alert(ip_address, username, attempt_count)
-        FailedLoginAlerter.send_webhook_alert(ip_address, username, attempt_count)
-    
-    return attempt_count
-
-def track_failed_email_login(email, ip_address):
-    """Track failed email login attempts and lock email if needed"""
-    # This would integrate with the email_auth module
-    # For now, we'll use the existing IP-based tracking
-    return track_failed_login(ip_address, email)
-
-def is_login_locked(ip_address):
-    """Check if an IP address is locked due to too many failed attempts"""
-    global failed_login_lock
-    
-    if ip_address in failed_login_lock:
-        lock_time = failed_login_lock[ip_address]
-        if datetime.now() < lock_time:
-            return True
-        else:
-            # Lock expired
-            del failed_login_lock[ip_address]
-    
-    if ip_address in failed_login_attempts:
-        attempt_count = len(failed_login_attempts.get(ip_address, []))
-        if attempt_count >= Config.MAX_LOGIN_ATTEMPTS:
-            # Lock the IP
-            failed_login_lock[ip_address] = datetime.now() + timedelta(minutes=Config.LOGIN_LOCKOUT_MINUTES)
-            return True
-    
-    return False
-
-def get_lockout_time_remaining(ip_address):
+def get_lockout_time_remaining(email: str) -> int:
     """Get remaining lockout time in seconds"""
-    if ip_address in failed_login_lock:
-        remaining = (failed_login_lock[ip_address] - datetime.now()).total_seconds()
-        if remaining > 0:
-            return int(remaining)
-    return 0
+    try:
+        conn = sqlite3.connect(auth_manager.db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT locked_until FROM users WHERE email = ?
+        ''', (email,))
+        
+        result = cursor.fetchone()
+        conn.close()
+        
+        if not result or not result[0]:
+            return 0
+        
+        locked_until = datetime.fromisoformat(result[0])
+        remaining = (locked_until - datetime.now()).total_seconds()
+        return max(0, int(remaining))
+        
+    except Exception as e:
+        logger.error(f"Error getting lockout time: {e}")
+        return 0
 
-def clear_failed_login_attempts(ip_address):
-    """Clear failed login attempts for an IP after successful login"""
-    global failed_login_attempts, failed_login_lock
-    
-    if ip_address in failed_login_attempts:
-        del failed_login_attempts[ip_address]
-    
-    if ip_address in failed_login_lock:
-        del failed_login_lock[ip_address]
+def clear_failed_login_attempts(email: str):
+    """Clear failed login attempts for an email"""
+    try:
+        conn = sqlite3.connect(auth_manager.db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            UPDATE users SET failed_login_attempts = 0, locked_until = NULL
+            WHERE email = ?
+        ''', (email,))
+        
+        conn.commit()
+        conn.close()
+        
+    except Exception as e:
+        logger.error(f"Error clearing failed login attempts: {e}")
 
-# ============================================================================
-# Security Validation Functions
-# ============================================================================
-
-import re
-import html
-from urllib.parse import quote, unquote
-
-def validate_input(input_data: str, input_type: str = "general") -> bool:
-    """
-    Validate input data based on type
+# API Key Manager
+class APIKeyManager:
+    """Manages API keys"""
     
-    Args:
-        input_data: The input string to validate
-        input_type: Type of input (email, command, filename, etc.)
+    def __init__(self):
+        self.auth_manager = auth_manager
     
-    Returns:
-        bool: True if valid, False if invalid
-    """
-    if not isinstance(input_data, str):
-        return False
+    def create_key(self, user_id: int, name: str, permissions: List[str] = None) -> Optional[str]:
+        """Create a new API key"""
+        return self.auth_manager.create_api_key(user_id, name, permissions)
     
-    # Length limits
-    if len(input_data) > 1000:
-        return False
-    
-    # Type-specific validation
-    if input_type == "email":
-        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        return bool(re.match(email_pattern, input_data))
-    
-    elif input_type == "command":
-        # Allow alphanumeric, spaces, and common command characters
-        command_pattern = r'^[a-zA-Z0-9\s\-_./\\:;=+*?()[\]{}|&<>!@#$%^~`"\']*$'
-        return bool(re.match(command_pattern, input_data))
-    
-    elif input_type == "filename":
-        # Prevent path traversal and dangerous characters
-        dangerous_chars = ['..', '/', '\\', ':', '*', '?', '"', '<', '>', '|']
-        if any(char in input_data for char in dangerous_chars):
+    def revoke_key(self, key_id: str) -> bool:
+        """Revoke an API key"""
+        try:
+            conn = sqlite3.connect(self.auth_manager.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                UPDATE api_keys SET is_active = 0 WHERE id = ?
+            ''', (key_id,))
+            
+            conn.commit()
+            conn.close()
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error revoking API key: {e}")
             return False
-        return len(input_data) <= 255
     
-    elif input_type == "url":
-        # Basic URL validation
-        url_pattern = r'^https?://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(/.*)?$'
-        return bool(re.match(url_pattern, input_data))
-    
-    else:  # general
-        # Basic validation - no null bytes, control characters, etc.
-        if '\x00' in input_data or any(ord(c) < 32 and c not in '\t\n\r' for c in input_data):
-            return False
-        return True
+    def list_keys(self, user_id: int) -> List[Dict[str, Any]]:
+        """List API keys for a user"""
+        try:
+            conn = sqlite3.connect(self.auth_manager.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                SELECT id, name, permissions, created_at, last_used, expires_at, is_active, usage_count
+                FROM api_keys WHERE user_id = ? ORDER BY created_at DESC
+            ''', (user_id,))
+            
+            keys = []
+            for row in cursor.fetchall():
+                key_id, name, permissions, created_at, last_used, expires_at, is_active, usage_count = row
+                keys.append({
+                    'id': key_id,
+                    'name': name,
+                    'permissions': permissions.split(',') if permissions else [],
+                    'created_at': created_at,
+                    'last_used': last_used,
+                    'expires_at': expires_at,
+                    'is_active': bool(is_active),
+                    'usage_count': usage_count
+                })
+            
+            conn.close()
+            return keys
+            
+        except Exception as e:
+            logger.error(f"Error listing API keys: {e}")
+            return []
 
-def sanitize_input(input_data: str, input_type: str = "general") -> str:
-    """
-    Sanitize input data to prevent XSS and injection attacks
-    
-    Args:
-        input_data: The input string to sanitize
-        input_type: Type of input (html, sql, command, etc.)
-    
-    Returns:
-        str: Sanitized input
-    """
-    if not isinstance(input_data, str):
-        return ""
-    
-    # HTML sanitization
-    if input_type == "html":
-        # Escape HTML entities
-        sanitized = html.escape(input_data, quote=True)
-        return sanitized
-    
-    # SQL sanitization (basic)
-    elif input_type == "sql":
-        # Remove or escape dangerous SQL characters
-        dangerous_chars = ["'", '"', ';', '--', '/*', '*/', 'xp_', 'sp_']
-        sanitized = input_data
-        for char in dangerous_chars:
-            sanitized = sanitized.replace(char, '')
-        return sanitized
-    
-    # Command sanitization
-    elif input_type == "command":
-        # Remove shell metacharacters
-        dangerous_chars = ['&', '|', ';', '`', '$', '(', ')', '<', '>', '\n', '\r']
-        sanitized = input_data
-        for char in dangerous_chars:
-            sanitized = sanitized.replace(char, '')
-        return sanitized
-    
-    # General sanitization
-    else:
-        # Remove null bytes and control characters
-        sanitized = ''.join(char for char in input_data if ord(char) >= 32 or char in '\t\n\r')
-        return sanitized
+# Global API key manager
+api_key_manager = APIKeyManager()
 
-def validate_email(email: str) -> bool:
-    """Validate email address format"""
-    return validate_input(email, "email")
-
-def sanitize_html(html_content: str) -> str:
-    """Sanitize HTML content to prevent XSS"""
-    return sanitize_input(html_content, "html")
-
-def sanitize_sql(sql_content: str) -> str:
-    """Sanitize SQL content to prevent injection"""
-    return sanitize_input(sql_content, "sql")
-
-def sanitize_command(command: str) -> str:
-    """Sanitize command to prevent shell injection"""
-    return sanitize_input(command, "command")
-
-def is_safe_filename(filename: str) -> bool:
-    """Check if filename is safe (no path traversal)"""
-    return validate_input(filename, "filename")
-
-def validate_password_strength(password):
-    """
-    Validate password meets complexity requirements
-    
-    Args:
-        password (str): Password to validate
-    
-    Returns:
-        tuple: (is_valid: bool, errors: list)
-    """
-    errors = []
-    
-    if not password:
-        return False, ["Password is required"]
-    
-    # Length check
-    if len(password) < Config.MIN_PASSWORD_LENGTH:
-        errors.append(f"Password must be at least {Config.MIN_PASSWORD_LENGTH} characters long")
-    
-    # Uppercase check
-    if Config.PASSWORD_REQUIRE_UPPERCASE and not any(c.isupper() for c in password):
-        errors.append("Password must contain at least one uppercase letter")
-    
-    # Lowercase check
-    if Config.PASSWORD_REQUIRE_LOWERCASE and not any(c.islower() for c in password):
-        errors.append("Password must contain at least one lowercase letter")
-    
-    # Numbers check
-    if Config.PASSWORD_REQUIRE_NUMBERS and not any(c.isdigit() for c in password):
-        errors.append("Password must contain at least one number")
-    
-    # Symbols check
-    if Config.PASSWORD_REQUIRE_SYMBOLS:
-        symbols = "!@#$%^&*()_+-=[]{}|;:,.<>?"
-        if not any(c in symbols for c in password):
-            errors.append("Password must contain at least one special character")
-    
-    # Common password check
-    common_passwords = [
-        "password", "123456", "password123", "admin", "qwerty",
-        "letmein", "welcome", "monkey", "1234567890", "abc123"
-    ]
-    if password.lower() in common_passwords:
-        errors.append("Password is too common, please choose a stronger password")
-    
-    return len(errors) == 0, errors
-
-def test_security_validation():
-    """Test security validation functions"""
-    print("Testing security validation functions...")
-    
-    # Test email validation
-    test_emails = [
-        "test@example.com",
-        "invalid-email",
-        "test@domain.co.uk",
-        "user+tag@example.org"
-    ]
-    
-    print("\n1. Email validation:")
-    for email in test_emails:
-        result = validate_email(email)
-        print(f"   {email}: {'✅' if result else '❌'}")
-    
-    # Test password validation
-    test_passwords = [
-        "StrongPass123!",
-        "weak",
-        "password123",
-        "NoNumbers!",
-        "nouppercase123!",
-        "NOLOWERCASE123!"
-    ]
-    
-    print("\n2. Password validation:")
-    for password in test_passwords:
-        is_valid, errors = validate_password_strength(password)
-        print(f"   {password}: {'✅' if is_valid else '❌'}")
-        if errors:
-            for error in errors:
-                print(f"      - {error}")
-    
-    # Test HTML sanitization
-    test_html = [
-        "Normal text",
-        "<script>alert('xss')</script>",
-        "Hello <b>world</b>",
-        "<img src=x onerror=alert(1)>"
-    ]
-    
-    print("\n3. HTML sanitization:")
-    for html_content in test_html:
-        sanitized = sanitize_html(html_content)
-        print(f"   {html_content[:30]}... -> {sanitized[:30]}...")
-    
-    # Test command sanitization
-    test_commands = [
-        "ls -la",
-        "rm -rf /; echo hacked",
-        "cat file.txt",
-        "command & echo hacked"
-    ]
-    
-    print("\n4. Command sanitization:")
-    for command in test_commands:
-        sanitized = sanitize_command(command)
-        print(f"   {command} -> {sanitized}")
-    
-    # Test filename validation
-    test_filenames = [
-        "document.pdf",
-        "../../../etc/passwd",
-        "file.txt",
-        "file/with/path.txt"
-    ]
-    
-    print("\n5. Filename validation:")
-    for filename in test_filenames:
-        result = is_safe_filename(filename)
-        print(f"   {filename}: {'✅' if result else '❌'}")
-    
-    print("\n✅ Security validation test complete")
-
+# Example usage and testing
 if __name__ == "__main__":
-    test_security_validation()
+    print("Authentication Utilities")
+    print("=" * 30)
+    
+    # Test user creation
+    print("Testing user creation...")
+    success = auth_manager.create_user("test@example.com", "password123")
+    print(f"User creation: {'✓' if success else '✗'}")
+    
+    # Test authentication
+    print("Testing authentication...")
+    user = auth_manager.authenticate_user("test@example.com", "password123")
+    print(f"Authentication: {'✓' if user else '✗'}")
+    
+    if user:
+        print(f"  User ID: {user.id}")
+        print(f"  Email: {user.email}")
+        print(f"  Active: {user.is_active}")
+    
+    # Test API key creation
+    if user:
+        print("Testing API key creation...")
+        api_key = auth_manager.create_api_key(user.id, "Test Key")
+        print(f"API key creation: {'✓' if api_key else '✗'}")
+        
+        if api_key:
+            print(f"  API Key: {api_key[:10]}...")
+    
+    print("Authentication utilities ready!")
