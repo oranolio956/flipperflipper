@@ -197,7 +197,8 @@ class OranolioRATSystem:
                 port=5000,
                 debug=False,
                 use_reloader=False,
-                log_output=True
+                log_output=True,
+                allow_unsafe_werkzeug=True
             )
             
         except Exception as e:

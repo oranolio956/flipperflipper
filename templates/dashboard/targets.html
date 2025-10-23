@@ -1,0 +1,481 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Targets - Oranolio C2{% endblock %}
+{% block page_title %}Targets{% endblock %}
+
+{% block content %}
+<!-- Stats Overview -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Active Targets</span>
+            <div class="stat-icon success">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+        <div class="stat-value" id="activeTargetsCount">0</div>
+        <div class="stat-change positive">
+            <i class="fas fa-arrow-up"></i> Real-time
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Total Targets</span>
+            <div class="stat-icon primary">
+                <i class="fas fa-crosshairs"></i>
+            </div>
+        </div>
+        <div class="stat-value" id="totalTargetsCount">0</div>
+        <div class="stat-change">All time</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Offline Targets</span>
+            <div class="stat-icon danger">
+                <i class="fas fa-times-circle"></i>
+            </div>
+        </div>
+        <div class="stat-value" id="offlineTargetsCount">0</div>
+        <div class="stat-change">Last 24h</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">New Today</span>
+            <div class="stat-icon warning">
+                <i class="fas fa-plus-circle"></i>
+            </div>
+        </div>
+        <div class="stat-value" id="newTargetsCount">0</div>
+        <div class="stat-change positive">
+            <i class="fas fa-arrow-up"></i> +0%
+        </div>
+    </div>
+</div>
+
+<!-- Filters and Actions -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Target Management</h2>
+        <div class="card-actions">
+            <button class="btn btn-secondary btn-sm" onclick="refreshTargets()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="exportTargets()">
+                <i class="fas fa-download"></i> Export
+            </button>
+        </div>
+    </div>
+    
+    <!-- Filter Bar -->
+    <div style="display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;">
+        <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+            <input type="text" class="form-input" id="searchTargets" placeholder="Search by hostname, IP, or user...">
+        </div>
+        
+        <div class="form-group" style="min-width: 150px; margin-bottom: 0;">
+            <select class="form-select" id="filterStatus" onchange="filterTargets()">
+                <option value="all">All Status</option>
+                <option value="online">Online</option>
+                <option value="offline">Offline</option>
+                <option value="idle">Idle</option>
+            </select>
+        </div>
+        
+        <div class="form-group" style="min-width: 150px; margin-bottom: 0;">
+            <select class="form-select" id="filterOS" onchange="filterTargets()">
+                <option value="all">All OS</option>
+                <option value="windows">Windows</option>
+                <option value="linux">Linux</option>
+                <option value="macos">macOS</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- Targets Table -->
+    <div style="overflow-x: auto;">
+        <table class="table" id="targetsTable">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Hostname</th>
+                    <th>IP Address</th>
+                    <th>Operating System</th>
+                    <th>User</th>
+                    <th>First Seen</th>
+                    <th>Last Seen</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="targetsTableBody">
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 40px;">
+                        <div class="spinner"></div>
+                        <p style="margin-top: 16px; color: var(--text-tertiary);">Loading targets...</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Target Details Modal -->
+<div id="targetModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 8px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg);">
+        <div style="padding: 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="font-size: 20px; font-weight: 600;">Target Details</h2>
+            <button onclick="closeTargetModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-tertiary);">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="targetModalContent" style="padding: 24px;">
+            <!-- Content will be populated dynamically -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ g.csp_nonce }}">
+let allTargets = [];
+let filteredTargets = [];
+
+// Load targets on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadTargets();
+    
+    // Search functionality
+    document.getElementById('searchTargets').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        filteredTargets = allTargets.filter(target => 
+            target.hostname.toLowerCase().includes(searchTerm) ||
+            target.ip_address.toLowerCase().includes(searchTerm) ||
+            target.user_info.toLowerCase().includes(searchTerm)
+        );
+        renderTargets(filteredTargets);
+    });
+    
+    // Auto-refresh every 30 seconds
+    setInterval(loadTargets, 30000);
+});
+
+// Load targets from API
+async function loadTargets() {
+    try {
+        const response = await fetch('/api/targets', {
+            headers: {
+                'X-CSRFToken': csrfToken
+            }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load targets');
+        
+        const data = await response.json();
+        allTargets = data.targets || [];
+        filteredTargets = allTargets;
+        
+        renderTargets(filteredTargets);
+        updateStats();
+        
+    } catch (error) {
+        console.error('Error loading targets:', error);
+        document.getElementById('targetsTableBody').innerHTML = `
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 40px;">
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Failed to load targets</h3>
+                        <p>${error.message}</p>
+                        <button class="btn btn-primary" onclick="loadTargets()">Retry</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Render targets table
+function renderTargets(targets) {
+    const tbody = document.getElementById('targetsTableBody');
+    
+    if (targets.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 40px;">
+                    <div class="empty-state">
+                        <i class="fas fa-crosshairs"></i>
+                        <h3>No targets found</h3>
+                        <p>No targets match your current filters</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = targets.map(target => `
+        <tr>
+            <td>
+                <span class="status-badge status-${target.is_active ? 'online' : 'offline'}">
+                    <i class="fas fa-circle"></i>
+                    ${target.is_active ? 'Online' : 'Offline'}
+                </span>
+            </td>
+            <td><strong>${escapeHtml(target.hostname)}</strong></td>
+            <td><code>${escapeHtml(target.ip_address)}</code></td>
+            <td>${escapeHtml(target.os_info)}</td>
+            <td>${escapeHtml(target.user_info)}</td>
+            <td>${formatDate(target.first_seen)}</td>
+            <td>${formatDate(target.last_seen)}</td>
+            <td>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-primary btn-sm" onclick="viewTarget('${target.id}')" title="View Details">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="interactTarget('${target.id}')" title="Interact">
+                        <i class="fas fa-terminal"></i>
+                    </button>
+                    ${target.is_active ? `
+                        <button class="btn btn-danger btn-sm" onclick="disconnectTarget('${target.id}')" title="Disconnect">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    ` : ''}
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Update statistics
+function updateStats() {
+    const activeCount = allTargets.filter(t => t.is_active).length;
+    const totalCount = allTargets.length;
+    const offlineCount = allTargets.filter(t => !t.is_active).length;
+    
+    // Calculate new targets today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const newCount = allTargets.filter(t => new Date(t.first_seen) >= today).length;
+    
+    document.getElementById('activeTargetsCount').textContent = activeCount;
+    document.getElementById('totalTargetsCount').textContent = totalCount;
+    document.getElementById('offlineTargetsCount').textContent = offlineCount;
+    document.getElementById('newTargetsCount').textContent = newCount;
+}
+
+// Filter targets
+function filterTargets() {
+    const statusFilter = document.getElementById('filterStatus').value;
+    const osFilter = document.getElementById('filterOS').value;
+    const searchTerm = document.getElementById('searchTargets').value.toLowerCase();
+    
+    filteredTargets = allTargets.filter(target => {
+        // Status filter
+        if (statusFilter !== 'all') {
+            if (statusFilter === 'online' && !target.is_active) return false;
+            if (statusFilter === 'offline' && target.is_active) return false;
+        }
+        
+        // OS filter
+        if (osFilter !== 'all') {
+            const os = target.os_info.toLowerCase();
+            if (osFilter === 'windows' && !os.includes('windows')) return false;
+            if (osFilter === 'linux' && !os.includes('linux') && !os.includes('ubuntu')) return false;
+            if (osFilter === 'macos' && !os.includes('mac')) return false;
+        }
+        
+        // Search filter
+        if (searchTerm) {
+            return target.hostname.toLowerCase().includes(searchTerm) ||
+                   target.ip_address.toLowerCase().includes(searchTerm) ||
+                   target.user_info.toLowerCase().includes(searchTerm);
+        }
+        
+        return true;
+    });
+    
+    renderTargets(filteredTargets);
+}
+
+// View target details
+async function viewTarget(targetId) {
+    try {
+        const response = await fetch(`/api/targets/${targetId}`, {
+            headers: {
+                'X-CSRFToken': csrfToken
+            }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load target details');
+        
+        const target = await response.json();
+        
+        document.getElementById('targetModalContent').innerHTML = `
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px;">
+                <div>
+                    <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Hostname</h3>
+                    <p style="font-size: 16px; font-weight: 600;">${escapeHtml(target.hostname)}</p>
+                </div>
+                <div>
+                    <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">IP Address</h3>
+                    <p style="font-size: 16px; font-weight: 600;"><code>${escapeHtml(target.ip_address)}</code></p>
+                </div>
+                <div>
+                    <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Status</h3>
+                    <span class="status-badge status-${target.is_active ? 'online' : 'offline'}">
+                        <i class="fas fa-circle"></i>
+                        ${target.is_active ? 'Online' : 'Offline'}
+                    </span>
+                </div>
+                <div>
+                    <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Operating System</h3>
+                    <p style="font-size: 16px;">${escapeHtml(target.os_info)}</p>
+                </div>
+                <div>
+                    <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">User</h3>
+                    <p style="font-size: 16px;">${escapeHtml(target.user_info)}</p>
+                </div>
+                <div>
+                    <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">First Seen</h3>
+                    <p style="font-size: 16px;">${formatDate(target.first_seen)}</p>
+                </div>
+                <div>
+                    <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Last Seen</h3>
+                    <p style="font-size: 16px;">${formatDate(target.last_seen)}</p>
+                </div>
+                <div>
+                    <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Connection Count</h3>
+                    <p style="font-size: 16px; font-weight: 600;">${target.connection_count || 0}</p>
+                </div>
+            </div>
+            
+            <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color); display: flex; gap: 12px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeTargetModal()">Close</button>
+                <button class="btn btn-primary" onclick="interactTarget('${target.id}')">
+                    <i class="fas fa-terminal"></i> Interact
+                </button>
+            </div>
+        `;
+        
+        document.getElementById('targetModal').style.display = 'flex';
+        
+    } catch (error) {
+        console.error('Error loading target details:', error);
+        alert('Failed to load target details: ' + error.message);
+    }
+}
+
+// Close target modal
+function closeTargetModal() {
+    document.getElementById('targetModal').style.display = 'none';
+}
+
+// Interact with target (redirect to commands page)
+function interactTarget(targetId) {
+    window.location.href = `/dashboard/commands?target=${targetId}`;
+}
+
+// Disconnect target
+async function disconnectTarget(targetId) {
+    if (!confirm('Are you sure you want to disconnect this target?')) return;
+    
+    try {
+        const response = await fetch(`/api/targets/${targetId}/disconnect`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            }
+        });
+        
+        if (!response.ok) throw new Error('Failed to disconnect target');
+        
+        showNotification('Target disconnected successfully', 'success');
+        loadTargets();
+        
+    } catch (error) {
+        console.error('Error disconnecting target:', error);
+        showNotification('Failed to disconnect target: ' + error.message, 'error');
+    }
+}
+
+// Refresh targets
+function refreshTargets() {
+    loadTargets();
+    showNotification('Targets refreshed', 'info');
+}
+
+// Export targets
+function exportTargets() {
+    const csv = [
+        ['Hostname', 'IP Address', 'OS', 'User', 'Status', 'First Seen', 'Last Seen'],
+        ...filteredTargets.map(t => [
+            t.hostname,
+            t.ip_address,
+            t.os_info,
+            t.user_info,
+            t.is_active ? 'Online' : 'Offline',
+            t.first_seen,
+            t.last_seen
+        ])
+    ].map(row => row.join(',')).join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `targets_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showNotification('Targets exported successfully', 'success');
+}
+
+// Utility functions
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now - date;
+    
+    // Less than 1 minute
+    if (diff < 60000) return 'Just now';
+    
+    // Less than 1 hour
+    if (diff < 3600000) {
+        const minutes = Math.floor(diff / 60000);
+        return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    }
+    
+    // Less than 24 hours
+    if (diff < 86400000) {
+        const hours = Math.floor(diff / 3600000);
+        return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    }
+    
+    // Format as date
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Listen for real-time target updates
+socket.on('target_connected', function(data) {
+    loadTargets();
+});
+
+socket.on('target_disconnected', function(data) {
+    loadTargets();
+});
+
+socket.on('target_updated', function(data) {
+    loadTargets();
+});
+</script>
+{% endblock %}

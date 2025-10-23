@@ -1,0 +1,598 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Commands - Oranolio C2{% endblock %}
+{% block page_title %}Command Center{% endblock %}
+
+{% block extra_css %}
+<style>
+.command-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 24px;
+    height: calc(100vh - 200px);
+}
+
+.command-categories {
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+    padding: 16px;
+    overflow-y: auto;
+}
+
+.category-item {
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.category-item:hover {
+    background: var(--bg-hover);
+}
+
+.category-item.active {
+    background: var(--primary);
+    color: white;
+}
+
+.command-panel {
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.command-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.target-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.command-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.command-item {
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.command-item:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.command-name {
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 4px;
+    color: var(--text-primary);
+}
+
+.command-description {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.terminal-container {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    padding: 16px;
+    height: 300px;
+    overflow-y: auto;
+    border-top: 1px solid var(--border-color);
+}
+
+.terminal-line {
+    margin-bottom: 4px;
+    line-height: 1.5;
+}
+
+.terminal-prompt {
+    color: #4ec9b0;
+}
+
+.terminal-output {
+    color: #d4d4d4;
+}
+
+.terminal-error {
+    color: #f48771;
+}
+
+.terminal-success {
+    color: #89d185;
+}
+
+.command-input-container {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-hover);
+}
+
+.command-input-wrapper {
+    display: flex;
+    gap: 12px;
+}
+
+.command-input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+}
+
+.command-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+    .command-grid {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+    
+    .command-categories {
+        max-height: 200px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="command-grid">
+    <!-- Command Categories Sidebar -->
+    <div class="command-categories">
+        <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--text-secondary); text-transform: uppercase;">Categories</h3>
+        
+        <div class="category-item active" data-category="all" onclick="selectCategory('all')">
+            <i class="fas fa-th"></i>
+            <span>All Commands</span>
+        </div>
+        
+        <div class="category-item" data-category="system" onclick="selectCategory('system')">
+            <i class="fas fa-desktop"></i>
+            <span>System</span>
+        </div>
+        
+        <div class="category-item" data-category="file" onclick="selectCategory('file')">
+            <i class="fas fa-folder"></i>
+            <span>File Operations</span>
+        </div>
+        
+        <div class="category-item" data-category="network" onclick="selectCategory('network')">
+            <i class="fas fa-network-wired"></i>
+            <span>Network</span>
+        </div>
+        
+        <div class="category-item" data-category="process" onclick="selectCategory('process')">
+            <i class="fas fa-tasks"></i>
+            <span>Process</span>
+        </div>
+        
+        <div class="category-item" data-category="security" onclick="selectCategory('security')">
+            <i class="fas fa-shield-alt"></i>
+            <span>Security</span>
+        </div>
+        
+        <div class="category-item" data-category="persistence" onclick="selectCategory('persistence')">
+            <i class="fas fa-anchor"></i>
+            <span>Persistence</span>
+        </div>
+        
+        <div class="category-item" data-category="recon" onclick="selectCategory('recon')">
+            <i class="fas fa-search"></i>
+            <span>Reconnaissance</span>
+        </div>
+        
+        <div class="category-item" data-category="custom" onclick="selectCategory('custom')">
+            <i class="fas fa-code"></i>
+            <span>Custom</span>
+        </div>
+    </div>
+    
+    <!-- Command Panel -->
+    <div class="command-panel">
+        <!-- Header with Target Selection -->
+        <div class="command-header">
+            <div class="target-selector">
+                <label style="font-weight: 500; color: var(--text-secondary);">Target:</label>
+                <select class="form-select" id="targetSelect" onchange="selectTarget()" style="min-width: 250px;">
+                    <option value="">Select a target...</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 8px;">
+                <button class="btn btn-secondary btn-sm" onclick="clearTerminal()">
+                    <i class="fas fa-eraser"></i> Clear
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="exportHistory()">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+        
+        <!-- Command List -->
+        <div class="command-list" id="commandList">
+            <div class="empty-state">
+                <i class="fas fa-terminal"></i>
+                <h3>Select a category to view commands</h3>
+                <p>Choose a command category from the left sidebar</p>
+            </div>
+        </div>
+        
+        <!-- Terminal Output -->
+        <div class="terminal-container" id="terminal">
+            <div class="terminal-line">
+                <span class="terminal-prompt">oranolio@c2:~$</span>
+                <span class="terminal-output"> Welcome to Oranolio Command Center</span>
+            </div>
+            <div class="terminal-line">
+                <span class="terminal-success">✓</span>
+                <span class="terminal-output"> System ready. Select a target to begin.</span>
+            </div>
+        </div>
+        
+        <!-- Command Input -->
+        <div class="command-input-container">
+            <div class="command-input-wrapper">
+                <input 
+                    type="text" 
+                    class="command-input" 
+                    id="commandInput" 
+                    placeholder="Type a command or select from the list above..."
+                    disabled
+                >
+                <button class="btn btn-primary" id="executeBtn" onclick="executeCommand()" disabled>
+                    <i class="fas fa-play"></i> Execute
+                </button>
+            </div>
+            <div style="margin-top: 8px; font-size: 12px; color: var(--text-tertiary);">
+                Press <kbd>Enter</kbd> to execute | <kbd>↑</kbd> <kbd>↓</kbd> for history | <kbd>Tab</kbd> for autocomplete
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ g.csp_nonce }}">
+let selectedTarget = null;
+let selectedCategory = 'all';
+let commandHistory = [];
+let historyIndex = -1;
+let allCommands = {};
+
+// Load on page ready
+document.addEventListener('DOMContentLoaded', function() {
+    loadTargets();
+    loadCommands();
+    setupCommandInput();
+    
+    // Check for target in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetId = urlParams.get('target');
+    if (targetId) {
+        setTimeout(() => {
+            document.getElementById('targetSelect').value = targetId;
+            selectTarget();
+        }, 500);
+    }
+});
+
+// Load available targets
+async function loadTargets() {
+    try {
+        const response = await fetch('/api/targets', {
+            headers: { 'X-CSRFToken': csrfToken }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load targets');
+        
+        const data = await response.json();
+        const select = document.getElementById('targetSelect');
+        
+        // Clear existing options except first
+        select.innerHTML = '<option value="">Select a target...</option>';
+        
+        // Add active targets
+        data.targets.filter(t => t.is_active).forEach(target => {
+            const option = document.createElement('option');
+            option.value = target.id;
+            option.textContent = `${target.hostname} (${target.ip_address})`;
+            select.appendChild(option);
+        });
+        
+    } catch (error) {
+        console.error('Error loading targets:', error);
+        addTerminalLine('Failed to load targets: ' + error.message, 'error');
+    }
+}
+
+// Load available commands
+async function loadCommands() {
+    try {
+        const response = await fetch('/api/commands', {
+            headers: { 'X-CSRFToken': csrfToken }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load commands');
+        
+        allCommands = await response.json();
+        selectCategory('all');
+        
+    } catch (error) {
+        console.error('Error loading commands:', error);
+        addTerminalLine('Failed to load commands: ' + error.message, 'error');
+    }
+}
+
+// Select target
+function selectTarget() {
+    const select = document.getElementById('targetSelect');
+    selectedTarget = select.value;
+    
+    const input = document.getElementById('commandInput');
+    const btn = document.getElementById('executeBtn');
+    
+    if (selectedTarget) {
+        input.disabled = false;
+        btn.disabled = false;
+        input.focus();
+        
+        const targetText = select.options[select.selectedIndex].text;
+        addTerminalLine(`Target selected: ${targetText}`, 'success');
+    } else {
+        input.disabled = true;
+        btn.disabled = true;
+        addTerminalLine('No target selected', 'error');
+    }
+}
+
+// Select category
+function selectCategory(category) {
+    selectedCategory = category;
+    
+    // Update active category
+    document.querySelectorAll('.category-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    document.querySelector(`[data-category="${category}"]`).classList.add('active');
+    
+    // Filter and display commands
+    displayCommands(category);
+}
+
+// Display commands for category
+function displayCommands(category) {
+    const commandList = document.getElementById('commandList');
+    
+    let commands = [];
+    if (category === 'all') {
+        // Flatten all commands
+        Object.values(allCommands).forEach(categoryCommands => {
+            commands = commands.concat(categoryCommands);
+        });
+    } else {
+        commands = allCommands[category] || [];
+    }
+    
+    if (commands.length === 0) {
+        commandList.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <h3>No commands in this category</h3>
+                <p>This category doesn't have any commands yet</p>
+            </div>
+        `;
+        return;
+    }
+    
+    commandList.innerHTML = commands.map(cmd => `
+        <div class="command-item" onclick="selectCommand('${cmd.name}')">
+            <div class="command-name">
+                <i class="fas fa-terminal" style="margin-right: 8px; color: var(--primary);"></i>
+                ${cmd.name}
+            </div>
+            <div class="command-description">${cmd.description}</div>
+        </div>
+    `).join('');
+}
+
+// Select command from list
+function selectCommand(commandName) {
+    document.getElementById('commandInput').value = commandName;
+    document.getElementById('commandInput').focus();
+}
+
+// Setup command input handlers
+function setupCommandInput() {
+    const input = document.getElementById('commandInput');
+    
+    // Enter key to execute
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            executeCommand();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            navigateHistory('up');
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            navigateHistory('down');
+        }
+    });
+}
+
+// Navigate command history
+function navigateHistory(direction) {
+    if (commandHistory.length === 0) return;
+    
+    if (direction === 'up') {
+        historyIndex = Math.min(historyIndex + 1, commandHistory.length - 1);
+    } else {
+        historyIndex = Math.max(historyIndex - 1, -1);
+    }
+    
+    const input = document.getElementById('commandInput');
+    if (historyIndex === -1) {
+        input.value = '';
+    } else {
+        input.value = commandHistory[historyIndex];
+    }
+}
+
+// Execute command
+async function executeCommand() {
+    const input = document.getElementById('commandInput');
+    const command = input.value.trim();
+    
+    if (!command) return;
+    if (!selectedTarget) {
+        addTerminalLine('Please select a target first', 'error');
+        return;
+    }
+    
+    // Add to history
+    commandHistory.unshift(command);
+    historyIndex = -1;
+    
+    // Display command in terminal
+    addTerminalLine(`$ ${command}`, 'prompt');
+    
+    // Clear input
+    input.value = '';
+    
+    // Show loading
+    addTerminalLine('Executing...', 'output');
+    
+    try {
+        const response = await fetch('/api/execute', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                target_id: selectedTarget,
+                command: command
+            })
+        });
+        
+        if (!response.ok) throw new Error('Command execution failed');
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            addTerminalLine(result.output || 'Command executed successfully', 'success');
+        } else {
+            addTerminalLine(result.error || 'Command failed', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error executing command:', error);
+        addTerminalLine('Error: ' + error.message, 'error');
+    }
+}
+
+// Add line to terminal
+function addTerminalLine(text, type = 'output') {
+    const terminal = document.getElementById('terminal');
+    const line = document.createElement('div');
+    line.className = 'terminal-line';
+    
+    if (type === 'prompt') {
+        line.innerHTML = `<span class="terminal-prompt">oranolio@c2:~$</span> <span class="terminal-output">${escapeHtml(text)}</span>`;
+    } else {
+        line.innerHTML = `<span class="terminal-${type}">${escapeHtml(text)}</span>`;
+    }
+    
+    terminal.appendChild(line);
+    terminal.scrollTop = terminal.scrollHeight;
+}
+
+// Clear terminal
+function clearTerminal() {
+    const terminal = document.getElementById('terminal');
+    terminal.innerHTML = `
+        <div class="terminal-line">
+            <span class="terminal-prompt">oranolio@c2:~$</span>
+            <span class="terminal-output"> Terminal cleared</span>
+        </div>
+    `;
+}
+
+// Export command history
+function exportHistory() {
+    if (commandHistory.length === 0) {
+        alert('No command history to export');
+        return;
+    }
+    
+    const text = commandHistory.reverse().join('\n');
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `command_history_${new Date().toISOString().split('T')[0]}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showNotification('Command history exported', 'success');
+}
+
+// Utility function
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Listen for command results via WebSocket
+socket.on('command_result', function(data) {
+    if (data.success) {
+        addTerminalLine(data.output, 'success');
+    } else {
+        addTerminalLine(data.error, 'error');
+    }
+});
+
+// Listen for target disconnection
+socket.on('target_disconnected', function(data) {
+    if (data.target_id === selectedTarget) {
+        addTerminalLine('Target disconnected', 'error');
+        selectedTarget = null;
+        document.getElementById('targetSelect').value = '';
+        document.getElementById('commandInput').disabled = true;
+        document.getElementById('executeBtn').disabled = true;
+    }
+    loadTargets();
+});
+</script>
+{% endblock %}

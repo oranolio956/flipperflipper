@@ -1,0 +1,772 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Files - Oranolio C2{% endblock %}
+{% block page_title %}File Management{% endblock %}
+
+{% block extra_css %}
+<style>
+.files-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.file-zone {
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+    padding: 24px;
+}
+
+.upload-area {
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.upload-area.dragover {
+    border-color: var(--primary);
+    background: rgba(99, 91, 255, 0.05);
+}
+
+.upload-area:hover {
+    border-color: var(--primary);
+}
+
+.upload-icon {
+    font-size: 48px;
+    color: var(--text-tertiary);
+    margin-bottom: 16px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+}
+
+.file-item:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.file-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.file-icon.doc { background: rgba(99, 91, 255, 0.1); color: var(--primary); }
+.file-icon.img { background: rgba(0, 217, 36, 0.1); color: var(--success); }
+.file-icon.archive { background: rgba(255, 192, 67, 0.1); color: var(--warning); }
+.file-icon.exe { background: rgba(223, 27, 65, 0.1); color: var(--danger); }
+
+.file-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-name {
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-meta {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+}
+
+.file-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 4px;
+    background: var(--border-color);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary);
+    transition: width 0.3s ease;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Uploaded Files</span>
+            <div class="stat-icon primary">
+                <i class="fas fa-upload"></i>
+            </div>
+        </div>
+        <div class="stat-value" id="uploadedCount">0</div>
+        <div class="stat-change">Ready to deploy</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Downloaded Files</span>
+            <div class="stat-icon success">
+                <i class="fas fa-download"></i>
+            </div>
+        </div>
+        <div class="stat-value" id="downloadedCount">0</div>
+        <div class="stat-change">From targets</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Total Size</span>
+            <div class="stat-icon warning">
+                <i class="fas fa-hdd"></i>
+            </div>
+        </div>
+        <div class="stat-value" id="totalSize">0 MB</div>
+        <div class="stat-change">Storage used</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Active Transfers</span>
+            <div class="stat-icon danger">
+                <i class="fas fa-exchange-alt"></i>
+            </div>
+        </div>
+        <div class="stat-value" id="activeTransfers">0</div>
+        <div class="stat-change">In progress</div>
+    </div>
+</div>
+
+<!-- File Management Grid -->
+<div class="files-grid">
+    <!-- Upload Zone -->
+    <div class="file-zone">
+        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">
+            <i class="fas fa-upload"></i> Upload Files
+        </h3>
+        
+        <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-icon">
+                <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Drop files here</h4>
+            <p style="font-size: 14px; color: var(--text-tertiary); margin-bottom: 16px;">
+                or click to browse
+            </p>
+            <p style="font-size: 12px; color: var(--text-tertiary);">
+                Supports: EXE, ZIP, PDF, TXT, Images
+            </p>
+        </div>
+        
+        <input type="file" id="fileInput" multiple style="display: none;" onchange="handleFileSelect(event)">
+        
+        <div id="uploadQueue" style="margin-top: 16px;">
+            <!-- Upload queue items will appear here -->
+        </div>
+    </div>
+    
+    <!-- Target File Browser -->
+    <div class="file-zone">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="font-size: 16px; font-weight: 600;">
+                <i class="fas fa-folder-open"></i> Target Files
+            </h3>
+            <select class="form-select" id="targetFileSelect" onchange="loadTargetFiles()" style="max-width: 200px;">
+                <option value="">Select target...</option>
+            </select>
+        </div>
+        
+        <div id="targetFileBrowser">
+            <div class="empty-state">
+                <i class="fas fa-folder"></i>
+                <h3>Select a target</h3>
+                <p>Choose a target to browse files</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Uploaded Files -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">
+            <i class="fas fa-upload"></i> Uploaded Files
+        </h2>
+        <div class="card-actions">
+            <button class="btn btn-secondary btn-sm" onclick="refreshFiles()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="clearAllFiles()">
+                <i class="fas fa-trash"></i> Clear All
+            </button>
+        </div>
+    </div>
+    
+    <div id="uploadedFilesList">
+        <div class="spinner"></div>
+    </div>
+</div>
+
+<!-- Downloaded Files -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">
+            <i class="fas fa-download"></i> Downloaded Files
+        </h2>
+        <div class="card-actions">
+            <button class="btn btn-secondary btn-sm" onclick="refreshFiles()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+    </div>
+    
+    <div id="downloadedFilesList">
+        <div class="spinner"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ g.csp_nonce }}">
+let uploadedFiles = [];
+let downloadedFiles = [];
+let uploadQueue = [];
+
+// Load on page ready
+document.addEventListener('DOMContentLoaded', function() {
+    loadFiles();
+    loadTargets();
+    setupDragAndDrop();
+});
+
+// Setup drag and drop
+function setupDragAndDrop() {
+    const uploadArea = document.getElementById('uploadArea');
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, () => {
+            uploadArea.classList.add('dragover');
+        }, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, () => {
+            uploadArea.classList.remove('dragover');
+        }, false);
+    });
+    
+    uploadArea.addEventListener('drop', handleDrop, false);
+}
+
+function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    handleFiles(files);
+}
+
+function handleFileSelect(e) {
+    const files = e.target.files;
+    handleFiles(files);
+}
+
+function handleFiles(files) {
+    [...files].forEach(uploadFile);
+}
+
+// Upload file
+async function uploadFile(file) {
+    const queueItem = {
+        id: Date.now() + Math.random(),
+        file: file,
+        progress: 0,
+        status: 'uploading'
+    };
+    
+    uploadQueue.push(queueItem);
+    renderUploadQueue();
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const xhr = new XMLHttpRequest();
+        
+        // Progress tracking
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                queueItem.progress = (e.loaded / e.total) * 100;
+                renderUploadQueue();
+            }
+        });
+        
+        // Complete
+        xhr.addEventListener('load', () => {
+            if (xhr.status === 200) {
+                queueItem.status = 'complete';
+                queueItem.progress = 100;
+                showNotification(`File ${file.name} uploaded successfully`, 'success');
+                setTimeout(() => {
+                    uploadQueue = uploadQueue.filter(item => item.id !== queueItem.id);
+                    renderUploadQueue();
+                    loadFiles();
+                }, 2000);
+            } else {
+                queueItem.status = 'error';
+                showNotification(`Failed to upload ${file.name}`, 'error');
+            }
+            renderUploadQueue();
+        });
+        
+        // Error
+        xhr.addEventListener('error', () => {
+            queueItem.status = 'error';
+            showNotification(`Failed to upload ${file.name}`, 'error');
+            renderUploadQueue();
+        });
+        
+        xhr.open('POST', '/api/files/upload');
+        xhr.setRequestHeader('X-CSRFToken', csrfToken);
+        xhr.send(formData);
+        
+    } catch (error) {
+        console.error('Upload error:', error);
+        queueItem.status = 'error';
+        renderUploadQueue();
+    }
+}
+
+// Render upload queue
+function renderUploadQueue() {
+    const container = document.getElementById('uploadQueue');
+    
+    if (uploadQueue.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    container.innerHTML = uploadQueue.map(item => `
+        <div class="file-item" style="margin-bottom: 12px;">
+            <div class="file-icon ${getFileIconClass(item.file.name)}">
+                <i class="fas ${getFileIcon(item.file.name)}"></i>
+            </div>
+            <div class="file-info">
+                <div class="file-name">${escapeHtml(item.file.name)}</div>
+                <div class="file-meta">${formatFileSize(item.file.size)}</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${item.progress}%"></div>
+                </div>
+            </div>
+            <div style="font-size: 12px; color: var(--text-tertiary);">
+                ${item.status === 'uploading' ? Math.round(item.progress) + '%' : 
+                  item.status === 'complete' ? '✓' : '✗'}
+            </div>
+        </div>
+    `).join('');
+    
+    document.getElementById('activeTransfers').textContent = uploadQueue.filter(i => i.status === 'uploading').length;
+}
+
+// Load files
+async function loadFiles() {
+    try {
+        const response = await fetch('/api/files', {
+            headers: { 'X-CSRFToken': csrfToken }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load files');
+        
+        const data = await response.json();
+        uploadedFiles = data.uploaded || [];
+        downloadedFiles = data.downloaded || [];
+        
+        renderUploadedFiles();
+        renderDownloadedFiles();
+        updateStats();
+        
+    } catch (error) {
+        console.error('Error loading files:', error);
+        showNotification('Failed to load files', 'error');
+    }
+}
+
+// Render uploaded files
+function renderUploadedFiles() {
+    const container = document.getElementById('uploadedFilesList');
+    
+    if (uploadedFiles.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-upload"></i>
+                <h3>No uploaded files</h3>
+                <p>Upload files to deploy to targets</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = uploadedFiles.map(file => `
+        <div class="file-item">
+            <div class="file-icon ${getFileIconClass(file.name)}">
+                <i class="fas ${getFileIcon(file.name)}"></i>
+            </div>
+            <div class="file-info">
+                <div class="file-name">${escapeHtml(file.name)}</div>
+                <div class="file-meta">
+                    ${formatFileSize(file.size)} • ${formatDate(file.modified)}
+                </div>
+            </div>
+            <div class="file-actions">
+                <button class="btn btn-secondary btn-sm" onclick="downloadLocalFile('${file.name}')" title="Download">
+                    <i class="fas fa-download"></i>
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="deployFile('${file.name}')" title="Deploy to Target">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteFile('${file.name}', 'uploaded')" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Render downloaded files
+function renderDownloadedFiles() {
+    const container = document.getElementById('downloadedFilesList');
+    
+    if (downloadedFiles.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-download"></i>
+                <h3>No downloaded files</h3>
+                <p>Files downloaded from targets will appear here</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = downloadedFiles.map(file => `
+        <div class="file-item">
+            <div class="file-icon ${getFileIconClass(file.name)}">
+                <i class="fas ${getFileIcon(file.name)}"></i>
+            </div>
+            <div class="file-info">
+                <div class="file-name">${escapeHtml(file.name)}</div>
+                <div class="file-meta">
+                    ${formatFileSize(file.size)} • ${formatDate(file.modified)}
+                </div>
+            </div>
+            <div class="file-actions">
+                <button class="btn btn-primary btn-sm" onclick="downloadLocalFile('${file.name}')" title="Download">
+                    <i class="fas fa-download"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteFile('${file.name}', 'downloaded')" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Update stats
+function updateStats() {
+    document.getElementById('uploadedCount').textContent = uploadedFiles.length;
+    document.getElementById('downloadedCount').textContent = downloadedFiles.length;
+    
+    const totalSize = [...uploadedFiles, ...downloadedFiles].reduce((sum, file) => sum + file.size, 0);
+    document.getElementById('totalSize').textContent = formatFileSize(totalSize);
+}
+
+// Load targets for file browser
+async function loadTargets() {
+    try {
+        const response = await fetch('/api/targets', {
+            headers: { 'X-CSRFToken': csrfToken }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load targets');
+        
+        const data = await response.json();
+        const select = document.getElementById('targetFileSelect');
+        
+        select.innerHTML = '<option value="">Select target...</option>';
+        
+        data.targets.filter(t => t.is_active).forEach(target => {
+            const option = document.createElement('option');
+            option.value = target.id;
+            option.textContent = `${target.hostname} (${target.ip_address})`;
+            select.appendChild(option);
+        });
+        
+    } catch (error) {
+        console.error('Error loading targets:', error);
+    }
+}
+
+// Load target files
+async function loadTargetFiles() {
+    const targetId = document.getElementById('targetFileSelect').value;
+    const browser = document.getElementById('targetFileBrowser');
+    
+    if (!targetId) {
+        browser.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-folder"></i>
+                <h3>Select a target</h3>
+                <p>Choose a target to browse files</p>
+            </div>
+        `;
+        return;
+    }
+    
+    browser.innerHTML = '<div class="spinner"></div>';
+    
+    try {
+        const response = await fetch(`/api/targets/${targetId}/files`, {
+            headers: { 'X-CSRFToken': csrfToken }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load target files');
+        
+        const files = await response.json();
+        
+        if (files.length === 0) {
+            browser.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-folder-open"></i>
+                    <h3>No files</h3>
+                    <p>No files available on this target</p>
+                </div>
+            `;
+            return;
+        }
+        
+        browser.innerHTML = files.map(file => `
+            <div class="file-item">
+                <div class="file-icon ${getFileIconClass(file.name)}">
+                    <i class="fas ${getFileIcon(file.name)}"></i>
+                </div>
+                <div class="file-info">
+                    <div class="file-name">${escapeHtml(file.name)}</div>
+                    <div class="file-meta">${file.path}</div>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="downloadFromTarget('${targetId}', '${file.path}')" title="Download">
+                    <i class="fas fa-download"></i>
+                </button>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading target files:', error);
+        browser.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Error</h3>
+                <p>${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+// Download file from target
+async function downloadFromTarget(targetId, filePath) {
+    try {
+        showNotification('Downloading file from target...', 'info');
+        
+        const response = await fetch('/api/files/download-from-target', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                target_id: targetId,
+                file_path: filePath
+            })
+        });
+        
+        if (!response.ok) throw new Error('Download failed');
+        
+        showNotification('File downloaded successfully', 'success');
+        loadFiles();
+        
+    } catch (error) {
+        console.error('Error downloading file:', error);
+        showNotification('Failed to download file: ' + error.message, 'error');
+    }
+}
+
+// Deploy file to target
+async function deployFile(filename) {
+    const targetId = prompt('Enter target ID to deploy to:');
+    if (!targetId) return;
+    
+    try {
+        showNotification('Deploying file to target...', 'info');
+        
+        const response = await fetch('/api/files/deploy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                filename: filename,
+                target_id: targetId
+            })
+        });
+        
+        if (!response.ok) throw new Error('Deployment failed');
+        
+        showNotification('File deployed successfully', 'success');
+        
+    } catch (error) {
+        console.error('Error deploying file:', error);
+        showNotification('Failed to deploy file: ' + error.message, 'error');
+    }
+}
+
+// Download local file
+function downloadLocalFile(filename) {
+    window.location.href = `/api/files/download/${filename}`;
+}
+
+// Delete file
+async function deleteFile(filename, type) {
+    if (!confirm(`Delete ${filename}?`)) return;
+    
+    try {
+        const response = await fetch(`/api/files/${type}/${filename}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': csrfToken
+            }
+        });
+        
+        if (!response.ok) throw new Error('Delete failed');
+        
+        showNotification('File deleted successfully', 'success');
+        loadFiles();
+        
+    } catch (error) {
+        console.error('Error deleting file:', error);
+        showNotification('Failed to delete file: ' + error.message, 'error');
+    }
+}
+
+// Clear all files
+async function clearAllFiles() {
+    if (!confirm('Delete all uploaded files? This cannot be undone.')) return;
+    
+    try {
+        const response = await fetch('/api/files/clear-all', {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': csrfToken
+            }
+        });
+        
+        if (!response.ok) throw new Error('Clear failed');
+        
+        showNotification('All files cleared', 'success');
+        loadFiles();
+        
+    } catch (error) {
+        console.error('Error clearing files:', error);
+        showNotification('Failed to clear files: ' + error.message, 'error');
+    }
+}
+
+// Refresh files
+function refreshFiles() {
+    loadFiles();
+    showNotification('Files refreshed', 'info');
+}
+
+// Utility functions
+function getFileIcon(filename) {
+    const ext = filename.split('.').pop().toLowerCase();
+    const iconMap = {
+        'exe': 'fa-file-code',
+        'zip': 'fa-file-archive',
+        'rar': 'fa-file-archive',
+        '7z': 'fa-file-archive',
+        'pdf': 'fa-file-pdf',
+        'doc': 'fa-file-word',
+        'docx': 'fa-file-word',
+        'txt': 'fa-file-alt',
+        'jpg': 'fa-file-image',
+        'jpeg': 'fa-file-image',
+        'png': 'fa-file-image',
+        'gif': 'fa-file-image',
+        'py': 'fa-file-code',
+        'js': 'fa-file-code',
+        'html': 'fa-file-code'
+    };
+    return iconMap[ext] || 'fa-file';
+}
+
+function getFileIconClass(filename) {
+    const ext = filename.split('.').pop().toLowerCase();
+    if (['exe', 'py', 'js'].includes(ext)) return 'exe';
+    if (['zip', 'rar', '7z'].includes(ext)) return 'archive';
+    if (['jpg', 'jpeg', 'png', 'gif'].includes(ext)) return 'img';
+    return 'doc';
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+function formatDate(dateString) {
+    return new Date(dateString).toLocaleString();
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Help - Oranolio C2{% endblock %}
+{% block page_title %}Help & Documentation{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px;">
+    <!-- Quick Start -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-rocket"></i> Quick Start Guide</h2>
+        </div>
+        
+        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">1. Generate Payload</h3>
+        <p style="margin-bottom: 16px; color: var(--text-secondary);">
+            Create a payload to deploy on target systems. The payload will connect back to this C2 server.
+        </p>
+        
+        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">2. Deploy to Target</h3>
+        <p style="margin-bottom: 16px; color: var(--text-secondary);">
+            Execute the payload on the target system. Once connected, the target will appear in the Targets page.
+        </p>
+        
+        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">3. Execute Commands</h3>
+        <p style="margin-bottom: 16px; color: var(--text-secondary);">
+            Use the Command Center to interact with connected targets. Select a target and execute commands.
+        </p>
+    </div>
+    
+    <!-- Available Commands -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-terminal"></i> Available Commands</h2>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+            <div>
+                <h4 style="font-weight: 600; margin-bottom: 8px; color: var(--primary);">System Commands</h4>
+                <ul style="list-style: none; padding: 0; font-size: 14px; color: var(--text-secondary);">
+                    <li style="margin-bottom: 4px;"><code>whoami</code> - Current user</li>
+                    <li style="margin-bottom: 4px;"><code>hostname</code> - System hostname</li>
+                    <li style="margin-bottom: 4px;"><code>sysinfo</code> - System information</li>
+                    <li style="margin-bottom: 4px;"><code>pwd</code> - Current directory</li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 style="font-weight: 600; margin-bottom: 8px; color: var(--success);">File Operations</h4>
+                <ul style="list-style: none; padding: 0; font-size: 14px; color: var(--text-secondary);">
+                    <li style="margin-bottom: 4px;"><code>ls</code> - List files</li>
+                    <li style="margin-bottom: 4px;"><code>cat [file]</code> - Read file</li>
+                    <li style="margin-bottom: 4px;"><code>download [file]</code> - Download file</li>
+                    <li style="margin-bottom: 4px;"><code>upload [file]</code> - Upload file</li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 style="font-weight: 600; margin-bottom: 8px; color: var(--warning);">Network</h4>
+                <ul style="list-style: none; padding: 0; font-size: 14px; color: var(--text-secondary);">
+                    <li style="margin-bottom: 4px;"><code>ping [host]</code> - Ping host</li>
+                    <li style="margin-bottom: 4px;"><code>netstat</code> - Network connections</li>
+                    <li style="margin-bottom: 4px;"><code>ifconfig</code> - Network interfaces</li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 style="font-weight: 600; margin-bottom: 8px; color: var(--danger);">Security</h4>
+                <ul style="list-style: none; padding: 0; font-size: 14px; color: var(--text-secondary);">
+                    <li style="margin-bottom: 4px;"><code>screenshot</code> - Take screenshot</li>
+                    <li style="margin-bottom: 4px;"><code>keylog start</code> - Start keylogger</li>
+                    <li style="margin-bottom: 4px;"><code>hashdump</code> - Dump hashes</li>
+                    <li style="margin-bottom: 4px;"><code>credentials</code> - Harvest credentials</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Features -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-star"></i> Features</h2>
+        </div>
+        
+        <div style="display: grid; gap: 16px;">
+            <div style="padding: 16px; background: var(--bg-hover); border-radius: 6px;">
+                <h4 style="font-weight: 600; margin-bottom: 8px;">
+                    <i class="fas fa-crosshairs" style="color: var(--primary);"></i> Target Management
+                </h4>
+                <p style="font-size: 14px; color: var(--text-secondary);">
+                    Track and manage all connected targets. View system information, connection status, and history.
+                </p>
+            </div>
+            
+            <div style="padding: 16px; background: var(--bg-hover); border-radius: 6px;">
+                <h4 style="font-weight: 600; margin-bottom: 8px;">
+                    <i class="fas fa-terminal" style="color: var(--success);"></i> Command Execution
+                </h4>
+                <p style="font-size: 14px; color: var(--text-secondary);">
+                    Execute commands on targets with real-time output. Command history and autocomplete included.
+                </p>
+            </div>
+            
+            <div style="padding: 16px; background: var(--bg-hover); border-radius: 6px;">
+                <h4 style="font-weight: 600; margin-bottom: 8px;">
+                    <i class="fas fa-folder" style="color: var(--warning);"></i> File Management
+                </h4>
+                <p style="font-size: 14px; color: var(--text-secondary);">
+                    Upload files to targets and download files from targets. Drag-and-drop support included.
+                </p>
+            </div>
+            
+            <div style="padding: 16px; background: var(--bg-hover); border-radius: 6px;">
+                <h4 style="font-weight: 600; margin-bottom: 8px;">
+                    <i class="fas fa-key" style="color: var(--danger);"></i> Credential Harvesting
+                </h4>
+                <p style="font-size: 14px; color: var(--text-secondary);">
+                    Automatically harvest credentials from browsers and applications. Export to CSV.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Keyboard Shortcuts -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h2>
+        </div>
+        
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Shortcut</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><kbd>Ctrl</kbd> + <kbd>K</kbd></td>
+                    <td>Open command palette</td>
+                </tr>
+                <tr>
+                    <td><kbd>↑</kbd> / <kbd>↓</kbd></td>
+                    <td>Navigate command history</td>
+                </tr>
+                <tr>
+                    <td><kbd>Tab</kbd></td>
+                    <td>Autocomplete command</td>
+                </tr>
+                <tr>
+                    <td><kbd>Enter</kbd></td>
+                    <td>Execute command</td>
+                </tr>
+                <tr>
+                    <td><kbd>Esc</kbd></td>
+                    <td>Close modals/panels</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Support -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-life-ring"></i> Support</h2>
+        </div>
+        
+        <p style="margin-bottom: 16px; color: var(--text-secondary);">
+            Need help? Check these resources:
+        </p>
+        
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="#" class="btn btn-secondary">
+                <i class="fas fa-book"></i> Documentation
+            </a>
+            <a href="#" class="btn btn-secondary">
+                <i class="fas fa-video"></i> Video Tutorials
+            </a>
+            <a href="#" class="btn btn-secondary">
+                <i class="fas fa-comments"></i> Community Forum
+            </a>
+            <a href="#" class="btn btn-secondary">
+                <i class="fas fa-bug"></i> Report Issue
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}System Logs - Oranolio C2{% endblock %}
+{% block page_title %}System Logs{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">System Logs</h2>
+        <div class="card-actions">
+            <select class="form-select" id="levelFilter" onchange="filterLogs()" style="min-width: 120px;">
+                <option value="all">All Levels</option>
+                <option value="INFO">Info</option>
+                <option value="WARNING">Warning</option>
+                <option value="ERROR">Error</option>
+                <option value="CRITICAL">Critical</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" onclick="refreshLogs()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="clearLogs()">
+                <i class="fas fa-trash"></i> Clear
+            </button>
+        </div>
+    </div>
+    
+    <div style="overflow-x: auto;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width: 100px;">Level</th>
+                    <th style="width: 180px;">Timestamp</th>
+                    <th>Message</th>
+                    <th style="width: 150px;">Source</th>
+                </tr>
+            </thead>
+            <tbody id="logsTableBody">
+                <tr><td colspan="4" style="text-align: center; padding: 40px;"><div class="spinner"></div></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ g.csp_nonce }}">
+let allLogs = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadLogs();
+    setInterval(loadLogs, 10000);
+});
+
+async function loadLogs() {
+    try {
+        const response = await fetch('/api/logs', {
+            headers: { 'X-CSRFToken': csrfToken }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load logs');
+        
+        const data = await response.json();
+        allLogs = data.logs || [];
+        
+        renderLogs();
+    } catch (error) {
+        console.error('Error loading logs:', error);
+    }
+}
+
+function renderLogs() {
+    const tbody = document.getElementById('logsTableBody');
+    const filter = document.getElementById('levelFilter').value;
+    
+    let filtered = allLogs;
+    if (filter !== 'all') {
+        filtered = allLogs.filter(log => log.level === filter);
+    }
+    
+    if (filtered.length === 0) {
+        tbody.innerHTML = `
+            <tr><td colspan="4" style="text-align: center; padding: 40px;">
+                <div class="empty-state">
+                    <i class="fas fa-list"></i>
+                    <h3>No logs found</h3>
+                    <p>System logs will appear here</p>
+                </div>
+            </td></tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = filtered.map(log => `
+        <tr>
+            <td>
+                <span class="status-badge status-${getLevelClass(log.level)}">
+                    ${log.level}
+                </span>
+            </td>
+            <td style="font-size: 12px;">${formatDate(log.timestamp)}</td>
+            <td>${escapeHtml(log.message)}</td>
+            <td style="font-size: 12px; color: var(--text-tertiary);">${escapeHtml(log.source || 'System')}</td>
+        </tr>
+    `).join('');
+}
+
+function getLevelClass(level) {
+    const map = {
+        'INFO': 'online',
+        'WARNING': 'idle',
+        'ERROR': 'offline',
+        'CRITICAL': 'offline'
+    };
+    return map[level] || 'online';
+}
+
+function filterLogs() {
+    renderLogs();
+}
+
+function refreshLogs() {
+    loadLogs();
+    showNotification('Logs refreshed', 'info');
+}
+
+async function clearLogs() {
+    if (!confirm('Clear all logs? This cannot be undone.')) return;
+    
+    try {
+        const response = await fetch('/api/logs/clear', {
+            method: 'DELETE',
+            headers: { 'X-CSRFToken': csrfToken }
+        });
+        
+        if (!response.ok) throw new Error('Failed to clear logs');
+        
+        showNotification('Logs cleared', 'success');
+        loadLogs();
+    } catch (error) {
+        console.error('Error clearing logs:', error);
+        showNotification('Failed to clear logs', 'error');
+    }
+}
+
+function formatDate(dateString) {
+    return new Date(dateString).toLocaleString();
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+socket.on('new_log', function(data) {
+    allLogs.unshift(data);
+    if (allLogs.length > 1000) allLogs.pop();
+    renderLogs();
+});
+</script>
+{% endblock %}
