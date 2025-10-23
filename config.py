@@ -139,9 +139,8 @@ class Config:
     # Authentication & Authorization
     # ============================================================================
     
-    # Admin credentials (legacy - being phased out)
-    ADMIN_USER = os.getenv('STITCH_ADMIN_USER', 'admin')
-    ADMIN_PASSWORD = os.getenv('STITCH_ADMIN_PASSWORD', 'StitchTest123!')
+    # Legacy admin credentials removed - using webhook-based authentication
+    # Authentication is now handled by webhook_auth_manager.py and mfa_manager.py
     
     # Password requirements
     MIN_PASSWORD_LENGTH = int(os.getenv('STITCH_MIN_PASSWORD_LENGTH', '12'))

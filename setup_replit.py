@@ -72,8 +72,7 @@ def setup_environment():
     if not env_file.exists():
         env_content = """# Stitch Elite RAT System Environment Configuration
 STITCH_DEBUG=true
-STITCH_ADMIN_USER=admin
-STITCH_ADMIN_PASSWORD=SuperSecurePass123!
+# Legacy admin credentials removed - using webhook-based authentication
 STITCH_REDIS_URL=memory://
 FLASK_ENV=development
 FLASK_DEBUG=true

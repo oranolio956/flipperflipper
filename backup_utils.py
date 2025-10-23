@@ -88,8 +88,8 @@ class BackupManager:
                 env_config = {
                     'note': 'These are the current environment settings. Set them in your environment before restoring.',
                     'settings': {
-                        'STITCH_ADMIN_USER': Config.ADMIN_USER or '<not set>',
-                        'STITCH_ADMIN_PASSWORD': '<redacted>' if Config.ADMIN_PASSWORD else '<not set>',
+                        'AUTH_SYSTEM': 'webhook-based',
+                        'AUTHORIZED_EMAILS': ', '.join(Config.get_authorized_emails()),
                         'STITCH_ENABLE_HTTPS': str(Config.ENABLE_HTTPS),
                         'STITCH_MAX_LOGIN_ATTEMPTS': str(Config.MAX_LOGIN_ATTEMPTS),
                         'STITCH_LOGIN_LOCKOUT_MINUTES': str(Config.LOGIN_LOCKOUT_MINUTES),

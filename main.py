@@ -15,8 +15,7 @@ from pathlib import Path
 
 # Set up environment variables for Replit
 os.environ.setdefault('STITCH_DEBUG', 'true')
-os.environ.setdefault('STITCH_ADMIN_USER', 'admin')
-os.environ.setdefault('STITCH_ADMIN_PASSWORD', 'SuperSecurePass123!')
+# Legacy admin credentials removed - using webhook-based authentication
 os.environ.setdefault('STITCH_REDIS_URL', 'memory://')
 os.environ.setdefault('FLASK_ENV', 'development')
 os.environ.setdefault('FLASK_DEBUG', 'true')

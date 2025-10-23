@@ -33,8 +33,7 @@ class RealEnvironmentSetup:
         """Set up required environment variables"""
         print("\n[SETUP] Setting environment variables...")
         
-        os.environ['STITCH_ADMIN_USER'] = 'admin'
-        os.environ['STITCH_ADMIN_PASSWORD'] = 'StitchTest123!'
+        # Legacy admin credentials removed - using webhook-based authentication
         os.environ['STITCH_SECRET_KEY'] = 'super-secret-key-for-testing'
         os.environ['STITCH_CSRF_SSL_STRICT'] = 'False'  # For local testing
         
@@ -55,8 +54,7 @@ import threading
 sys.path.insert(0, '/workspace')
 
 # Set environment
-os.environ['STITCH_ADMIN_USER'] = 'admin'
-os.environ['STITCH_ADMIN_PASSWORD'] = 'StitchTest123!'
+# Legacy admin credentials removed - using webhook-based authentication
 
 from Application.stitch_cmd import stitch_server
 
@@ -158,8 +156,7 @@ import os
 sys.path.insert(0, '/workspace')
 
 # Set environment
-os.environ['STITCH_ADMIN_USER'] = 'admin'
-os.environ['STITCH_ADMIN_PASSWORD'] = 'StitchTest123!'
+# Legacy admin credentials removed - using webhook-based authentication
 os.environ['STITCH_SECRET_KEY'] = 'super-secret-key-for-testing'
 os.environ['STITCH_CSRF_SSL_STRICT'] = 'False'
 
@@ -170,12 +167,12 @@ from werkzeug.security import generate_password_hash
 
 # Monkey-patch for testing
 import web_app_real
-web_app_real.USERS = {'admin': generate_password_hash('StitchTest123!')}
+# Legacy USERS dictionary removed - using webhook-based authentication
 
 from web_app_real import app, socketio
 
 print("[Web] Web interface starting on http://0.0.0.0:5000")
-print("[Web] Login: admin / StitchTest123!")
+print("[Web] Login: Use webhook authentication at /webhook-auth/login")
 
 # Run the app
 socketio.run(app, host='0.0.0.0', port=5000, debug=False, use_reloader=False)

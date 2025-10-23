@@ -10,8 +10,7 @@ import socket
 
 # Set environment variables
 os.environ['STITCH_DEBUG'] = 'true'
-os.environ['STITCH_ADMIN_USER'] = 'admin'
-os.environ['STITCH_ADMIN_PASSWORD'] = 'SuperSecurePass123!'
+# Legacy admin credentials removed - using webhook-based authentication
 
 # Check if port is in use
 def is_port_open(port):

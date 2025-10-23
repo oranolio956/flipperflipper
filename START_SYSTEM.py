@@ -65,8 +65,7 @@ import os
 import time
 sys.path.insert(0, '/workspace')
 
-os.environ['STITCH_ADMIN_USER'] = 'admin'
-os.environ['STITCH_ADMIN_PASSWORD'] = 'StitchTest123!'
+# Legacy admin credentials removed - using webhook-based authentication
 
 from Application.stitch_cmd import stitch_server
 
@@ -142,14 +141,13 @@ import sys
 import os
 sys.path.insert(0, '/workspace')
 
-os.environ['STITCH_ADMIN_USER'] = 'admin'
-os.environ['STITCH_ADMIN_PASSWORD'] = 'StitchTest123!'
+# Legacy admin credentials removed - using webhook-based authentication
 os.environ['STITCH_SECRET_KEY'] = 'test-secret-key'
 os.environ['STITCH_CSRF_SSL_STRICT'] = 'False'
 
 from werkzeug.security import generate_password_hash
 import web_app_real
-web_app_real.USERS = {'admin': generate_password_hash('StitchTest123!')}
+# Legacy USERS dictionary removed - using webhook-based authentication
 
 from web_app_real import app, socketio
 
