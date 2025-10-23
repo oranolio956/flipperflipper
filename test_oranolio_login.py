@@ -38,7 +38,7 @@ def test_responsive_design():
         ('small screen media queries', '@media (max-width: 360px)'),
         ('flexible grid system', 'display: flex'),
         ('responsive typography', 'font-size: var(--font-size-'),
-        ('touch-friendly buttons', 'min-height: 44px'),
+        ('touch-friendly buttons', 'min-height: 48px'),
         ('accessible focus states', 'focus-visible'),
         ('reduced motion support', 'prefers-reduced-motion')
     ]
@@ -71,7 +71,7 @@ def test_accessibility():
         ('ARIA live regions', 'aria-live'),
         ('Screen reader support', 'sr-only'),
         ('Semantic HTML', '<section>'),
-        ('Proper heading structure', '<h2>'),
+        ('Proper heading structure', '<h1>'),
         ('Focus management', 'autofocus'),
         ('Keyboard navigation', 'keydown'),
         ('Color contrast support', 'prefers-contrast'),
