@@ -4,7 +4,7 @@ Admin Setup Routes
 One-time admin account creation with token validation
 """
 
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, session, g
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, session, g, current_app
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from admin_setup import AdminSetupManager
@@ -15,6 +15,9 @@ import bleach
 logger = logging.getLogger(__name__)
 
 admin_setup_bp = Blueprint('admin_setup', __name__, url_prefix='/admin')
+
+# Mark this blueprint to skip CSRF
+admin_setup_bp._got_registered_once = False
 
 # Initialize manager
 setup_manager = AdminSetupManager()

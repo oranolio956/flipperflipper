@@ -126,10 +126,13 @@ def create_app():
         """Exempt webhook routes from CSRF protection"""
         pass
     
-    # Configure CSRF to skip webhook paths
+    # Configure CSRF to skip webhook and admin setup paths
+    # Admin setup uses its own CSRF implementation
     app.config['WTF_CSRF_EXEMPT_ENDPOINTS'] = ['webhook_auth.register_webhook', 
                                                  'webhook_auth.test_webhook',
-                                                 'webhook_auth.execute_webhook_command']
+                                                 'webhook_auth.execute_webhook_command',
+                                                 'admin_setup.setup_page',
+                                                 'admin_setup.create_admin']
     
     # Register blueprints
     app.register_blueprint(auth_bp)
@@ -145,8 +148,9 @@ def create_app():
     if WEBHOOK_AUTH_AVAILABLE:
         app.register_blueprint(webhook_auth_bp)
     
-    # Register admin setup blueprint
+    # Register admin setup blueprint (exempt from CSRF - uses custom implementation)
     if ADMIN_SETUP_AVAILABLE:
+        csrf.exempt(admin_setup_bp)
         app.register_blueprint(admin_setup_bp)
     
     # Register WebSocket handlers
