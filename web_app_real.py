@@ -525,116 +525,13 @@ def login():
 
 # Legacy verify-email route removed - using webhook-based authentication only
 
-@app.route('/mfa/setup', methods=['GET', 'POST'])
-def mfa_setup():
-    """MFA setup page for first-time users"""
-    # Import MFA modules
-    from mfa_manager import mfa_manager
-    from mfa_database import save_user_mfa, log_mfa_event
-    import json
-    
-    # Check if user is in setup flow
-    if 'mfa_setup_email' not in session:
-        flash('Invalid MFA setup session', 'error')
-        return redirect(url_for('login'))
-    
-    email = session['mfa_setup_email']
-    client_ip = session.get('mfa_setup_ip', get_remote_address())
-    
-    # Check session timeout (10 minutes)
-    if 'mfa_setup_time' in session:
-        setup_time = datetime.fromisoformat(session['mfa_setup_time'])
-        if (datetime.now() - setup_time).total_seconds() > 600:
-            session.pop('mfa_setup_email', None)
-            session.pop('mfa_setup_secret', None)
-            session.pop('mfa_setup_ip', None)
-            session.pop('mfa_setup_time', None)
-            flash('MFA setup session expired. Please log in again.', 'error')
-            return redirect(url_for('login'))
-    
-    if request.method == 'POST':
-        token = request.form.get('token', '').strip()
-        secret = session.get('mfa_setup_secret')
-        
-        if not secret or not token:
-            flash('Invalid setup request', 'error')
-            return redirect(url_for('mfa_setup'))
-        
-        # Verify the token
-        if mfa_manager.verify_token(secret, token):
-            # Generate backup codes
-            backup_codes = mfa_manager.generate_backup_codes(10)
-            backup_codes_hashed = [mfa_manager.hash_backup_code(c) for c in backup_codes]
-            
-            # Save MFA configuration
-            encrypted_secret = mfa_manager.encrypt_secret(secret)
-            save_result = save_user_mfa(
-                email, 
-                encrypted_secret, 
-                json.dumps(backup_codes_hashed)
-            )
-            
-            if save_result:
-                # Store backup codes in session for display
-                session['backup_codes'] = backup_codes
-                
-                # Clear setup session
-                session.pop('mfa_setup_email', None)
-                session.pop('mfa_setup_secret', None)
-                session.pop('mfa_setup_ip', None)
-                session.pop('mfa_setup_time', None)
-                
-                # Log MFA setup
-                log_mfa_event(email, 'setup_complete', client_ip, request.headers.get('User-Agent', ''))
-                
-                log_debug(f"MFA setup completed for {email}", "INFO", "MFA")
-                flash('MFA setup successful! Save your backup codes.', 'success')
-                return redirect(url_for('mfa_backup_codes'))
-            else:
-                flash('Error saving MFA configuration. Please try again.', 'error')
-                log_debug(f"MFA setup failed for {email} - database error", "ERROR", "MFA")
-        else:
-            flash('Invalid verification code. Please try again.', 'error')
-            log_mfa_event(email, 'setup_verify_fail', client_ip, request.headers.get('User-Agent', ''), success=False)
-    
-    # Generate new secret for setup (or reuse existing in session)
-    if 'mfa_setup_secret' not in session:
-        secret = mfa_manager.generate_secret()
-        session['mfa_setup_secret'] = secret
-    else:
-        secret = session['mfa_setup_secret']
-    
-    # Generate QR code
-    provisioning_uri = mfa_manager.get_provisioning_uri(email, secret)
-    qr_code_data = mfa_manager.generate_qr_code(provisioning_uri)
-    
-    return render_template('mfa_setup.html', 
-                         qr_code=qr_code_data,
-                         secret=secret,
-                         email=email)
+# Legacy MFA setup route removed - using webhook-based authentication only
 
-@app.route('/mfa/backup-codes')
-def mfa_backup_codes():
-    """Display backup codes after MFA setup (one-time display)"""
-    backup_codes = session.get('backup_codes')
-    
-    if not backup_codes:
-        flash('No backup codes to display', 'error')
-        return redirect(url_for('index'))
-    
-    # Clear from session after retrieval
-    session.pop('backup_codes', None)
-    
-    return render_template('mfa_backup_codes.html', backup_codes=backup_codes)
+# Legacy MFA backup codes route removed - using webhook-based authentication only
 
-@app.route('/mfa/verify', methods=['GET', 'POST'])
-def mfa_verify():
-    """MFA verification page (SECOND FACTOR)"""
-    # Import MFA modules
-    from mfa_manager import mfa_manager
-    from mfa_database import get_user_mfa_config, update_user_backup_codes, log_mfa_event, update_mfa_last_used
+# Legacy MFA verify route removed - using webhook-based authentication only
     
-    # Check if user is in verification flow
+# Legacy MFA code removed - using webhook-based authentication only
     if 'mfa_verify_email' not in session:
         flash('Invalid MFA verification session', 'error')
         return redirect(url_for('login'))
