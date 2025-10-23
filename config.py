@@ -229,6 +229,7 @@ class Config:
     MAX_CONNECTIONS = int(os.getenv('STITCH_MAX_CONNECTIONS', '1000'))
     MAX_CONNECTIONS_PER_IP = int(os.getenv('STITCH_MAX_CONNECTIONS_PER_IP', '10'))
     CONNECTION_TIMEOUT = int(os.getenv('STITCH_CONNECTION_TIMEOUT', '300'))
+    STALE_CONNECTION_THRESHOLD = int(os.getenv('STITCH_STALE_CONNECTION_THRESHOLD', '3600'))  # 1 hour
     
     # ============================================================================
     # UI/UX Configuration
