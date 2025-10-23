@@ -10,9 +10,11 @@ import json
 import time
 import logging
 from datetime import datetime, timedelta
-from flask import Blueprint, request, jsonify, session, g, send_file
+from flask import Blueprint, request, jsonify, session, g, send_file, abort
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_wtf.csrf import validate_csrf
+from werkzeug.exceptions import BadRequest
 
 # Add current directory to Python path
 sys.path.insert(0, os.path.dirname(__file__))
@@ -34,6 +36,43 @@ api_bp = Blueprint('api', __name__, url_prefix='/api')
 # Global instances
 connection_manager = get_connection_manager()
 metrics_collector = get_metrics_collector()
+
+def require_csrf_token(f):
+    """
+    Decorator to require CSRF token validation for API endpoints.
+    Checks for token in X-CSRFToken header or csrf_token form field.
+    """
+    from functools import wraps
+    
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Get CSRF token from header or form data
+        token = request.headers.get('X-CSRFToken')
+        if not token:
+            token = request.form.get('csrf_token')
+        if not token and request.is_json:
+            data = request.get_json(silent=True)
+            if data:
+                token = data.get('csrf_token')
+        
+        # Validate token
+        try:
+            validate_csrf(token)
+        except Exception as e:
+            logger.warning(f"CSRF validation failed: {e} from {request.remote_addr}")
+            context = ErrorContext(
+                user_id=getattr(g, 'current_user', {}).get('id'),
+                ip_address=request.remote_addr,
+                additional_data={'error': 'CSRF token validation failed'}
+            )
+            error_handler.handle_error(
+                e, context, ErrorSeverity.HIGH, ErrorCategory.SECURITY
+            )
+            abort(400, description="CSRF token missing or invalid")
+        
+        return f(*args, **kwargs)
+    
+    return decorated_function
 
 @api_bp.route('/connections', methods=['GET'])
 @api_key_or_login_required
@@ -272,6 +311,7 @@ def get_active_targets():
 
 @api_bp.route('/execute', methods=['POST'])
 @api_key_or_login_required
+@require_csrf_token
 def execute_command():
     """Execute a command on a target"""
     try:
@@ -462,6 +502,7 @@ def export_commands():
 
 @api_bp.route('/generate-payload', methods=['POST'])
 @api_key_or_login_required
+@require_csrf_token
 def generate_payload():
     """Generate a payload for target systems"""
     try:

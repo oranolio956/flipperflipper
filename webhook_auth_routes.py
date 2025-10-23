@@ -11,6 +11,7 @@ import hmac
 import hashlib
 import logging
 from datetime import datetime, timedelta
+from functools import wraps
 from flask import Blueprint, request, jsonify, session, g
 from typing import Dict, Any, Optional
 
@@ -127,6 +128,7 @@ webhook_auth_manager = WebhookAuthManager()
 def webhook_auth_required(permissions: list = None):
     """Decorator to require webhook authentication"""
     def decorator(f):
+        @wraps(f)
         def decorated_function(*args, **kwargs):
             try:
                 # Get webhook ID and signature from headers
@@ -170,6 +172,8 @@ def webhook_auth_required(permissions: list = None):
     return decorator
 
 @webhook_auth_bp.route('/register', methods=['POST'])
+# NOTE: Webhook endpoints use HMAC signature validation instead of CSRF tokens
+# CSRF exemption should be applied when registering this blueprint in web_app.py
 def register_webhook():
     """Register a new webhook"""
     try:
@@ -204,6 +208,7 @@ def register_webhook():
 
 @webhook_auth_bp.route('/test', methods=['POST'])
 @webhook_auth_required(['read'])
+# NOTE: Webhook endpoints use HMAC signature validation instead of CSRF tokens
 def test_webhook():
     """Test webhook authentication"""
     try:
@@ -273,6 +278,7 @@ def get_webhook_events():
 
 @webhook_auth_bp.route('/command', methods=['POST'])
 @webhook_auth_required(['write'])
+# NOTE: Webhook endpoints use HMAC signature validation instead of CSRF tokens
 def execute_webhook_command():
     """Execute a command via webhook"""
     try:

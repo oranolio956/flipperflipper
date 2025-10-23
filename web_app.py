@@ -38,10 +38,26 @@ from command_handlers import register_command_handlers
 from new_auth_routes import new_auth_bp
 from new_dashboard_routes import new_dashboard_bp
 
+# Import webhook authentication (uses HMAC signature validation)
+try:
+    from webhook_auth_routes import webhook_auth_bp
+    WEBHOOK_AUTH_AVAILABLE = True
+except ImportError:
+    WEBHOOK_AUTH_AVAILABLE = False
+    logger.warning("Webhook authentication module not available")
+
 # Import utilities
 from auth_utils import login_required
 from error_handler import error_handler, ErrorSeverity, ErrorCategory, ErrorContext
 from validation_schemas import validate_input
+
+# Import Phase 1 Enterprise Security Components
+from core.security import (
+    EnterpriseSessionManager,
+    EnterpriseInputValidator,
+    EnterpriseCryptoManager,
+    EnterpriseErrorHandler
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -71,6 +87,20 @@ def create_app():
             x_prefix=x_prefix
         )
     
+    # Initialize Phase 1 Enterprise Security Components
+    session_manager = EnterpriseSessionManager()
+    input_validator = EnterpriseInputValidator()
+    crypto_manager = EnterpriseCryptoManager()
+    enterprise_error_handler = EnterpriseErrorHandler()
+    
+    # Store security components in app context
+    app.session_manager = session_manager
+    app.input_validator = input_validator
+    app.crypto_manager = crypto_manager
+    app.enterprise_error_handler = enterprise_error_handler
+    
+    logger.info("Phase 1 Enterprise Security Components initialized")
+    
     # Initialize extensions
     socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True)
     limiter = Limiter(
@@ -78,7 +108,20 @@ def create_app():
         key_func=get_remote_address,
         default_limits=[f"{Config.DEFAULT_RATE_LIMIT_HOUR} per hour"]
     )
+    
+    # Initialize CSRF protection
     csrf = CSRFProtect(app)
+    
+    # Exempt webhook routes from CSRF (they use HMAC signature validation)
+    @csrf.exempt
+    def csrf_exempt_webhooks():
+        """Exempt webhook routes from CSRF protection"""
+        pass
+    
+    # Configure CSRF to skip webhook paths
+    app.config['WTF_CSRF_EXEMPT_ENDPOINTS'] = ['webhook_auth.register_webhook', 
+                                                 'webhook_auth.test_webhook',
+                                                 'webhook_auth.execute_webhook_command']
     
     # Register blueprints
     app.register_blueprint(auth_bp)
@@ -89,11 +132,42 @@ def create_app():
     app.register_blueprint(new_auth_bp)
     app.register_blueprint(new_dashboard_bp)
     
+    # Register webhook authentication blueprint
+    # Note: Webhook routes use HMAC signature validation instead of CSRF tokens
+    if WEBHOOK_AUTH_AVAILABLE:
+        app.register_blueprint(webhook_auth_bp)
+    
     # Register WebSocket handlers
     register_websocket_handlers(socketio)
     
     # Register command handlers
     register_command_handlers(app)
+    
+    # Add Phase 1 request validation middleware
+    @app.before_request
+    def validate_request_inputs():
+        """Validate all incoming request data using Phase 1 InputValidator"""
+        # Skip validation for static files
+        if request.endpoint and request.endpoint == 'static':
+            return None
+        
+        # Validate JSON payloads
+        if request.is_json and request.get_json(silent=True):
+            try:
+                from core.security.input_validator import InputType
+                json_data = request.get_json()
+                validation_result = app.input_validator.validate_input(
+                    json_data,
+                    InputType.JSON_DATA,
+                    context={'endpoint': request.endpoint}
+                )
+                if not validation_result.is_valid:
+                    logger.warning(f"Invalid JSON input: {validation_result.violations}")
+                    return jsonify({'error': 'Invalid input data'}), 400
+            except Exception as e:
+                logger.error(f"Input validation error: {e}")
+        
+        return None
     
     # Add security headers
     @app.after_request
@@ -121,66 +195,136 @@ def create_app():
         
         return response
     
-    # Error handlers
+    # Enhanced Error handlers with Phase 1 EnterpriseErrorHandler
     @app.errorhandler(400)
     def bad_request(error):
-        """Handle 400 errors"""
-        context = ErrorContext(
-            additional_data={'error': str(error)}
+        """Handle 400 errors with Phase 1 error handling"""
+        from core.security.error_handler import ErrorSeverity, ErrorCategory
+        
+        context = {
+            'user_id': session.get('user_id'),
+            'ip_address': request.remote_addr,
+            'endpoint': request.endpoint,
+            'error': str(error)
+        }
+        error_info = app.enterprise_error_handler.handle_error(
+            error, context
         )
-        error_handler.handle_error(error, context, ErrorSeverity.MEDIUM, ErrorCategory.VALIDATION)
-        return jsonify({'error': 'Bad request'}), 400
+        return jsonify({'error': 'Bad request', 'error_id': error_info.error_id}), 400
     
     @app.errorhandler(401)
     def unauthorized(error):
-        """Handle 401 errors"""
-        context = ErrorContext(
-            additional_data={'error': str(error)}
+        """Handle 401 errors with Phase 1 error handling"""
+        from core.security.error_handler import ErrorSeverity, ErrorCategory
+        
+        context = {
+            'user_id': session.get('user_id'),
+            'ip_address': request.remote_addr,
+            'endpoint': request.endpoint,
+            'error': str(error)
+        }
+        error_info = app.enterprise_error_handler.handle_error(
+            error, context
         )
-        error_handler.handle_error(error, context, ErrorSeverity.MEDIUM, ErrorCategory.AUTHENTICATION)
-        return jsonify({'error': 'Unauthorized'}), 401
+        return jsonify({'error': 'Unauthorized', 'error_id': error_info.error_id}), 401
     
     @app.errorhandler(403)
     def forbidden(error):
-        """Handle 403 errors"""
-        context = ErrorContext(
-            additional_data={'error': str(error)}
+        """Handle 403 errors with Phase 1 error handling"""
+        context = {
+            'user_id': session.get('user_id'),
+            'ip_address': request.remote_addr,
+            'endpoint': request.endpoint,
+            'error': str(error)
+        }
+        error_info = app.enterprise_error_handler.handle_error(
+            error, context
         )
-        error_handler.handle_error(error, context, ErrorSeverity.HIGH, ErrorCategory.AUTHORIZATION)
-        return jsonify({'error': 'Forbidden'}), 403
+        return jsonify({'error': 'Forbidden', 'error_id': error_info.error_id}), 403
     
     @app.errorhandler(404)
     def not_found(error):
-        """Handle 404 errors"""
-        context = ErrorContext(
-            additional_data={'error': str(error)}
+        """Handle 404 errors with Phase 1 error handling"""
+        context = {
+            'user_id': session.get('user_id'),
+            'ip_address': request.remote_addr,
+            'endpoint': request.endpoint,
+            'error': str(error)
+        }
+        error_info = app.enterprise_error_handler.handle_error(
+            error, context
         )
-        error_handler.handle_error(error, context, ErrorSeverity.LOW, ErrorCategory.APPLICATION)
-        return jsonify({'error': 'Not found'}), 404
+        return jsonify({'error': 'Not found', 'error_id': error_info.error_id}), 404
     
     @app.errorhandler(429)
     def rate_limit_exceeded(error):
-        """Handle 429 errors"""
-        context = ErrorContext(
-            additional_data={'error': str(error)}
+        """Handle 429 errors with Phase 1 error handling"""
+        context = {
+            'user_id': session.get('user_id'),
+            'ip_address': request.remote_addr,
+            'endpoint': request.endpoint,
+            'error': str(error)
+        }
+        error_info = app.enterprise_error_handler.handle_error(
+            error, context
         )
-        error_handler.handle_error(error, context, ErrorSeverity.MEDIUM, ErrorCategory.SECURITY)
-        return jsonify({'error': 'Rate limit exceeded'}), 429
+        return jsonify({'error': 'Rate limit exceeded', 'error_id': error_info.error_id}), 429
     
     @app.errorhandler(500)
     def internal_error(error):
-        """Handle 500 errors"""
-        context = ErrorContext(
-            additional_data={'error': str(error)}
+        """Handle 500 errors with Phase 1 error handling"""
+        context = {
+            'user_id': session.get('user_id'),
+            'ip_address': request.remote_addr,
+            'endpoint': request.endpoint,
+            'error': str(error)
+        }
+        error_info = app.enterprise_error_handler.handle_error(
+            error, context
         )
-        error_handler.handle_error(error, context, ErrorSeverity.CRITICAL, ErrorCategory.SYSTEM)
-        return jsonify({'error': 'Internal server error'}), 500
+        return jsonify({'error': 'Internal server error', 'error_id': error_info.error_id}), 500
+    
+    # Phase 1 Crypto Helper Functions
+    @app.context_processor
+    def inject_crypto_helpers():
+        """Inject Phase 1 crypto helpers into template context"""
+        def encrypt_sensitive(data: str, key_id: str = 'master') -> dict:
+            """Encrypt sensitive data using Phase 1 CryptoManager"""
+            try:
+                return app.crypto_manager.encrypt(data, key_id)
+            except Exception as e:
+                logger.error(f"Encryption error: {e}")
+                return {}
+        
+        def decrypt_sensitive(encrypted_data: dict, key_id: str = 'master') -> str:
+            """Decrypt sensitive data using Phase 1 CryptoManager"""
+            try:
+                result = app.crypto_manager.decrypt(encrypted_data, key_id)
+                return result.get('plaintext', '')
+            except Exception as e:
+                logger.error(f"Decryption error: {e}")
+                return ""
+        
+        return dict(
+            encrypt_sensitive=encrypt_sensitive,
+            decrypt_sensitive=decrypt_sensitive
+        )
     
     # Health check endpoint
     @app.route('/health')
     def health():
         """Health check endpoint for deployment"""
-        return jsonify({'status': 'healthy', 'timestamp': str(datetime.now())})
+        from datetime import datetime
+        return jsonify({
+            'status': 'healthy',
+            'timestamp': str(datetime.now()),
+            'phase1_security': {
+                'session_manager': 'active',
+                'input_validator': 'active',
+                'crypto_manager': 'active',
+                'error_handler': 'active'
+            }
+        })
     
     # Root route - redirect to new login
     @app.route('/')

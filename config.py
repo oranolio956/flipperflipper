@@ -124,11 +124,19 @@ class Config:
     SECRET_KEY = None
     
     # Session Configuration
-    SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = 'Lax'
-    SESSION_TIMEOUT_MINUTES = int(os.getenv('STITCH_SESSION_TIMEOUT', '30'))
+    SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
+    SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection (use 'Strict' for more security)
+    SESSION_TIMEOUT_MINUTES = int(os.getenv('STITCH_SESSION_TIMEOUT', '120'))  # 2 hours default
     SESSION_COOKIE_SECURE = os.getenv('STITCH_HTTPS', 'false').lower() in ('true', '1', 'yes')
-    PERMANENT_SESSION_LIFETIME = timedelta(minutes=SESSION_TIMEOUT_MINUTES)
+    PERMANENT_SESSION_LIFETIME = timedelta(minutes=SESSION_TIMEOUT_MINUTES)  # Absolute timeout
+    SESSION_REFRESH_EACH_REQUEST = True  # Idle timeout - refresh session on each request
+    
+    # Session cookie name (use __Host- prefix for HTTPS to prevent subdomain attacks)
+    # For development (HTTP), use regular name
+    if SESSION_COOKIE_SECURE:
+        SESSION_COOKIE_NAME = '__Host-session'
+    else:
+        SESSION_COOKIE_NAME = 'session'
     
     # HTTPS Configuration
     ENABLE_HTTPS = os.getenv('STITCH_ENABLE_HTTPS', 'false').lower() in ('true', '1', 'yes')

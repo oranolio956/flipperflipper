@@ -19,6 +19,7 @@ import time
 import hashlib
 import secrets
 import logging
+import base64
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List, Tuple, Union
 from dataclasses import dataclass, asdict
@@ -512,7 +513,9 @@ class EnterpriseCryptoManager:
         """Store key securely"""
         # Encrypt key material with master key
         if key_material:
-            cipher = Fernet(self.master_key[:32])  # Use first 32 bytes
+            # Ensure master key is properly base64-encoded for Fernet
+            fernet_key = base64.urlsafe_b64encode(self.master_key[:32])
+            cipher = Fernet(fernet_key)
             encrypted_material = cipher.encrypt(key_material)
         else:
             encrypted_material = None
@@ -550,19 +553,28 @@ class EnterpriseCryptoManager:
         stored_data = self.key_store[key_id]
         
         # Reconstruct CryptoKey object
-        key_data = stored_data['crypto_key']
-        key_data['created_at'] = datetime.fromisoformat(key_data['created_at'])
-        if key_data['expires_at']:
+        key_data = stored_data['crypto_key'].copy()
+        
+        # Handle datetime conversion
+        if isinstance(key_data['created_at'], str):
+            key_data['created_at'] = datetime.fromisoformat(key_data['created_at'])
+        if key_data['expires_at'] and isinstance(key_data['expires_at'], str):
             key_data['expires_at'] = datetime.fromisoformat(key_data['expires_at'])
-        key_data['key_type'] = KeyType(key_data['key_type'])
-        key_data['algorithm'] = CryptoAlgorithm(key_data['algorithm'])
+        
+        # Handle enum conversion
+        if isinstance(key_data['key_type'], str):
+            key_data['key_type'] = KeyType(key_data['key_type'])
+        if isinstance(key_data['algorithm'], str):
+            key_data['algorithm'] = CryptoAlgorithm(key_data['algorithm'])
         
         crypto_key = CryptoKey(**key_data)
         
         # Decrypt key material
         encrypted_material = stored_data['encrypted_material']
         if encrypted_material:
-            cipher = Fernet(self.master_key[:32])
+            # Ensure master key is properly base64-encoded for Fernet
+            fernet_key = base64.urlsafe_b64encode(self.master_key[:32])
+            cipher = Fernet(fernet_key)
             key_material = cipher.decrypt(encrypted_material)
         else:
             key_material = None

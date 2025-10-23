@@ -26,12 +26,31 @@ from dataclasses import dataclass
 from enum import Enum
 import logging
 from pathlib import Path
-import magic
-import bleach
 from urllib.parse import urlparse, quote, unquote
 from html import escape, unescape
-import sqlparse
 from config import Config
+
+# Optional dependencies for advanced features
+try:
+    import magic
+    MAGIC_AVAILABLE = True
+except ImportError:
+    MAGIC_AVAILABLE = False
+    logging.warning("python-magic not available, file type detection limited")
+
+try:
+    import bleach
+    BLEACH_AVAILABLE = True
+except ImportError:
+    BLEACH_AVAILABLE = False
+    logging.warning("bleach not available, HTML sanitization limited")
+
+try:
+    import sqlparse
+    SQLPARSE_AVAILABLE = True
+except ImportError:
+    SQLPARSE_AVAILABLE = False
+    logging.warning("sqlparse not available, SQL validation limited")
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +126,7 @@ class EnterpriseInputValidator:
         self.xss_patterns = self._load_xss_patterns()
         
         # File type detection
-        self.magic_mime = magic.Magic(mime=True)
+        self.magic_mime = magic.Magic(mime=True) if MAGIC_AVAILABLE else None
         
         # Allowed file types for uploads
         self.allowed_file_types = {
@@ -252,19 +271,31 @@ class EnterpriseInputValidator:
         risk_score = 0.0
         
         try:
-            # Parse SQL query
-            parsed = sqlparse.parse(query)
-            if not parsed:
-                violations.append('invalid_sql_syntax')
-                risk_score = 1.0
-            
-            # Check allowed operations
-            if allowed_operations and parsed:
-                statement = parsed[0]
-                operation = statement.get_type()
-                if operation.upper() not in [op.upper() for op in allowed_operations]:
-                    violations.append('sql_operation_not_allowed')
+            # Parse SQL query if sqlparse available
+            if SQLPARSE_AVAILABLE:
+                parsed = sqlparse.parse(query)
+                if not parsed:
+                    violations.append('invalid_sql_syntax')
                     risk_score = 1.0
+                
+                # Check allowed operations
+                if allowed_operations and parsed:
+                    statement = parsed[0]
+                    operation = statement.get_type()
+                    if operation.upper() not in [op.upper() for op in allowed_operations]:
+                        violations.append('sql_operation_not_allowed')
+                        risk_score = 1.0
+            else:
+                # Basic SQL validation without sqlparse
+                if allowed_operations:
+                    found_operation = False
+                    for op in allowed_operations:
+                        if query.strip().upper().startswith(op.upper()):
+                            found_operation = True
+                            break
+                    if not found_operation:
+                        violations.append('sql_operation_not_allowed')
+                        risk_score = 1.0
             
             # Check for SQL injection patterns
             for pattern in self.sql_injection_patterns:
@@ -700,9 +731,13 @@ class EnterpriseInputValidator:
                            context: Dict[str, Any]) -> Any:
         """Apply final sanitization based on context"""
         if input_type == InputType.HTML_CONTENT:
-            # Use bleach for HTML sanitization
-            allowed_tags = ['p', 'br', 'strong', 'em', 'u', 'ol', 'ul', 'li']
-            return bleach.clean(str(input_data), tags=allowed_tags, strip=True)
+            # Use bleach for HTML sanitization if available
+            if BLEACH_AVAILABLE:
+                allowed_tags = ['p', 'br', 'strong', 'em', 'u', 'ol', 'ul', 'li']
+                return bleach.clean(str(input_data), tags=allowed_tags, strip=True)
+            else:
+                # Fallback to basic HTML escaping
+                return escape(str(input_data))
         
         elif input_type == InputType.JSON_DATA:
             # Validate and sanitize JSON
