@@ -363,7 +363,7 @@ class AuthenticationManager:
             
             cursor.execute('''
                 SELECT id, email, is_active, is_verified, created_at, last_login,
-                       failed_login_attempts, locked_until, api_key, api_key_created
+                       failed_login_attempts, locked_until
                 FROM users WHERE id = ?
             ''', (user_id,))
             
