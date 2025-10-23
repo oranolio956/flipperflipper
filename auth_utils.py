@@ -36,8 +36,6 @@ class User:
     last_login: Optional[datetime] = None
     failed_login_attempts: int = 0
     locked_until: Optional[datetime] = None
-    api_key: Optional[str] = None
-    api_key_created: Optional[datetime] = None
 
 @dataclass
 class APIKey:
@@ -373,7 +371,7 @@ class AuthenticationManager:
             if not user_data:
                 return None
             
-            user_id, email, is_active, is_verified, created_at, last_login, failed_attempts, locked_until, api_key, api_key_created = user_data
+            user_id, email, is_active, is_verified, created_at, last_login, failed_attempts, locked_until = user_data
             
             return User(
                 id=user_id,
@@ -383,9 +381,7 @@ class AuthenticationManager:
                 created_at=datetime.fromisoformat(created_at) if created_at else datetime.now(),
                 last_login=datetime.fromisoformat(last_login) if last_login else None,
                 failed_login_attempts=failed_attempts,
-                locked_until=datetime.fromisoformat(locked_until) if locked_until else None,
-                api_key=api_key,
-                api_key_created=datetime.fromisoformat(api_key_created) if api_key_created else None
+                locked_until=datetime.fromisoformat(locked_until) if locked_until else None
             )
             
         except Exception as e:
