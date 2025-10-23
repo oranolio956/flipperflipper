@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oranolio RATX - Verify Access</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================================================
+           CSS Reset & Base Styles
+           ============================================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Color Palette - Modern SaaS Design */
+            --background: #F9FAFB;
+            --card-background: #FFFFFF;
+            --primary-accent: #4D8FD9;
+            --primary-hover: #3B7BC7;
+            --primary-light: #E3F2FD;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --text-muted: #9CA3AF;
+            --border: #D1D5DB;
+            --border-focus: #4D8FD9;
+            --error: #EF4444;
+            --error-light: #FEF2F2;
+            --success: #10B981;
+            --success-light: #F0FDF4;
+            --warning: #F59E0B;
+            --warning-light: #FFFBEB;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+            --radius: 8px;
+            --radius-sm: 4px;
+            --radius-lg: 12px;
+            
+            /* Typography */
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            --font-size-xs: 12px;
+            --font-size-sm: 14px;
+            --font-size-base: 16px;
+            --font-size-lg: 18px;
+            --font-size-xl: 24px;
+            --font-size-2xl: 32px;
+            
+            /* Spacing System (8px grid) */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --spacing-2xl: 48px;
+            --spacing-3xl: 64px;
+        }
+
+        /* Dark theme support */
+        [data-theme="dark"] {
+            --background: #0F172A;
+            --card-background: #1E293B;
+            --text-primary: #F8FAFC;
+            --text-secondary: #CBD5E1;
+            --text-muted: #94A3B8;
+            --border: #334155;
+            --primary-light: #1E3A8A;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ============================================================================
+           Layout & Container
+           ============================================================================ */
+        .container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-md);
+            position: relative;
+        }
+
+        .background-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: 
+                radial-gradient(circle at 25% 25%, rgba(77, 143, 217, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(77, 143, 217, 0.02) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .verify-card {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card-background);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: var(--spacing-3xl);
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .verify-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ============================================================================
+           Header & Branding
+           ============================================================================ */
+        .header {
+            text-align: center;
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary-accent), var(--primary-hover));
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: var(--font-size-lg);
+            box-shadow: 0 4px 12px rgba(77, 143, 217, 0.3);
+        }
+
+        .brand-name {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.025em;
+        }
+
+        .verification-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto var(--spacing-lg);
+            background: linear-gradient(135deg, var(--primary-light), var(--primary-accent));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-2xl);
+            box-shadow: 0 8px 25px rgba(77, 143, 217, 0.2);
+            animation: iconPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 8px 25px rgba(77, 143, 217, 0.2); }
+            50% { transform: scale(1.05); box-shadow: 0 12px 35px rgba(77, 143, 217, 0.3); }
+        }
+
+        .card-title {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+            letter-spacing: -0.025em;
+        }
+
+        .card-subtitle {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .email-display {
+            color: var(--primary-accent);
+            font-weight: 600;
+        }
+
+        /* ============================================================================
+           Form Elements
+           ============================================================================ */
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-label {
+            display: block;
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-md);
+            text-align: center;
+        }
+
+        .code-input-container {
+            display: flex;
+            gap: var(--spacing-sm);
+            justify-content: center;
+            margin: var(--spacing-lg) 0;
+        }
+
+        .code-input {
+            width: 48px;
+            height: 56px;
+            text-align: center;
+            font-size: var(--font-size-xl);
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--card-background);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .code-input:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px var(--primary-light);
+            transform: scale(1.05);
+        }
+
+        .code-input.filled {
+            border-color: var(--success);
+            background: var(--success-light);
+        }
+
+        .code-input.error {
+            border-color: var(--error);
+            background: var(--error-light);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* ============================================================================
+           Buttons
+           ============================================================================ */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-base);
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 44px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: var(--primary-accent);
+            color: white;
+            box-shadow: 0 4px 12px rgba(77, 143, 217, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(77, 143, 217, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary-accent);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-light);
+            border-color: var(--primary-accent);
+        }
+
+        /* ============================================================================
+           Loading States
+           ============================================================================ */
+        .loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ============================================================================
+           Messages & Alerts
+           ============================================================================ */
+        .alert {
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--spacing-md);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .alert-error {
+            background: var(--error-light);
+            border: 1px solid #FECACA;
+            color: var(--error);
+        }
+
+        .alert-success {
+            background: var(--success-light);
+            border: 1px solid #BBF7D0;
+            color: var(--success);
+        }
+
+        .alert-warning {
+            background: var(--warning-light);
+            border: 1px solid #FED7AA;
+            color: var(--warning);
+        }
+
+        .error-message {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: var(--font-size-sm);
+            color: var(--error);
+            margin-top: var(--spacing-sm);
+            animation: slideDown 0.3s ease-out;
+            text-align: center;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ============================================================================
+           Timer & Status
+           ============================================================================ */
+        .timer-section {
+            background: var(--primary-light);
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            margin: var(--spacing-lg) 0;
+            text-align: center;
+        }
+
+        .timer-label {
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .timer-display {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+            color: var(--primary-accent);
+            font-family: 'Courier New', monospace;
+        }
+
+        .timer-warning {
+            color: var(--warning);
+        }
+
+        .timer-expired {
+            color: var(--error);
+        }
+
+        /* ============================================================================
+           Trust Indicators
+           ============================================================================ */
+        .trust-indicators {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: var(--spacing-lg);
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--border);
+        }
+
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            font-size: var(--font-size-xs);
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .trust-icon {
+            width: 14px;
+            height: 14px;
+            fill: var(--success);
+        }
+
+        /* ============================================================================
+           Resend Section
+           ============================================================================ */
+        .resend-section {
+            text-align: center;
+            margin-top: var(--spacing-lg);
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--border);
+        }
+
+        .resend-text {
+            font-size: var(--font-size-sm);
+            color: var(--text-muted);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .resend-timer {
+            font-size: var(--font-size-xs);
+            color: var(--text-muted);
+            margin-top: var(--spacing-sm);
+        }
+
+        .resend-timer.active {
+            color: var(--warning);
+        }
+
+        /* ============================================================================
+           Responsive Design
+           ============================================================================ */
+        @media (max-width: 480px) {
+            .container {
+                padding: var(--spacing-sm);
+            }
+            
+            .verify-card {
+                padding: var(--spacing-xl);
+                margin: var(--spacing-sm);
+            }
+            
+            .brand-name {
+                font-size: var(--font-size-lg);
+            }
+            
+            .code-input {
+                width: 40px;
+                height: 48px;
+                font-size: var(--font-size-lg);
+            }
+            
+            .verification-icon {
+                width: 56px;
+                height: 56px;
+                font-size: var(--font-size-xl);
+            }
+        }
+
+        @media (max-width: 360px) {
+            .verify-card {
+                padding: var(--spacing-lg);
+            }
+            
+            .code-input-container {
+                gap: var(--spacing-xs);
+            }
+            
+            .code-input {
+                width: 36px;
+                height: 44px;
+                font-size: var(--font-size-base);
+            }
+        }
+
+        /* ============================================================================
+           Accessibility
+           ============================================================================ */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .btn:focus-visible,
+        .code-input:focus-visible {
+            outline: 2px solid var(--primary-accent);
+            outline-offset: 2px;
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            :root {
+                --border: #000000;
+                --text-secondary: #000000;
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-pattern"></div>
+    
+    <div class="container">
+        <div class="verify-card">
+            <!-- Header -->
+            <div class="header">
+                <div class="logo">
+                    <div class="logo-icon">O</div>
+                    <span class="brand-name">Oranolio RATX</span>
+                </div>
+                <div class="verification-icon">📧</div>
+                <h1 class="card-title">Check Your Email</h1>
+                <p class="card-subtitle">
+                    We've sent a 6-digit verification code to<br>
+                    <span class="email-display">{{ email }}</span>
+                </p>
+            </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Timer Section -->
+            <div class="timer-section">
+                <div class="timer-label">Code Expires In</div>
+                <div class="timer-display" id="timer">10:00</div>
+            </div>
+
+            <!-- Verification Form -->
+            <form method="POST" id="verifyForm">
+                {{ csrf_token() }}
+                <input type="hidden" name="email" value="{{ email }}">
+                
+                <div class="form-group">
+                    <label for="code" class="form-label">Enter Verification Code</label>
+                    <div class="code-input-container">
+                    <div class="code-input-container" role="group" aria-label="6-digit verification code">
+                        <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" aria-label="Digit 1 of 6">
+                        <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" aria-label="Digit 2 of 6">
+                        <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" aria-label="Digit 3 of 6">
+                        <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" aria-label="Digit 4 of 6">
+                        <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" aria-label="Digit 5 of 6">
+                        <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" aria-label="Digit 6 of 6">
+                    </div>
+                    </div>
+                    <input type="hidden" name="code" id="fullCode">
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="verifyBtn">
+                    Verify Code
+                </button>
+            </form>
+
+            <!-- Resend Section -->
+            <div class="resend-section">
+                <p class="resend-text">Didn't receive the code?</p>
+                <button type="button" class="btn btn-secondary" id="resendBtn">
+                    Resend Code
+                </button>
+                <div class="resend-timer" id="resendTimer" style="display: none;">
+                    Resend available in <span id="countdown">30</span>s
+                </div>
+            </div>
+
+            <!-- Trust Indicators -->
+            <div class="trust-indicators">
+                <div class="trust-item">
+                    <svg class="trust-icon" viewBox="0 0 24 24">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                    </svg>
+                    <span>SSL Secured</span>
+                </div>
+                <div class="trust-item">
+                    <svg class="trust-icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                    <span>2FA Protected</span>
+                </div>
+                <div class="trust-item">
+                    <svg class="trust-icon" viewBox="0 0 24 24">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                    </svg>
+                    <span>GDPR Compliant</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================================
+        // DOM Elements
+        // ============================================================================
+        const verifyForm = document.getElementById('verifyForm');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const resendBtn = document.getElementById('resendBtn');
+        const codeInputs = document.querySelectorAll('.code-input');
+        const fullCodeInput = document.getElementById('fullCode');
+        const timerElement = document.getElementById('timer');
+        const resendTimer = document.getElementById('resendTimer');
+        const countdownElement = document.getElementById('countdown');
+
+        // ============================================================================
+        // State Management
+        // ============================================================================
+        let timeLeft = 600; // 10 minutes in seconds
+        let resendCountdown = 0;
+        let resendInterval = null;
+        let timerInterval = null;
+
+        // ============================================================================
+        // Timer Management
+        // ============================================================================
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerElement.textContent = 'Expired';
+                    timerElement.classList.add('timer-expired');
+                    verifyBtn.disabled = true;
+                    verifyBtn.textContent = 'Code Expired';
+                } else if (timeLeft <= 60) {
+                    timerElement.classList.add('timer-warning');
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function startResendCountdown() {
+            resendCountdown = 30;
+            resendBtn.disabled = true;
+            resendTimer.style.display = 'block';
+            resendTimer.classList.add('active');
+            
+            resendInterval = setInterval(() => {
+                resendCountdown--;
+                countdownElement.textContent = resendCountdown;
+                
+                if (resendCountdown <= 0) {
+                    clearInterval(resendInterval);
+                    resendBtn.disabled = false;
+                    resendTimer.style.display = 'none';
+                    resendTimer.classList.remove('active');
+                }
+            }, 1000);
+        }
+
+        // ============================================================================
+        // Code Input Management
+        // ============================================================================
+        function setupCodeInputs() {
+            codeInputs.forEach((input, index) => {
+                input.addEventListener('input', function(e) {
+                    const value = e.target.value;
+                    
+                    // Only allow numbers
+                    if (!/^\d$/.test(value)) {
+                        e.target.value = '';
+                        return;
+                    }
+                    
+                    // Move to next input
+                    if (value && index < codeInputs.length - 1) {
+                        codeInputs[index + 1].focus();
+                    }
+                    
+                    // Update full code
+                    updateFullCode();
+                    
+                    // Check if all inputs are filled
+                    if (isCodeComplete()) {
+                        verifyBtn.disabled = false;
+                        verifyBtn.classList.remove('loading');
+                    }
+                });
+                
+                input.addEventListener('keydown', function(e) {
+                    // Handle backspace
+                    if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                        codeInputs[index - 1].focus();
+                    }
+                    
+                    // Handle paste
+                    if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        handlePaste(e);
+                    }
+                });
+                
+                input.addEventListener('paste', handlePaste);
+            });
+        }
+
+        function updateFullCode() {
+            const code = Array.from(codeInputs).map(input => input.value).join('');
+            fullCodeInput.value = code;
+        }
+
+        function isCodeComplete() {
+            return codeInputs.every(input => input.value.length === 1);
+        }
+
+        function clearCodeInputs() {
+            codeInputs.forEach(input => {
+                input.value = '';
+                input.classList.remove('filled', 'error');
+            });
+            updateFullCode();
+        }
+
+        function showCodeError() {
+            codeInputs.forEach(input => {
+                input.classList.add('error');
+            });
+            setTimeout(() => {
+                codeInputs.forEach(input => {
+                    input.classList.remove('error');
+                });
+            }, 500);
+        }
+
+        function handlePaste(e) {
+            e.preventDefault();
+            const pastedData = (e.clipboardData || window.clipboardData).getData('text');
+            const numbers = pastedData.replace(/\D/g, '').slice(0, 6);
+            
+            numbers.split('').forEach((digit, index) => {
+                if (codeInputs[index]) {
+                    codeInputs[index].value = digit;
+                }
+            });
+            
+            updateFullCode();
+            
+            // Focus last filled input or next empty
+            const lastFilledIndex = numbers.length - 1;
+            const nextEmptyIndex = Math.min(lastFilledIndex + 1, codeInputs.length - 1);
+            codeInputs[nextEmptyIndex].focus();
+        }
+
+        // ============================================================================
+        // Form Submission
+        // ============================================================================
+        verifyForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const code = fullCodeInput.value;
+            
+            if (code.length !== 6) {
+                showCodeError();
+                announceError('Please enter all 6 digits of the verification code');
+                return;
+            }
+            
+            // Show loading state
+            verifyBtn.classList.add('loading');
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = 'Verifying...';
+            
+            // Simulate API call (replace with actual implementation)
+            setTimeout(() => {
+                // Here you would typically redirect to dashboard or show success
+                console.log('Code verified:', code);
+                
+                // Reset button
+                verifyBtn.classList.remove('loading');
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = 'Verify Code';
+            }, 1500);
+        });
+
+        resendBtn.addEventListener('click', function() {
+            if (resendBtn.disabled) return;
+            
+            resendBtn.classList.add('loading');
+            resendBtn.disabled = true;
+            resendBtn.textContent = 'Sending...';
+            
+            // Simulate API call
+            setTimeout(() => {
+                clearCodeInputs();
+                startResendCountdown();
+                resendBtn.classList.remove('loading');
+                resendBtn.textContent = 'Resend Code';
+                
+                // Reset timer
+                timeLeft = 600;
+                updateTimerDisplay();
+                timerElement.classList.remove('timer-warning', 'timer-expired');
+                startTimer();
+            }, 1000);
+        });
+
+        // ============================================================================
+        // Accessibility Enhancements
+        // ============================================================================
+        function announceError(message) {
+            const announcementDiv = document.createElement('div');
+            announcementDiv.setAttribute('aria-live', 'assertive');
+            announcementDiv.setAttribute('aria-atomic', 'true');
+            announcementDiv.className = 'sr-only';
+            announcementDiv.textContent = message;
+            
+            document.body.appendChild(announcementDiv);
+            
+            setTimeout(() => {
+                document.body.removeChild(announcementDiv);
+            }, 3000);
+        }
+
+        function announceSuccess(message) {
+            const announcementDiv = document.createElement('div');
+            announcementDiv.setAttribute('aria-live', 'polite');
+            announcementDiv.setAttribute('aria-atomic', 'true');
+            announcementDiv.className = 'sr-only';
+            announcementDiv.textContent = message;
+            
+            document.body.appendChild(announcementDiv);
+            
+            setTimeout(() => {
+                document.body.removeChild(announcementDiv);
+            }, 3000);
+        }
+
+        // ============================================================================
+        // Keyboard Shortcuts
+        // ============================================================================
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + Enter to submit
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                verifyForm.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // ============================================================================
+        // Initialization
+        // ============================================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            setupCodeInputs();
+            startTimer();
+            startResendCountdown();
+            
+            // Auto-focus first code input
+            codeInputs[0].focus();
+        });
+
+        // ============================================================================
+        // Cleanup
+        // ============================================================================
+        window.addEventListener('beforeunload', function() {
+            if (timerInterval) clearInterval(timerInterval);
+            if (resendInterval) clearInterval(resendInterval);
+        });
+    </script>
+</body>
+</html>

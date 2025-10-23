@@ -72,6 +72,9 @@ from Core.advanced_evasion import apply_evasions
 # Import webhook authentication system
 from webhook_auth_routes import register_webhook_auth_routes
 
+# Import Oranolio authentication system
+from oranolio_auth_routes import register_oranolio_auth_routes
+
 # ============================================================================
 # Configuration - Now loaded from Config module
 # ============================================================================
@@ -212,6 +215,9 @@ csrf = CSRFProtect(app)
 
 # Register webhook authentication routes
 register_webhook_auth_routes(app)
+
+# Register Oranolio authentication routes
+register_oranolio_auth_routes(app)
 
 # Print configuration status
 # Startup information (commented for production)
@@ -466,7 +472,7 @@ def ratelimit_handler(e):
     
     # Return HTML page for regular requests (login page)
     flash('Too many requests. Please wait a moment and try again.', 'error')
-    return render_template('elite_email_login.html'), 429
+    return render_template('oranolio_login.html'), 429
 
 @app.errorhandler(404)
 def not_found_handler(e):
@@ -476,7 +482,7 @@ def not_found_handler(e):
             'error': 'Not Found',
             'message': 'The requested resource was not found.'
         }), 404
-    return render_template('elite_email_login.html'), 404
+    return render_template('oranolio_login.html'), 404
 
 @app.errorhandler(500)
 def internal_error_handler(e):
@@ -488,7 +494,7 @@ def internal_error_handler(e):
             'message': 'An unexpected error occurred. Please try again later.'
         }), 500
     flash('An unexpected error occurred. Please try again.', 'error')
-    return render_template('elite_email_login.html'), 500
+    return render_template('oranolio_login.html'), 500
 
 @app.errorhandler(403)
 def forbidden_handler(e):
@@ -499,7 +505,7 @@ def forbidden_handler(e):
             'message': 'Access denied. You do not have permission to access this resource.'
         }), 403
     flash('Access denied. You do not have permission to access this resource.', 'error')
-    return render_template('elite_email_login.html'), 403
+    return render_template('oranolio_login.html'), 403
 
 # ============================================================================
 # Routes - Authentication
@@ -517,9 +523,9 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """
-    Redirect to webhook-based authentication
+    Redirect to Oranolio RATX authentication
     """
-    return redirect(url_for('webhook_auth.webhook_login'))
+    return redirect(url_for('oranolio_auth.oranolio_login'))
 
 # Legacy login route removed - using webhook-based authentication only
 
