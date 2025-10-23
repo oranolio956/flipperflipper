@@ -6,8 +6,6 @@ echo "================================================"
 
 # Set environment variables
 export STITCH_DEBUG=true
-export STITCH_ADMIN_USER=admin
-export STITCH_ADMIN_PASSWORD=SuperSecurePass123!
 export STITCH_REDIS_URL=memory://
 export FLASK_ENV=development
 export FLASK_DEBUG=true

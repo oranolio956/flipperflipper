@@ -8,8 +8,6 @@ run = "bash start_replit.sh"
 # Environment variables
 [env]
 STITCH_DEBUG = "true"
-STITCH_ADMIN_USER = "admin"
-STITCH_ADMIN_PASSWORD = "SuperSecurePass123!"
 STITCH_REDIS_URL = "memory://"
 FLASK_ENV = "development"
 FLASK_DEBUG = "true"
@@ -22,8 +20,9 @@ channel = "stable-23_11"
 hidden = [".env", "*.log", "*.db", "*.key", "*.pem", "*.crt"]
 
 # Port configuration
-[ports]
-5000 = { localPort = 5000, externalPort = 80 }
+[[ports]]
+localPort = 5000
+externalPort = 80
 
 # Git configuration
 [git]
