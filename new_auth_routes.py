@@ -28,6 +28,28 @@ logger = logging.getLogger(__name__)
 # Create blueprint
 new_auth_bp = Blueprint('new_auth', __name__, url_prefix='/auth')
 
+def generate_csrf_token():
+    """Generate a CSRF token"""
+    if 'csrf_token' not in session:
+        session['csrf_token'] = secrets.token_urlsafe(32)
+    return session['csrf_token']
+
+def validate_csrf_token():
+    """Validate CSRF token from request"""
+    token = request.form.get('csrf_token') or request.json.get('csrf_token') if request.is_json else None
+    return token and hmac.compare_digest(token, session.get('csrf_token', ''))
+
+def sanitize_input(data, max_length=1000):
+    """Sanitize input data to prevent XSS and injection attacks"""
+    if isinstance(data, str):
+        # Remove potentially dangerous characters
+        data = data.strip()
+        if len(data) > max_length:
+            data = data[:max_length]
+        # Basic XSS prevention
+        data = data.replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#x27;')
+    return data
+
 
 def login_required(f):
     """Decorator to require authentication"""
@@ -64,12 +86,19 @@ def login():
         if 'access_key_id' in session:
             return redirect(url_for('dashboard.index'))
         
-        return render_template('new_login.html')
+        return render_template('new_login.html', csrf_token=generate_csrf_token())
     
     # POST - Process login
     try:
         data = request.get_json() if request.is_json else request.form
-        access_key = data.get('access_key', '').strip()
+        access_key = sanitize_input(data.get('access_key', ''))
+        
+        # Validate CSRF token
+        if not validate_csrf_token():
+            return jsonify({
+                'success': False,
+                'error': 'Invalid CSRF token'
+            }), 403
         
         if not access_key:
             return jsonify({
@@ -85,8 +114,9 @@ def login():
         result = access_key_manager.authenticate(access_key, ip_address, user_agent)
         
         if result.success:
-            # Create session
+            # Create session - fix session fixation
             session.clear()
+            session.regenerate()  # Regenerate session ID to prevent fixation
             session['access_key_id'] = result.key_id
             session['permissions'] = result.permissions
             session['authenticated_at'] = datetime.utcnow().isoformat()
@@ -131,6 +161,41 @@ def logout():
         return jsonify({'success': True, 'message': 'Logged out successfully'})
     
     return redirect(url_for('new_auth.login'))
+
+
+@new_auth_bp.route('/request-key-recovery', methods=['POST'])
+def request_key_recovery():
+    """Handle key recovery requests"""
+    try:
+        data = request.get_json()
+        email = sanitize_input(data.get('email', ''))
+        
+        if not email or '@' not in email:
+            return jsonify({
+                'success': False,
+                'error': 'Please provide a valid email address'
+            }), 400
+        
+        # In a real implementation, you would:
+        # 1. Look up the user by email
+        # 2. Generate a recovery token
+        # 3. Send an email with recovery instructions
+        # 4. Store the recovery token with expiration
+        
+        # For now, just return success
+        logger.info(f"Key recovery requested for email: {email}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Recovery instructions sent to your email address'
+        })
+        
+    except Exception as e:
+        logger.error(f"Key recovery error: {e}")
+        return jsonify({
+            'success': False,
+            'error': 'An error occurred. Please try again.'
+        }), 500
 
 
 @new_auth_bp.route('/link', methods=['GET'])

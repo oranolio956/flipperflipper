@@ -149,6 +149,70 @@
             transform: translateY(0);
         }
         
+        /* Focus indicators for accessibility */
+        *:focus {
+            outline: 2px solid #6366f1;
+            outline-offset: 2px;
+        }
+        
+        .btn-primary:focus {
+            outline: 2px solid #6366f1;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+        }
+        
+        input:focus {
+            outline: 2px solid #6366f1;
+            outline-offset: 2px;
+            border-color: #6366f1;
+        }
+        
+        /* Recovery Modal */
+        .recovery-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .recovery-modal.show {
+            display: flex;
+        }
+        
+        .recovery-content {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid var(--border-primary);
+        }
+        
+        .recovery-content h2 {
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+        
+        .recovery-content p {
+            margin-bottom: 24px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+        
         .btn-primary:disabled {
             background: #475569;
             cursor: not-allowed;
@@ -228,9 +292,10 @@
         
         <div id="errorMessage" class="error-message" role="alert"></div>
         
-        <form id="loginForm">
+        <form id="loginForm" role="form" aria-label="Login form">
+            <input type="hidden" id="csrf_token" name="csrf_token" value="{{ csrf_token }}">
             <div class="form-group">
-                <label for="accessKey">Access Key</label>
+                <label for="accessKey" id="accessKeyLabel">Access Key</label>
                 <input 
                     type="text" 
                     id="accessKey" 
@@ -239,19 +304,42 @@
                     autocomplete="off"
                     spellcheck="false"
                     required
-                    aria-label="Access Key"
+                    aria-labelledby="accessKeyLabel"
                     aria-describedby="keyHelp"
+                    aria-required="true"
                 >
             </div>
             
-            <button type="submit" class="btn-primary" id="submitBtn">
+            <button type="submit" class="btn-primary" id="submitBtn" 
+                    aria-describedby="submitHelp"
+                    aria-live="polite">
                 <span id="btnText">Access Dashboard</span>
-                <span id="btnSpinner" class="loading-spinner" style="display: none;"></span>
+                <span id="btnSpinner" class="loading-spinner" style="display: none;" aria-hidden="true"></span>
             </button>
         </form>
         
         <div class="help-text">
             <p id="keyHelp">Enter your access key to continue</p>
+            <p><a href="#" id="forgotKeyLink" style="color: var(--primary); text-decoration: none;">Forgot your access key? Request a new one</a></p>
+        </div>
+        
+        <!-- Key Recovery Modal -->
+        <div class="recovery-modal" id="recoveryModal" role="dialog" aria-labelledby="recoveryTitle" aria-hidden="true">
+            <div class="recovery-content">
+                <h2 id="recoveryTitle">Request New Access Key</h2>
+                <p>If you've lost your access key, you can request a new one. Please provide your email address and we'll send you instructions.</p>
+                <form id="recoveryForm">
+                    <div class="form-group">
+                        <label for="recoveryEmail">Email Address</label>
+                        <input type="email" id="recoveryEmail" name="email" required aria-describedby="recoveryHelp">
+                        <div id="recoveryHelp" class="help-text">We'll send recovery instructions to this email</div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelRecovery">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Send Recovery Instructions</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
     
@@ -262,11 +350,62 @@
         const btnText = document.getElementById('btnText');
         const btnSpinner = document.getElementById('btnSpinner');
         const errorMessage = document.getElementById('errorMessage');
+        const forgotKeyLink = document.getElementById('forgotKeyLink');
+        const recoveryModal = document.getElementById('recoveryModal');
+        const recoveryForm = document.getElementById('recoveryForm');
+        const cancelRecovery = document.getElementById('cancelRecovery');
         
         // Auto-focus input
         input.focus();
         
+        // Key recovery functionality
+        forgotKeyLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            recoveryModal.classList.add('show');
+            recoveryModal.setAttribute('aria-hidden', 'false');
+        });
+        
+        cancelRecovery.addEventListener('click', () => {
+            recoveryModal.classList.remove('show');
+            recoveryModal.setAttribute('aria-hidden', 'true');
+        });
+        
+        recoveryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('recoveryEmail').value;
+            
+            try {
+                const response = await fetch('/auth/request-key-recovery', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showError('Recovery instructions sent to your email address.');
+                    recoveryModal.classList.remove('show');
+                    recoveryModal.setAttribute('aria-hidden', 'true');
+                } else {
+                    showError(data.error || 'Failed to send recovery instructions.');
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+            }
+        });
+        
         // Handle form submission
+        // Keyboard navigation support
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                form.dispatchEvent(new Event('submit'));
+            }
+        });
+        
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -275,6 +414,7 @@
             // Client-side validation
             if (!key) {
                 showError('Please enter an access key');
+                input.focus();
                 return;
             }
             
