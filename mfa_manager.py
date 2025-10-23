@@ -175,6 +175,25 @@ class MFAManager:
         
         return f"data:image/png;base64,{img_base64}"
     
+    def generate_token(self, secret):
+        """
+        Generate current TOTP token for a secret
+        
+        Args:
+            secret (str): TOTP secret
+        
+        Returns:
+            str: 6-digit TOTP token
+        """
+        if not secret:
+            return None
+        
+        try:
+            totp = pyotp.TOTP(secret)
+            return totp.now()
+        except Exception:
+            return None
+    
     def verify_token(self, secret, token):
         """
         Verify a TOTP token
