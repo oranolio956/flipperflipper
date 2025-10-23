@@ -10,6 +10,8 @@ import time
 import smtplib
 import requests
 import logging
+import html
+import re
 from datetime import datetime, timedelta
 from functools import wraps
 from pathlib import Path
@@ -440,6 +442,13 @@ def sanitize_input(input_data: str, input_type: str = "general") -> str:
     else:
         # Remove null bytes and control characters
         sanitized = ''.join(char for char in input_data if ord(char) >= 32 or char in '\t\n\r')
+        
+        # Remove script tags and dangerous HTML
+        sanitized = re.sub(r'<script[^>]*>.*?</script>', '', sanitized, flags=re.IGNORECASE | re.DOTALL)
+        sanitized = re.sub(r'<iframe[^>]*>.*?</iframe>', '', sanitized, flags=re.IGNORECASE | re.DOTALL)
+        sanitized = re.sub(r'javascript:', '', sanitized, flags=re.IGNORECASE)
+        sanitized = re.sub(r'on\w+\s*=', '', sanitized, flags=re.IGNORECASE)
+        
         return sanitized
 
 def validate_email(email: str) -> bool:
