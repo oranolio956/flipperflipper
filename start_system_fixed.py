@@ -32,8 +32,8 @@ def check_dependencies():
     
     required_packages = [
         'flask', 'flask_socketio', 'flask_limiter', 'flask_wtf',
-        'pycryptodome', 'colorama', 'qrcode', 'pillow', 'pyotp',
-        'cryptography', 'requests', 'python_dotenv'
+        'Crypto', 'colorama', 'qrcode', 'PIL', 'pyotp',
+        'cryptography', 'requests', 'dotenv'
     ]
     
     missing_packages = []
