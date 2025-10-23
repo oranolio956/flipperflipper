@@ -19,6 +19,7 @@ import time
 import hashlib
 import secrets
 import hmac
+import base64
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List, Tuple
 from dataclasses import dataclass, asdict
@@ -143,7 +144,9 @@ class EnterpriseSessionManager:
             salt=salt,
             iterations=100000,
         )
-        return kdf.derive(master_key)
+        key = kdf.derive(master_key)
+        # Fernet requires base64-encoded key
+        return base64.urlsafe_b64encode(key)
     
     def create_session(self, user_id: str, security_level: str = 'standard',
                       permissions: List[str] = None) -> Tuple[str, SessionInfo]:

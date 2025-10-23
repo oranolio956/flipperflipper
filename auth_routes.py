@@ -85,14 +85,21 @@ def login():
             flash(error_msg, 'error')
             return render_template('login.html')
         
-        # Create session
+        # Regenerate session to prevent session fixation attacks
+        # Save Flask internal session data
+        old_session_data = {k: v for k, v in session.items() if k.startswith('_')}
+        session.clear()
+        session.update(old_session_data)
+        
+        # Create new session with user data
         session_token = session_manager.create_session_token(user)
+        session.permanent = True if remember_me else False
         session['user_id'] = user.id
         session['email'] = user.email
         session['session_token'] = session_token
-        
-        if remember_me:
-            session.permanent = True
+        session['login_time'] = datetime.utcnow().isoformat()
+        session['ip_address'] = ip_address
+        session['user_agent'] = user_agent[:200] if user_agent else ''
         
         # Log successful login
         logger.info(f"User logged in: {email} from {ip_address}")

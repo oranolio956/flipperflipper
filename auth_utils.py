@@ -136,9 +136,11 @@ class AuthenticationManager:
         return password_hash.hex(), salt
     
     def _verify_password(self, password: str, password_hash: str, salt: str) -> bool:
-        """Verify a password against its hash"""
+        """Verify a password against its hash using constant-time comparison"""
+        import hmac
         computed_hash, _ = self._hash_password(password, salt)
-        return computed_hash == password_hash
+        # Use constant-time comparison to prevent timing attacks
+        return hmac.compare_digest(computed_hash, password_hash)
     
     def create_user(self, email: str, password: str, full_name: str = None) -> bool:
         """Create a new user"""
