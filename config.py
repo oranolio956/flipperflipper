@@ -181,6 +181,8 @@ class Config:
     # ============================================================================
     
     # Content Security Policy
+    CSP_ENABLED = os.getenv('STITCH_CSP_ENABLED', 'false').lower() in ('true', '1', 'yes')
+    CSP_REPORT_ONLY = os.getenv('STITCH_CSP_REPORT_ONLY', 'false').lower() in ('true', '1', 'yes')
     CSP_DEFAULT_SRC = "'self'"
     CSP_SCRIPT_SRC = "'self' 'unsafe-inline' 'unsafe-eval'"
     CSP_STYLE_SRC = "'self' 'unsafe-inline'"
@@ -397,6 +399,26 @@ class Config:
         """Get backup folder path"""
         cls.BACKUP_DIR.mkdir(parents=True, exist_ok=True)
         return str(cls.BACKUP_DIR)
+    
+    @classmethod
+    def get_csp_policy(cls, nonce=None):
+        """Get Content Security Policy string"""
+        if not cls.CSP_ENABLED:
+            return None
+        
+        policy_parts = [
+            f"default-src {cls.CSP_DEFAULT_SRC}",
+            f"script-src {cls.CSP_SCRIPT_SRC}",
+            f"style-src {cls.CSP_STYLE_SRC}",
+            f"img-src {cls.CSP_IMG_SRC}",
+            f"font-src {cls.CSP_FONT_SRC}",
+            f"connect-src {cls.CSP_CONNECT_SRC}"
+        ]
+        
+        if nonce:
+            policy_parts.append(f"script-src 'nonce-{nonce}'")
+        
+        return "; ".join(policy_parts)
 
 # Initialize the secret key after class definition
 Config.SECRET_KEY = Config.ensure_secret_key()
