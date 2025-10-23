@@ -23,7 +23,7 @@ def test_imports():
         print("✅ Flask modules imported")
         
         # Security
-        import pycryptodome
+        import Crypto
         import cryptography
         import pyotp
         import jwt
@@ -38,7 +38,7 @@ def test_imports():
         import redis
         import requests
         import qrcode
-        import pillow
+        from PIL import Image
         import psutil
         import colorama
         print("✅ Core modules imported")

@@ -27,16 +27,22 @@ def install_dependencies():
     print("📦 Installing Python Dependencies...")
     
     # Upgrade pip first
-    run_command("python3 -m pip install --upgrade pip", "Upgrading pip")
+    if not run_command("python3 -m pip install --upgrade pip", "Upgrading pip"):
+        return False
     
     # Install requirements
-    run_command("python3 -m pip install -r requirements.txt", "Installing main requirements")
+    if not run_command("python3 -m pip install -r requirements.txt", "Installing main requirements"):
+        return False
     
     # Install playwright browsers
-    run_command("python3 -m playwright install", "Installing Playwright browsers")
+    if not run_command("python3 -m playwright install", "Installing Playwright browsers"):
+        return False
     
     # Install additional system dependencies if needed
-    run_command("python3 -m pip install --upgrade setuptools wheel", "Upgrading build tools")
+    if not run_command("python3 -m pip install --upgrade setuptools wheel", "Upgrading build tools"):
+        return False
+    
+    return True
 
 def setup_directories():
     """Create necessary directories"""
