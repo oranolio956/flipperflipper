@@ -41,7 +41,7 @@ class Config:
     # ============================================================================
     
     # Primary email settings
-    FROM_EMAIL = os.getenv('FROM_EMAIL', 'brooketogo98@gmail.com')
+    FROM_EMAIL = os.getenv('FROM_EMAIL', 'admin@oranolio.local')
     FROM_NAME = os.getenv('FROM_NAME', 'Oranolio Security')
     
     # Automated Email Methods (zero configuration)
@@ -69,7 +69,7 @@ class Config:
     MAILJET_API_SECRET = os.getenv('MAILJET_API_SECRET', '')
 
     # Authorized emails for elite access (comma-separated)
-    AUTHORIZED_EMAILS = os.getenv('STITCH_AUTHORIZED_EMAILS', 'brooketogo98@gmail.com').split(',') if os.getenv('STITCH_AUTHORIZED_EMAILS') else ['brooketogo98@gmail.com']
+    AUTHORIZED_EMAILS = os.getenv('STITCH_AUTHORIZED_EMAILS', 'admin@oranolio.local').split(',') if os.getenv('STITCH_AUTHORIZED_EMAILS') else ['admin@oranolio.local']
     
     # ============================================================================
     # Security Configuration
