@@ -34,6 +34,10 @@ from dashboard_routes import dashboard_bp
 from websocket_handlers import register_websocket_handlers
 from command_handlers import register_command_handlers
 
+# Import new authentication and dashboard modules
+from new_auth_routes import new_auth_bp
+from new_dashboard_routes import new_dashboard_bp
+
 # Import utilities
 from auth_utils import login_required
 from error_handler import error_handler, ErrorSeverity, ErrorCategory, ErrorContext
@@ -80,6 +84,10 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(dashboard_bp)
+    
+    # Register new authentication and dashboard blueprints
+    app.register_blueprint(new_auth_bp)
+    app.register_blueprint(new_dashboard_bp)
     
     # Register WebSocket handlers
     register_websocket_handlers(socketio)
@@ -174,12 +182,13 @@ def create_app():
         """Health check endpoint for deployment"""
         return jsonify({'status': 'healthy', 'timestamp': str(datetime.now())})
     
-    # Root route
+    # Root route - redirect to new login
     @app.route('/')
-    @login_required
     def index():
-        """Main dashboard"""
-        return render_template('dashboard_real.html')
+        """Root route - redirect to new authentication"""
+        if session.get('authenticated'):
+            return redirect('/dashboard')
+        return redirect('/auth/login')
     
     # Store instances for external access
     app.socketio = socketio
