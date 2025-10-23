@@ -36,7 +36,7 @@ print("-" * 50)
 sys.path.insert(0, '/workspace')
 
 try:
-    from web_app_real import app, socketio
+    from main_entry import OranolioRATSystem
     
     # Use werkzeug server instead of socketio for testing
     print("\nStarting server in DEBUG mode...")

@@ -548,10 +548,10 @@ if __name__ == "__main__":
     }
     
     result = validate_input('login', test_data)
-    print(f"Login validation: {'✓' if result.is_valid else '✗'}")
+    logger.info(f"Login validation: {'✓' if result.is_valid else '✗'}")
     if result.errors:
-        print(f"  Errors: {result.errors}")
+        logger.info(f"  Errors: {result.errors}")
     if result.warnings:
-        print(f"  Warnings: {result.warnings}")
+        logger.info(f"  Warnings: {result.warnings}")
     
-    print("\nValidation system ready!")
+    logger.info("Validation system ready!")

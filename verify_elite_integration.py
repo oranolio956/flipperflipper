@@ -96,7 +96,7 @@ def verify_elite_integration():
     # 5. Check Web App Integration
     print("\n[5] Checking Web App Integration...")
     try:
-        from web_app_real import get_elite_executor
+        from c2_integration import get_elite_executor
         
         # This should work without starting the server
         print("✅ Web App: Elite executor integrated")

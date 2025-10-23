@@ -34,7 +34,7 @@ def kill_existing_processes():
     """Kill any existing processes that might be using our ports"""
     try:
         # Kill processes using port 5000
-        os.system("pkill -f 'web_app_real' 2>/dev/null || true")
+        os.system("pkill -f 'main_entry' 2>/dev/null || true")
         os.system("pkill -f 'stitch_server' 2>/dev/null || true")
         time.sleep(1)
     except:

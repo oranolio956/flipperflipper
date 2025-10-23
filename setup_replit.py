@@ -110,7 +110,7 @@ def verify_installation():
         print("✅ All core dependencies imported successfully")
         
         # Test web app import
-        from web_app_real import app
+        from web_app import create_app
         print("✅ Web application imports successfully")
         
         # Test backend import

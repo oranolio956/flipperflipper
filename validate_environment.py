@@ -93,7 +93,7 @@ def test_critical_functions():
         print("  ✅ Stitch server imported")
         
         # Test web app
-        from web_app_real import app
+        from web_app import create_app
         print("  ✅ Web app imported")
         
         return True

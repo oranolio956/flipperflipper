@@ -47,7 +47,7 @@ def test_imports():
     
     try:
         # Test main application imports
-        from web_app_real import app, socketio
+        from main_entry import OranolioRATSystem
         print("✅ Web app imported successfully")
         
         from webhook_auth_routes import webhook_auth_bp
@@ -67,7 +67,7 @@ def test_app_initialization():
     print("🚀 Testing App Initialization...")
     
     try:
-        from web_app_real import app
+        from web_app import create_app
         
         # Test app configuration
         with app.test_client() as client:

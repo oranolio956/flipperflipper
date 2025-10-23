@@ -144,8 +144,7 @@ def test_authentication():
         # Test user creation
         user = auth_manager.create_user(
             email="test@example.com",
-            password="testpass123",
-            is_verified=True
+            password="testpass123"
         )
         
         if not user:
@@ -207,14 +206,15 @@ def test_validation_schemas():
         from validation_schemas import validate_input, ValidationManager
         
         # Test email validation
-        result = validate_input('email', {'email': 'test@example.com'})
-        if not result.is_valid:
+        from validation_schemas import validate_email
+        result = validate_email('test@example.com')
+        if not result:
             logger.error("Email validation failed")
             return False
         
         # Test invalid email
-        result = validate_input('email', {'email': 'invalid-email'})
-        if result.is_valid:
+        result = validate_email('invalid-email')
+        if result:
             logger.error("Invalid email was accepted")
             return False
         

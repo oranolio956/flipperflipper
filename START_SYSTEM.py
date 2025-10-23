@@ -146,10 +146,10 @@ os.environ['STITCH_SECRET_KEY'] = 'test-secret-key'
 os.environ['STITCH_CSRF_SSL_STRICT'] = 'False'
 
 from werkzeug.security import generate_password_hash
-import web_app_real
+from main_entry import OranolioRATSystem
 # Legacy USERS dictionary removed - using webhook-based authentication
 
-from web_app_real import app, socketio
+from web_app import create_app
 
 print("[Web] Starting on http://localhost:5000")
 socketio.run(app, host='0.0.0.0', port=5000, debug=False, use_reloader=False)

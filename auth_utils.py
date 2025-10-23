@@ -86,9 +86,7 @@ class AuthenticationManager:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 last_login TIMESTAMP,
                 failed_login_attempts INTEGER DEFAULT 0,
-                locked_until TIMESTAMP,
-                api_key TEXT UNIQUE,
-                api_key_created TIMESTAMP
+                locked_until TIMESTAMP
             )
         ''')
         
@@ -183,8 +181,7 @@ class AuthenticationManager:
             # Get user data
             cursor.execute('''
                 SELECT id, email, password_hash, salt, is_active, is_verified,
-                       created_at, last_login, failed_login_attempts, locked_until,
-                       api_key, api_key_created
+                       created_at, last_login, failed_login_attempts, locked_until
                 FROM users WHERE email = ?
             ''', (email,))
             
@@ -193,7 +190,7 @@ class AuthenticationManager:
                 self._log_login_attempt(email, ip_address, False, user_agent)
                 return None
             
-            user_id, email, password_hash, salt, is_active, is_verified, created_at, last_login, failed_attempts, locked_until, api_key, api_key_created = user_data
+            user_id, email, password_hash, salt, is_active, is_verified, created_at, last_login, failed_attempts, locked_until = user_data
             
             # Check if account is locked
             if locked_until and datetime.now() < datetime.fromisoformat(locked_until):
@@ -244,9 +241,7 @@ class AuthenticationManager:
                 is_active=bool(is_active),
                 is_verified=bool(is_verified),
                 created_at=datetime.fromisoformat(created_at) if created_at else datetime.now(),
-                last_login=datetime.fromisoformat(last_login) if last_login else None,
-                api_key=api_key,
-                api_key_created=datetime.fromisoformat(api_key_created) if api_key_created else None
+                last_login=datetime.fromisoformat(last_login) if last_login else None
             )
             
             logger.info(f"User authenticated: {email}")
@@ -317,8 +312,7 @@ class AuthenticationManager:
             # Get API key and user data
             cursor.execute('''
                 SELECT u.id, u.email, u.is_active, u.is_verified, u.created_at,
-                       u.last_login, u.api_key, u.api_key_created,
-                       ak.permissions, ak.expires_at, ak.is_active
+                       u.last_login, ak.permissions, ak.expires_at, ak.is_active
                 FROM users u
                 JOIN api_keys ak ON u.id = ak.user_id
                 WHERE ak.key_hash = ? AND ak.is_active = 1
@@ -329,7 +323,7 @@ class AuthenticationManager:
                 conn.close()
                 return None
             
-            user_id, email, is_active, is_verified, created_at, last_login, user_api_key, api_key_created, permissions, expires_at, key_active = result
+            user_id, email, is_active, is_verified, created_at, last_login, permissions, expires_at, key_active = result
             
             # Check if API key is expired
             if expires_at and datetime.now() > datetime.fromisoformat(expires_at):
@@ -352,9 +346,7 @@ class AuthenticationManager:
                 is_active=bool(is_active),
                 is_verified=bool(is_verified),
                 created_at=datetime.fromisoformat(created_at) if created_at else datetime.now(),
-                last_login=datetime.fromisoformat(last_login) if last_login else None,
-                api_key=user_api_key,
-                api_key_created=datetime.fromisoformat(api_key_created) if api_key_created else None
+                last_login=datetime.fromisoformat(last_login) if last_login else None
             )
             
             return user
@@ -754,31 +746,4 @@ api_key_manager = APIKeyManager()
 
 # Example usage and testing
 if __name__ == "__main__":
-    print("Authentication Utilities")
-    print("=" * 30)
-    
-    # Test user creation
-    print("Testing user creation...")
-    success = auth_manager.create_user("test@example.com", "password123")
-    print(f"User creation: {'✓' if success else '✗'}")
-    
-    # Test authentication
-    print("Testing authentication...")
-    user = auth_manager.authenticate_user("test@example.com", "password123")
-    print(f"Authentication: {'✓' if user else '✗'}")
-    
-    if user:
-        print(f"  User ID: {user.id}")
-        print(f"  Email: {user.email}")
-        print(f"  Active: {user.is_active}")
-    
-    # Test API key creation
-    if user:
-        print("Testing API key creation...")
-        api_key = auth_manager.create_api_key(user.id, "Test Key")
-        print(f"API key creation: {'✓' if api_key else '✗'}")
-        
-        if api_key:
-            print(f"  API Key: {api_key[:10]}...")
-    
-    print("Authentication utilities ready!")
+    logger.info("Authentication utilities ready!")

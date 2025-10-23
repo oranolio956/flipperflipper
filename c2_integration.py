@@ -188,23 +188,21 @@ if __name__ == "__main__":
     print("=" * 30)
     
     # Test initialization
-    print("Testing C2 system initialization...")
+    # Test C2 system initialization
     if initialize_c2_system():
-        print("✓ C2 system initialized successfully")
+        logger.info("✓ C2 system initialized successfully")
     else:
-        print("✗ C2 system initialization failed")
+        logger.error("✗ C2 system initialization failed")
     
     # Test status
-    print("\nTesting system status...")
     status = get_system_status()
-    print(f"Stitch Server: {status['stitch_server']}")
-    print(f"Elite Executor: {status['elite_executor']}")
+    logger.info(f"Stitch Server: {status['stitch_server']}")
+    logger.info(f"Elite Executor: {status['elite_executor']}")
     
     # Test shutdown
-    print("\nTesting C2 system shutdown...")
     if shutdown_c2_system():
-        print("✓ C2 system shutdown successfully")
+        logger.info("✓ C2 system shutdown successfully")
     else:
-        print("✗ C2 system shutdown failed")
+        logger.error("✗ C2 system shutdown failed")
     
-    print("C2 integration module ready!")
+    logger.info("C2 integration module ready!")

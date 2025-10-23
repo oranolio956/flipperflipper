@@ -67,7 +67,7 @@ def test_web_app():
     print("🌐 Testing web application...")
     
     try:
-        from web_app_real import app
+        from web_app import create_app
         print("✅ Web app imported successfully")
         
         # Test basic app properties

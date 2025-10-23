@@ -110,7 +110,7 @@ def test_web_app():
     
     try:
         # Test web app import
-        from web_app_real import app
+        from web_app import create_app
         print("✅ Web app imported successfully")
         
         # Test app configuration

