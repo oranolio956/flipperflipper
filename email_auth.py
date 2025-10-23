@@ -12,7 +12,7 @@ import secrets
 from datetime import datetime, timedelta
 from pathlib import Path
 from config import Config
-from automated_email_service import automated_email_service
+from free_email_manager import free_email_manager
 
 DB_PATH = Config.APPLICATION_DIR / 'stitch.db'
 
@@ -286,8 +286,8 @@ def send_verification_email(email, ip_address=""):
         log_email_auth_event(email, 'code_generation_failed', ip_address, success=False)
         return False, None, None
     
-    # Send email via automated methods
-    success = automated_email_service.send_verification_email(email, code, ip_address)
+    # Send email via free methods
+    success = free_email_manager.send_verification_email(email, code, ip_address)
     
     if success:
         log_email_auth_event(email, 'code_sent', ip_address, success=True)
