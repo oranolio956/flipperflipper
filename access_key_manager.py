@@ -216,6 +216,7 @@ class AccessKeyManager:
         
         # Store in database
         conn = sqlite3.connect(self.db_path)
+        conn.execute("PRAGMA foreign_keys = ON")  # Enable foreign key constraints
         cursor = conn.cursor()
         
         try:
@@ -262,10 +263,17 @@ class AccessKeyManager:
         # Step 2: Rate limiting check
         if self._is_rate_limited(ip_address):
             remaining = self._get_rate_limit_reset_time(ip_address)
+            minutes = remaining // 60
+            seconds = remaining % 60
+            if minutes > 0:
+                time_str = f"{minutes} minute{'s' if minutes != 1 else ''} and {seconds} second{'s' if seconds != 1 else ''}"
+            else:
+                time_str = f"{seconds} second{'s' if seconds != 1 else ''}"
+            
             return AuthResult(
                 success=False,
                 error_code=AuthErrorCode.RATE_LIMITED,
-                error_message=f"Too many attempts. Try again in {remaining} seconds"
+                error_message=f"Too many login attempts. Please wait {time_str} before trying again. This helps protect your account from unauthorized access."
             )
         
         # Step 3: Normalize key
@@ -378,6 +386,7 @@ class AccessKeyManager:
     def _update_key_usage(self, key_id: str):
         """Update key usage statistics"""
         conn = sqlite3.connect(self.db_path)
+        conn.execute("PRAGMA foreign_keys = ON")  # Enable foreign key constraints
         cursor = conn.cursor()
         
         cursor.execute("""
@@ -446,6 +455,7 @@ class AccessKeyManager:
     ):
         """Log authentication attempt"""
         conn = sqlite3.connect(self.db_path)
+        conn.execute("PRAGMA foreign_keys = ON")  # Enable foreign key constraints
         cursor = conn.cursor()
         
         cursor.execute("""
@@ -460,6 +470,7 @@ class AccessKeyManager:
     def revoke_key(self, key_id: str) -> bool:
         """Revoke an access key"""
         conn = sqlite3.connect(self.db_path)
+        conn.execute("PRAGMA foreign_keys = ON")  # Enable foreign key constraints
         cursor = conn.cursor()
         
         cursor.execute("""

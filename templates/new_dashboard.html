@@ -33,6 +33,23 @@
             color: var(--text-primary);
             min-height: 100vh;
         }
+        
+        /* Skip links for accessibility */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 6px;
+            background: var(--primary);
+            color: white;
+            padding: 8px;
+            text-decoration: none;
+            border-radius: 4px;
+            z-index: 1000;
+        }
+        
+        .skip-link:focus {
+            top: 6px;
+        }
 
         .dashboard-container {
             display: grid;
@@ -65,18 +82,24 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px 16px;
+            padding: 16px 20px;
             border-radius: 8px;
             color: var(--text-secondary);
             text-decoration: none;
             transition: all 0.2s;
             margin-bottom: 4px;
             cursor: pointer;
+            min-height: 44px;
         }
 
         .nav-item:hover {
             background: var(--bg-tertiary);
             color: var(--text-primary);
+        }
+        
+        .nav-item:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
         }
 
         .nav-item.active {
@@ -107,13 +130,15 @@
         }
 
         .btn {
-            padding: 8px 16px;
+            padding: 12px 20px;
             border-radius: 6px;
             border: none;
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
+            min-width: 44px;
+            min-height: 44px;
         }
 
         .btn-primary {
@@ -432,45 +457,205 @@
         @media (max-width: 768px) {
             .dashboard-container {
                 grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
             }
             
             .sidebar {
-                display: none;
+                position: fixed;
+                top: 0;
+                left: -240px;
+                width: 240px;
+                height: 100vh;
+                z-index: 1000;
+                transition: left 0.3s ease;
+                background: var(--bg-secondary);
+                border-right: 1px solid var(--border-primary);
+            }
+            
+            .sidebar.open {
+                left: 0;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
             }
             
             .stats-grid {
                 grid-template-columns: 1fr;
+                gap: 15px;
             }
+            
+            .stat-card {
+                padding: 20px;
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .content-section {
+                padding: 20px;
+            }
+            
+            /* Mobile menu button */
+            .mobile-menu-btn {
+                display: block;
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 1001;
+                background: var(--primary);
+                color: white;
+                border: none;
+                padding: 12px;
+                border-radius: 8px;
+                font-size: 18px;
+                cursor: pointer;
+                min-width: 44px;
+                min-height: 44px;
+            }
+            
+            .mobile-menu-btn:focus {
+                outline: 2px solid var(--primary);
+                outline-offset: 2px;
+            }
+            
+            /* Overlay for mobile menu */
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 999;
+            }
+            
+            .sidebar-overlay.open {
+                display: block;
+            }
+        }
+        
+        /* Focus indicators for accessibility */
+        *:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+        
+        .btn:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+        }
+        
+        .nav-item:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+        
+        /* Onboarding Modal */
+        .onboarding-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .onboarding-modal.show {
+            display: flex;
+        }
+        
+        .onboarding-content {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .onboarding-steps {
+            margin: 24px 0;
+        }
+        
+        .step {
+            display: none;
+            padding: 20px;
+            border-radius: 8px;
+            background: var(--bg-tertiary);
+            margin-bottom: 16px;
+        }
+        
+        .step.active {
+            display: block;
+        }
+        
+        .step h3 {
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+        
+        .step p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        .onboarding-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
         }
     </style>
 </head>
-<body>
-    <div class="dashboard-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
+    <body>
+        <!-- Skip links for keyboard navigation -->
+        <a href="#main-content" class="skip-link">Skip to main content</a>
+        <a href="#navigation" class="skip-link">Skip to navigation</a>
+        
+        <!-- Mobile menu button -->
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open navigation menu">
+            ☰
+        </button>
+        
+        <!-- Mobile menu overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        
+        <div class="dashboard-container" role="main" aria-label="Dashboard">
+            <!-- Sidebar -->
+            <aside class="sidebar" role="navigation" aria-label="Main navigation">
             <div class="logo">
                 🔄 FlipperFlipper
             </div>
-            <nav>
-                <a href="#" class="nav-item active">
+            <nav id="navigation" role="navigation" aria-label="Main navigation">
+                <a href="#" class="nav-item active" aria-label="View dashboard" aria-current="page">
                     📊 Dashboard
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#" class="nav-item" aria-label="View agents">
                     💻 Agents
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#" class="nav-item" aria-label="View commands">
                     ⚡ Commands
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#" class="nav-item" aria-label="View payloads">
                     📦 Payloads
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#" class="nav-item" aria-label="Manage access keys">
                     🔑 Access Keys
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#" class="nav-item" aria-label="View logs">
                     📝 Logs
                 </a>
-                <a href="/auth/logout" class="nav-item">
+                <a href="/auth/logout" class="nav-item" aria-label="Logout from system">
                     🚪 Logout
                 </a>
             </nav>
@@ -486,18 +671,43 @@
         </header>
 
         <!-- Main Content -->
-        <main class="main-content">
+        <!-- Onboarding Modal -->
+        <div class="onboarding-modal" id="onboardingModal" role="dialog" aria-labelledby="onboardingTitle" aria-hidden="true">
+            <div class="onboarding-content">
+                <h2 id="onboardingTitle">Welcome to FlipperFlipper Dashboard</h2>
+                <div class="onboarding-steps">
+                    <div class="step active" data-step="1">
+                        <h3>📊 Dashboard Overview</h3>
+                        <p>This dashboard shows your active agents, system statistics, and allows you to execute commands.</p>
+                    </div>
+                    <div class="step" data-step="2">
+                        <h3>💻 Agent Management</h3>
+                        <p>View and manage your connected agents. Agents appear here when they establish a connection.</p>
+                    </div>
+                    <div class="step" data-step="3">
+                        <h3>⚡ Command Execution</h3>
+                        <p>Select an agent and execute commands in real-time using the terminal interface.</p>
+                    </div>
+                </div>
+                <div class="onboarding-actions">
+                    <button class="btn btn-secondary" id="skipOnboarding">Skip Tour</button>
+                    <button class="btn btn-primary" id="nextStep">Next</button>
+                </div>
+            </div>
+        </div>
+
+        <main class="main-content" id="main-content" role="main" aria-label="Dashboard content">
             <!-- Stats Grid -->
-            <div class="stats-grid">
-                <div class="stat-card">
+            <div class="stats-grid" role="region" aria-label="Statistics overview">
+                <div class="stat-card" role="region" aria-label="Active agents statistics">
                     <div class="stat-header">
                         <span class="stat-label">Active Agents</span>
-                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);" aria-hidden="true">
                             💻
                         </div>
                     </div>
-                    <div class="stat-value" id="activeAgents">-</div>
-                    <div class="stat-change" id="activeAgentsChange">Loading...</div>
+                    <div class="stat-value" id="activeAgents" aria-live="polite">-</div>
+                    <div class="stat-change" id="activeAgentsChange" aria-live="polite">Loading...</div>
                 </div>
 
                 <div class="stat-card">
@@ -595,7 +805,81 @@
             loadDashboardData();
             setupEventListeners();
             connectWebSocket();
+            initMobileMenu();
+            initOnboarding();
         });
+        
+        // Mobile menu functionality
+        function initMobileMenu() {
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (mobileMenuBtn && sidebar && overlay) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    sidebar.classList.toggle('open');
+                    overlay.classList.toggle('open');
+                });
+                
+                overlay.addEventListener('click', function() {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('open');
+                });
+                
+                // Close menu on escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        sidebar.classList.remove('open');
+                        overlay.classList.remove('open');
+                    }
+                });
+            }
+        }
+        
+        // Onboarding functionality
+        function initOnboarding() {
+            const modal = document.getElementById('onboardingModal');
+            const skipBtn = document.getElementById('skipOnboarding');
+            const nextBtn = document.getElementById('nextStep');
+            const steps = document.querySelectorAll('.step');
+            
+            let currentStep = 1;
+            
+            // Check if user has seen onboarding before
+            if (localStorage.getItem('onboarding_completed')) {
+                return;
+            }
+            
+            // Show onboarding for new users
+            setTimeout(() => {
+                modal.classList.add('show');
+                modal.setAttribute('aria-hidden', 'false');
+            }, 1000);
+            
+            skipBtn.addEventListener('click', () => {
+                closeOnboarding();
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                if (currentStep < steps.length) {
+                    steps[currentStep - 1].classList.remove('active');
+                    currentStep++;
+                    steps[currentStep - 1].classList.add('active');
+                    
+                    if (currentStep === steps.length) {
+                        nextBtn.textContent = 'Get Started';
+                    }
+                } else {
+                    closeOnboarding();
+                }
+            });
+            
+            function closeOnboarding() {
+                modal.classList.remove('show');
+                modal.setAttribute('aria-hidden', 'true');
+                localStorage.setItem('onboarding_completed', 'true');
+            }
+        }
 
         // Load dashboard data
         async function loadDashboardData() {
@@ -635,7 +919,10 @@
                     agentList.innerHTML = `
                         <div class="empty-state">
                             <div class="empty-state-icon">💻</div>
-                            <div>No active agents</div>
+                            <h3>No Active Agents</h3>
+                            <p>No agents are currently connected to the system.</p>
+                            <p>Agents will appear here once they establish a connection.</p>
+                            <button class="btn btn-secondary" onclick="loadAgents()">Refresh</button>
                         </div>
                     `;
                     return;
