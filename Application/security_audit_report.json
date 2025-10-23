@@ -1,0 +1,338 @@
+{
+  "audit_timestamp": "2025-10-23T02:35:08.240398",
+  "summary": {
+    "total_findings": 20,
+    "critical_issues": 0,
+    "warnings": 0,
+    "recommendations": 20,
+    "severity_breakdown": {
+      "INFO": 20
+    }
+  },
+  "critical_issues": [],
+  "warnings": [],
+  "recommendations": [
+    {
+      "category": "Encryption",
+      "severity": "INFO",
+      "issue": "Encryption key file permissions secure",
+      "description": "Key file has secure permissions (mode: 0o100600)",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:05.159359"
+    },
+    {
+      "category": "Encryption",
+      "severity": "INFO",
+      "issue": "Encryption key length appropriate",
+      "description": "Key length: 44 bytes (Fernet standard)",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:05.159416"
+    },
+    {
+      "category": "Encryption",
+      "severity": "INFO",
+      "issue": "Encryption key is valid",
+      "description": "Key can be used to create Fernet cipher",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:05.159431"
+    },
+    {
+      "category": "Session Management",
+      "severity": "INFO",
+      "issue": "HTTPOnly cookies enabled",
+      "description": "Session cookies are protected from JavaScript access",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:05.159442"
+    },
+    {
+      "category": "Session Management",
+      "severity": "INFO",
+      "issue": "SameSite cookie protection enabled",
+      "description": "SameSite setting: Lax",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:05.159448"
+    },
+    {
+      "category": "Session Management",
+      "severity": "INFO",
+      "issue": "Session timeout appropriate",
+      "description": "Session timeout: 30 minutes",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:05.159454"
+    },
+    {
+      "category": "Input Validation",
+      "severity": "INFO",
+      "issue": "Handled XSS attempt safely",
+      "description": "Input: <script>alert('xss')</script>...",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:05.771531"
+    },
+    {
+      "category": "Input Validation",
+      "severity": "INFO",
+      "issue": "Handled SQL injection attempt safely",
+      "description": "Input: '; DROP TABLE users; --...",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:06.326538"
+    },
+    {
+      "category": "Input Validation",
+      "severity": "INFO",
+      "issue": "Handled Path traversal attempt safely",
+      "description": "Input: ../../../etc/passwd...",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:06.901000"
+    },
+    {
+      "category": "Input Validation",
+      "severity": "INFO",
+      "issue": "Handled Empty input safely",
+      "description": "Input: ...",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:07.455653"
+    },
+    {
+      "category": "Input Validation",
+      "severity": "INFO",
+      "issue": "Handled Oversized input safely",
+      "description": "Input: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:08.238900"
+    },
+    {
+      "category": "Database Security",
+      "severity": "INFO",
+      "issue": "Database file permissions secure",
+      "description": "Database has secure permissions (mode: 0o100600)",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:08.239062"
+    },
+    {
+      "category": "Database Security",
+      "severity": "INFO",
+      "issue": "SQL injection protection working",
+      "description": "Parameterized queries prevent SQL injection",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:08.239870"
+    },
+    {
+      "category": "Webhook Security",
+      "severity": "INFO",
+      "issue": "Webhook URL uses HTTPS",
+      "description": "Communication with webhook is encrypted",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:08.239897"
+    },
+    {
+      "category": "Webhook Security",
+      "severity": "INFO",
+      "issue": "No passwords in webhook payload",
+      "description": "Sensitive data not exposed in webhook",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:08.239911"
+    },
+    {
+      "category": "Rate Limiting",
+      "severity": "INFO",
+      "issue": "Login attempt limit appropriate",
+      "description": "Max attempts: 5",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:08.239923"
+    },
+    {
+      "category": "Rate Limiting",
+      "severity": "INFO",
+      "issue": "Lockout duration appropriate",
+      "description": "Lockout duration: 15 minutes",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:08.239930"
+    },
+    {
+      "category": "Cryptography",
+      "severity": "INFO",
+      "issue": "TOTP secret length appropriate",
+      "description": "Secret length: 32 characters",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:08.240079"
+    },
+    {
+      "category": "Cryptography",
+      "severity": "INFO",
+      "issue": "TOTP verification working correctly",
+      "description": "Invalid tokens properly rejected",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:08.240361"
+    },
+    {
+      "category": "Cryptography",
+      "severity": "INFO",
+      "issue": "Backup code hashing working",
+      "description": "Backup codes properly hashed with SHA-256",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:08.240383"
+    }
+  ],
+  "all_findings": [
+    {
+      "category": "Encryption",
+      "severity": "INFO",
+      "issue": "Encryption key file permissions secure",
+      "description": "Key file has secure permissions (mode: 0o100600)",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:05.159359"
+    },
+    {
+      "category": "Encryption",
+      "severity": "INFO",
+      "issue": "Encryption key length appropriate",
+      "description": "Key length: 44 bytes (Fernet standard)",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:05.159416"
+    },
+    {
+      "category": "Encryption",
+      "severity": "INFO",
+      "issue": "Encryption key is valid",
+      "description": "Key can be used to create Fernet cipher",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:05.159431"
+    },
+    {
+      "category": "Session Management",
+      "severity": "INFO",
+      "issue": "HTTPOnly cookies enabled",
+      "description": "Session cookies are protected from JavaScript access",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:05.159442"
+    },
+    {
+      "category": "Session Management",
+      "severity": "INFO",
+      "issue": "SameSite cookie protection enabled",
+      "description": "SameSite setting: Lax",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:05.159448"
+    },
+    {
+      "category": "Session Management",
+      "severity": "INFO",
+      "issue": "Session timeout appropriate",
+      "description": "Session timeout: 30 minutes",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:05.159454"
+    },
+    {
+      "category": "Input Validation",
+      "severity": "INFO",
+      "issue": "Handled XSS attempt safely",
+      "description": "Input: <script>alert('xss')</script>...",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:05.771531"
+    },
+    {
+      "category": "Input Validation",
+      "severity": "INFO",
+      "issue": "Handled SQL injection attempt safely",
+      "description": "Input: '; DROP TABLE users; --...",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:06.326538"
+    },
+    {
+      "category": "Input Validation",
+      "severity": "INFO",
+      "issue": "Handled Path traversal attempt safely",
+      "description": "Input: ../../../etc/passwd...",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:06.901000"
+    },
+    {
+      "category": "Input Validation",
+      "severity": "INFO",
+      "issue": "Handled Empty input safely",
+      "description": "Input: ...",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:07.455653"
+    },
+    {
+      "category": "Input Validation",
+      "severity": "INFO",
+      "issue": "Handled Oversized input safely",
+      "description": "Input: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:08.238900"
+    },
+    {
+      "category": "Database Security",
+      "severity": "INFO",
+      "issue": "Database file permissions secure",
+      "description": "Database has secure permissions (mode: 0o100600)",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:08.239062"
+    },
+    {
+      "category": "Database Security",
+      "severity": "INFO",
+      "issue": "SQL injection protection working",
+      "description": "Parameterized queries prevent SQL injection",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:08.239870"
+    },
+    {
+      "category": "Webhook Security",
+      "severity": "INFO",
+      "issue": "Webhook URL uses HTTPS",
+      "description": "Communication with webhook is encrypted",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:08.239897"
+    },
+    {
+      "category": "Webhook Security",
+      "severity": "INFO",
+      "issue": "No passwords in webhook payload",
+      "description": "Sensitive data not exposed in webhook",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:08.239911"
+    },
+    {
+      "category": "Rate Limiting",
+      "severity": "INFO",
+      "issue": "Login attempt limit appropriate",
+      "description": "Max attempts: 5",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:08.239923"
+    },
+    {
+      "category": "Rate Limiting",
+      "severity": "INFO",
+      "issue": "Lockout duration appropriate",
+      "description": "Lockout duration: 15 minutes",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:08.239930"
+    },
+    {
+      "category": "Cryptography",
+      "severity": "INFO",
+      "issue": "TOTP secret length appropriate",
+      "description": "Secret length: 32 characters",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:08.240079"
+    },
+    {
+      "category": "Cryptography",
+      "severity": "INFO",
+      "issue": "TOTP verification working correctly",
+      "description": "Invalid tokens properly rejected",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:08.240361"
+    },
+    {
+      "category": "Cryptography",
+      "severity": "INFO",
+      "issue": "Backup code hashing working",
+      "description": "Backup codes properly hashed with SHA-256",
+      "recommendation": null,
+      "timestamp": "2025-10-23T02:35:08.240383"
+    }
+  ]
+}

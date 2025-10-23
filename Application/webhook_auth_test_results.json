@@ -1,0 +1,169 @@
+{
+  "test_summary": {
+    "total_suites": 6,
+    "passed_suites": 6,
+    "total_individual_tests": 16,
+    "passed_individual_tests": 16,
+    "timestamp": "2025-10-23T02:35:04.948748"
+  },
+  "detailed_results": [
+    {
+      "test_name": "Configuration",
+      "success": true,
+      "message": "All required configuration present",
+      "timestamp": "2025-10-23T02:35:01.043474",
+      "details": {
+        "configs_checked": 5
+      }
+    },
+    {
+      "test_name": "Authorized Emails",
+      "success": true,
+      "message": "Authorized emails configured",
+      "timestamp": "2025-10-23T02:35:01.043506",
+      "details": {
+        "emails": [
+          "brooketogo98@gmail.com"
+        ]
+      }
+    },
+    {
+      "test_name": "Directory Structure",
+      "success": true,
+      "message": "All required directories exist",
+      "timestamp": "2025-10-23T02:35:01.043546",
+      "details": {
+        "directories_checked": 3
+      }
+    },
+    {
+      "test_name": "Code Generation",
+      "success": true,
+      "message": "Successfully generated authentication code",
+      "timestamp": "2025-10-23T02:35:01.600978",
+      "details": {
+        "session_id_length": 43,
+        "display_code_length": 6,
+        "display_code": "667409"
+      }
+    },
+    {
+      "test_name": "Code Verification",
+      "success": true,
+      "message": "Successfully verified authentication code",
+      "timestamp": "2025-10-23T02:35:01.601970",
+      "details": {
+        "user_identifier": "test@example.com"
+      }
+    },
+    {
+      "test_name": "Invalid Code Rejection",
+      "success": true,
+      "message": "Correctly rejected invalid code",
+      "timestamp": "2025-10-23T02:35:01.602099",
+      "details": {
+        "message": "Invalid code. 1 attempts remaining"
+      }
+    },
+    {
+      "test_name": "Session Status",
+      "success": true,
+      "message": "Session status correctly shows verified",
+      "timestamp": "2025-10-23T02:35:01.602148",
+      "details": {
+        "verified": true
+      }
+    },
+    {
+      "test_name": "MFA Setup",
+      "success": true,
+      "message": "Successfully initiated MFA setup",
+      "timestamp": "2025-10-23T02:35:01.637034",
+      "details": {
+        "has_secret": true,
+        "has_qr_code": true,
+        "backup_codes_count": 10
+      }
+    },
+    {
+      "test_name": "Backup Code Hashing",
+      "success": true,
+      "message": "Successfully hashed backup code",
+      "timestamp": "2025-10-23T02:35:01.637360",
+      "details": {
+        "code_length": 8,
+        "hash_length": 64
+      }
+    },
+    {
+      "test_name": "MFA Status Check",
+      "success": true,
+      "message": "Successfully retrieved MFA status",
+      "timestamp": "2025-10-23T02:35:01.637651",
+      "details": {
+        "mfa_enabled": false,
+        "setup_required": true,
+        "setup_completed_at": null,
+        "last_used_at": null
+      }
+    },
+    {
+      "test_name": "IP Address Validation",
+      "success": true,
+      "message": "Correctly rejected different IP address",
+      "timestamp": "2025-10-23T02:35:03.224426",
+      "details": {
+        "message": "IP address mismatch"
+      }
+    },
+    {
+      "test_name": "Rate Limiting",
+      "success": true,
+      "message": "Correctly implemented rate limiting",
+      "timestamp": "2025-10-23T02:35:03.224899",
+      "details": {
+        "attempts": "N/A"
+      }
+    },
+    {
+      "test_name": "Database Schema",
+      "success": true,
+      "message": "All required tables exist",
+      "timestamp": "2025-10-23T02:35:03.225554",
+      "details": {
+        "tables": [
+          "user_mfa",
+          "sqlite_sequence",
+          "mfa_verification_logs"
+        ]
+      }
+    },
+    {
+      "test_name": "Encryption Key",
+      "success": true,
+      "message": "Encryption key file exists",
+      "timestamp": "2025-10-23T02:35:03.225652",
+      "details": {
+        "key_file": "/workspace/Application/.webhook_auth_key"
+      }
+    },
+    {
+      "test_name": "Webhook Accessibility",
+      "success": true,
+      "message": "Webhook URL is accessible",
+      "timestamp": "2025-10-23T02:35:03.777812",
+      "details": {
+        "status_code": 200
+      }
+    },
+    {
+      "test_name": "Webhook API",
+      "success": true,
+      "message": "Webhook API is accessible",
+      "timestamp": "2025-10-23T02:35:04.946284",
+      "details": {
+        "status_code": 200
+      }
+    }
+  ]
+}
