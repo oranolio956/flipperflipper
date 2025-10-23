@@ -46,6 +46,14 @@ except ImportError:
     WEBHOOK_AUTH_AVAILABLE = False
     logger.warning("Webhook authentication module not available")
 
+# Import admin setup routes
+try:
+    from admin_setup_routes import admin_setup_bp
+    ADMIN_SETUP_AVAILABLE = True
+except ImportError:
+    ADMIN_SETUP_AVAILABLE = False
+    logger.warning("Admin setup module not available")
+
 # Import utilities
 from auth_utils import login_required
 from error_handler import error_handler, ErrorSeverity, ErrorCategory, ErrorContext
@@ -136,6 +144,10 @@ def create_app():
     # Note: Webhook routes use HMAC signature validation instead of CSRF tokens
     if WEBHOOK_AUTH_AVAILABLE:
         app.register_blueprint(webhook_auth_bp)
+    
+    # Register admin setup blueprint
+    if ADMIN_SETUP_AVAILABLE:
+        app.register_blueprint(admin_setup_bp)
     
     # Register WebSocket handlers
     register_websocket_handlers(socketio)
