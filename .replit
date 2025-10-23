@@ -1,55 +1,34 @@
-modules = ["bash", "python-3.11"]
-[agent]
-expertMode = true
+# Replit configuration for Stitch Elite RAT System
+# This file configures how Replit runs your project
 
+# Language and runtime
+language = "python3"
+run = "python main.py"
+
+# Environment variables
+[env]
+STITCH_DEBUG = "true"
+STITCH_ADMIN_USER = "admin"
+STITCH_ADMIN_PASSWORD = "SuperSecurePass123!"
+STITCH_REDIS_URL = "memory://"
+FLASK_ENV = "development"
+FLASK_DEBUG = "true"
+
+# Nix packages for additional system dependencies
 [nix]
-channel = "stable-25_05"
-packages = ["gmp", "iana-etc", "udev"]
+channel = "stable-23_11"
 
-[[ports]]
-localPort = 4040
-externalPort = 80
+# Hidden files (don't show in file tree)
+hidden = [".env", "*.log", "*.db", "*.key", "*.pem", "*.crt"]
 
-[[ports]]
-localPort = 5000
-externalPort = 80
+# Port configuration
+[ports]
+5000 = { localPort = 5000, externalPort = 80 }
 
-[[ports]]
-localPort = 34707
-externalPort = 3001
+# Git configuration
+[git]
+enableGitSync = true
 
-[[ports]]
-localPort = 38991
-externalPort = 3002
-
-[[ports]]
-localPort = 44091
-externalPort = 3000
-
-[workflows]
-runButton = "Project"
-
-[[workflows.workflow]]
-name = "Project"
-mode = "parallel"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Stitch Web Interface"
-
-[[workflows.workflow]]
-name = "Stitch Web Interface"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python3 web_app_real.py"
-waitForPort = 5000
-
-[workflows.workflow.metadata]
-outputType = "webview"
-
-[deployment]
-run = ["python3", "web_app_real.py"]
-deploymentTarget = "autoscale"
+# Unit tests
+[unitTest]
+language = "python3"
