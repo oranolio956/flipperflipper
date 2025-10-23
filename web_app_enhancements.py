@@ -1,459 +1,406 @@
 #!/usr/bin/env python3
 """
-Web App Enhancements - Integration module for all new features
-This module contains all the integration code for the new security and operational features
+Web App Enhancements Module
+Provides enhanced logging, metrics collection, and connection management
+for the Oranolio RAT - Elite C2 Framework
 """
 
 import os
-import sys
 import json
-import uuid
 import time
-import secrets
+import threading
 import logging
-import logging.handlers
-from datetime import datetime
+from datetime import datetime, timedelta
+from collections import defaultdict, deque
+from typing import Dict, List, Optional, Any
+from dataclasses import dataclass, asdict
 from functools import wraps
-from flask import request, jsonify, g, make_response, send_file, session
 
-# Import our new modules
-from config import Config
-from auth_utils import (
-    api_key_manager, api_key_required, api_key_or_login_required,
-    track_failed_login, is_login_locked, get_lockout_time_remaining,
-    clear_failed_login_attempts
-)
-from metrics import metrics_collector
-from backup_utils import BackupManager
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# ============================================================================
-# Enhanced Logging Setup
-# ============================================================================
-def setup_enhanced_logging(app):
-    """Configure enhanced logging with rotation and remote support"""
-    
-    # Set log level
-    log_level = getattr(logging, Config.LOG_LEVEL.upper(), logging.INFO)
-    
-    # Create formatter
-    formatter = logging.Formatter(
-        Config.LOG_FORMAT,
-        datefmt=Config.LOG_DATE_FORMAT
-    )
-    
-    # File handler with rotation
-    if Config.ENABLE_FILE_LOGGING:
-        try:
-            Config.LOGS_DIR.mkdir(parents=True, exist_ok=True)
-            
-            file_handler = logging.handlers.RotatingFileHandler(
-                Config.LOG_FILE,
-                maxBytes=Config.LOG_MAX_BYTES,
-                backupCount=Config.LOG_BACKUP_COUNT
-            )
-            file_handler.setFormatter(formatter)
-            file_handler.setLevel(log_level)
-            
-            app.logger.addHandler(file_handler)
-            logging.getLogger().addHandler(file_handler)
-            
-            app.logger.info(f"File logging enabled: {Config.LOG_FILE}")
-        except Exception as e:
-            app.logger.error(f"Failed to setup file logging: {e}")
-    
-    # Syslog handler
-    if Config.ENABLE_SYSLOG:
-        try:
-            syslog_handler = logging.handlers.SysLogHandler(
-                address=(Config.SYSLOG_HOST, Config.SYSLOG_PORT)
-            )
-            syslog_handler.setFormatter(formatter)
-            syslog_handler.setLevel(log_level)
-            
-            app.logger.addHandler(syslog_handler)
-            logging.getLogger().addHandler(syslog_handler)
-            
-            app.logger.info(f"Syslog enabled: {Config.SYSLOG_HOST}:{Config.SYSLOG_PORT}")
-        except Exception as e:
-            app.logger.error(f"Failed to setup syslog: {e}")
-    
-    app.logger.setLevel(log_level)
-    app.logger.info(f"Enhanced logging initialized at {log_level} level")
+@dataclass
+class ConnectionInfo:
+    """Information about an active connection"""
+    connection_id: str
+    client_ip: str
+    user_agent: str
+    connected_at: datetime
+    last_activity: datetime
+    command_count: int = 0
+    bytes_transferred: int = 0
+    is_authenticated: bool = False
+    user_id: Optional[str] = None
 
-# ============================================================================
-# Request ID Tracking Middleware
-# ============================================================================
-def add_request_id():
-    """Add unique request ID to each request for tracking"""
-    if not hasattr(g, 'request_id'):
-        g.request_id = str(uuid.uuid4())
-    return g.request_id
+@dataclass
+class CommandMetrics:
+    """Metrics for command execution"""
+    command: str
+    execution_time: float
+    success: bool
+    error_message: Optional[str] = None
+    timestamp: datetime = None
+    
+    def __post_init__(self):
+        if self.timestamp is None:
+            self.timestamp = datetime.now()
 
-def log_request():
-    """Log incoming request with request ID"""
-    request_id = add_request_id()
-    logging.info(f"[{request_id}] {request.method} {request.path} from {request.remote_addr}")
-
-def log_response(response):
-    """Log response with request ID"""
-    request_id = getattr(g, 'request_id', 'unknown')
-    duration = getattr(g, 'request_start_time', 0)
-    if duration:
-        duration = (time.time() - duration) * 1000  # Convert to milliseconds
-        metrics_collector.record_duration('response_time', duration / 1000)
-    
-    logging.info(f"[{request_id}] Response: {response.status_code} ({duration:.2f}ms)")
-    return response
-
-# ============================================================================
-# Content Security Policy Middleware
-# ============================================================================
-def add_csp_headers(response):
-    """Add Content Security Policy headers to all responses"""
-    if Config.CSP_ENABLED and response.mimetype == 'text/html':
-        # Generate nonce for inline scripts
-        nonce = secrets.token_urlsafe(16)
-        g.csp_nonce = nonce
-        
-        # Get CSP policy
-        csp_policy = Config.get_csp_policy(nonce)
-        
-        # Add header
-        if Config.CSP_REPORT_ONLY:
-            response.headers['Content-Security-Policy-Report-Only'] = csp_policy
-        else:
-            response.headers['Content-Security-Policy'] = csp_policy
-    
-    # Add other security headers
-    response.headers['X-Content-Type-Options'] = 'nosniff'
-    response.headers['X-Frame-Options'] = 'DENY'
-    response.headers['X-XSS-Protection'] = '1; mode=block'
-    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
-    
-    if Config.ENABLE_HTTPS:
-        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-    
-    return response
-
-# ============================================================================
-# New API Endpoints
-# ============================================================================
-
-def register_config_endpoint(app):
-    """Register /api/config endpoint"""
-    @app.route('/api/config')
-    @api_key_or_login_required
-    def api_config():
-        """Get public configuration for frontend"""
-        metrics_collector.increment_counter('api_requests')
-        return jsonify(Config.get_public_config())
-
-def register_api_key_endpoints(app):
-    """Register API key management endpoints"""
-    
-    @app.route('/api/keys', methods=['GET'])
-    @api_key_required
-    def list_api_keys():
-        """List all API keys"""
-        metrics_collector.increment_counter('api_requests')
-        keys = api_key_manager.list_api_keys()
-        return jsonify({'keys': keys})
-    
-    @app.route('/api/keys', methods=['POST'])
-    @api_key_required
-    def create_api_key():
-        """Create a new API key"""
-        metrics_collector.increment_counter('api_requests')
-        
-        data = request.get_json()
-        name = data.get('name', 'Unnamed Key')
-        description = data.get('description', '')
-        
-        if not name:
-            return jsonify({'error': 'Key name is required'}), 400
-        
-        api_key = api_key_manager.generate_api_key(name, description)
-        
-        return jsonify({
-            'message': 'API key created successfully',
-            'api_key': api_key,
-            'warning': 'Save this key securely. It cannot be retrieved again.'
-        })
-    
-    @app.route('/api/keys/<key_id>', methods=['DELETE'])
-    @api_key_required
-    def revoke_api_key(key_id):
-        """Revoke an API key"""
-        metrics_collector.increment_counter('api_requests')
-        
-        if api_key_manager.revoke_api_key(key_id):
-            return jsonify({'message': 'API key revoked successfully'})
-        else:
-            return jsonify({'error': 'API key not found'}), 404
-
-def register_backup_endpoints(app):
-    """Register backup and restore endpoints"""
-    
-    @app.route('/api/backup', methods=['GET'])
-    @api_key_or_login_required
-    def create_backup():
-        """Create and download backup"""
-        metrics_collector.increment_counter('api_requests')
-        
-        try:
-            backup_path, filename, metadata = BackupManager.create_backup()
-            
-            # Log backup creation
-            app.logger.info(f"Backup created: {filename} with {len(metadata['files'])} files")
-            
-            return send_file(
-                backup_path,
-                mimetype='application/zip',
-                as_attachment=True,
-                download_name=filename
-            )
-        except Exception as e:
-            app.logger.error(f"Backup creation failed: {e}")
-            return jsonify({'error': str(e)}), 500
-    
-    @app.route('/api/restore', methods=['POST'])
-    @api_key_required  # More restrictive - only API key auth for restore
-    def restore_backup():
-        """Restore from backup"""
-        metrics_collector.increment_counter('api_requests')
-        
-        if 'backup' not in request.files:
-            return jsonify({'error': 'No backup file provided'}), 400
-        
-        backup_file = request.files['backup']
-        
-        # Save uploaded file temporarily
-        import tempfile
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.zip') as tmp_file:
-            backup_file.save(tmp_file.name)
-            tmp_path = tmp_file.name
-        
-        try:
-            # Validate and restore
-            success, result = BackupManager.restore_backup(tmp_path)
-            
-            if success:
-                app.logger.info(f"Backup restored successfully: {result['restored_files']}")
-                
-                # Reload configuration
-                Config.reload()
-                
-                return jsonify(result)
-            else:
-                return jsonify({'error': result}), 400
-                
-        except Exception as e:
-            app.logger.error(f"Restore failed: {e}")
-            return jsonify({'error': str(e)}), 500
-        finally:
-            # Clean up temp file
-            try:
-                os.unlink(tmp_path)
-            except Exception:
-                pass
-    
-    @app.route('/api/backups', methods=['GET'])
-    @api_key_or_login_required
-    def list_backups():
-        """List available backups"""
-        metrics_collector.increment_counter('api_requests')
-        backups = BackupManager.list_backups()
-        return jsonify({'backups': backups})
-
-def register_metrics_endpoint(app):
-    """Register metrics endpoint"""
-    
-    @app.route('/metrics')
-    def metrics():
-        """Prometheus-compatible metrics endpoint"""
-        if Config.METRICS_AUTH_REQUIRED:
-            # Check authentication
-            if Config.ENABLE_API_KEYS:
-                api_key = request.headers.get(Config.API_KEY_HEADER)
-                if not api_key or not api_key_manager.validate_api_key(api_key):
-                    if 'user' not in session:
-                        return jsonify({'error': 'Authentication required'}), 401
-            elif 'user' not in session:
-                return jsonify({'error': 'Authentication required'}), 401
-        
-        # Generate metrics
-        prometheus_metrics = metrics_collector.generate_prometheus_metrics()
-        
-        response = make_response(prometheus_metrics)
-        response.mimetype = 'text/plain; version=0.0.4'
-        return response
-    
-    @app.route('/api/metrics')
-    @api_key_or_login_required
-    def api_metrics():
-        """JSON metrics endpoint"""
-        metrics_collector.increment_counter('api_requests')
-        return jsonify(metrics_collector.get_json_metrics())
-
-def register_config_reload_endpoint(app):
-    """Register configuration reload endpoint"""
-    
-    @app.route('/api/config/reload', methods=['POST'])
-    @api_key_required
-    def reload_config():
-        """Reload configuration from environment variables"""
-        metrics_collector.increment_counter('api_requests')
-        
-        try:
-            new_config = Config.reload()
-            app.logger.info("Configuration reloaded successfully")
-            
-            return jsonify({
-                'message': 'Configuration reloaded successfully',
-                'config': Config.get_public_config()
-            })
-        except Exception as e:
-            app.logger.error(f"Configuration reload failed: {e}")
-            return jsonify({'error': str(e)}), 500
-
-# ============================================================================
-# Enhanced Connection Management
-# ============================================================================
+@dataclass
+class SystemMetrics:
+    """System performance metrics"""
+    timestamp: datetime
+    cpu_percent: float
+    memory_percent: float
+    active_connections: int
+    commands_per_minute: float
+    errors_per_minute: float
 
 class ConnectionManager:
-    """Enhanced connection management with pooling and heartbeat"""
+    """Manages active connections and their metadata"""
     
-    def __init__(self):
-        self.connection_pool = {}
-        self.last_heartbeat = {}
-        self.connection_latency = {}
+    def __init__(self, max_connections: int = 1000):
+        self.max_connections = max_connections
+        self.connections: Dict[str, ConnectionInfo] = {}
+        self.connection_lock = threading.RLock()
+        self.cleanup_interval = 300  # 5 minutes
+        self._start_cleanup_thread()
     
-    def update_heartbeat(self, conn_id):
-        """Update heartbeat timestamp for a connection"""
-        self.last_heartbeat[conn_id] = time.time()
-    
-    def get_connection_status(self, conn_id):
-        """Get enhanced connection status"""
-        if conn_id not in self.last_heartbeat:
-            return 'offline'
+    def _start_cleanup_thread(self):
+        """Start background thread for connection cleanup"""
+        def cleanup_old_connections():
+            while True:
+                try:
+                    time.sleep(self.cleanup_interval)
+                    self._cleanup_old_connections()
+                except Exception as e:
+                    logger.error(f"Error in connection cleanup: {e}")
         
-        time_since_heartbeat = time.time() - self.last_heartbeat[conn_id]
-        
-        if time_since_heartbeat < Config.HEARTBEAT_INTERVAL_SECONDS:
-            return 'online'
-        elif time_since_heartbeat < Config.CONNECTION_TIMEOUT_SECONDS:
-            return 'idle'
-        else:
-            return 'stale'
+        cleanup_thread = threading.Thread(target=cleanup_old_connections, daemon=True)
+        cleanup_thread.start()
     
-    def cleanup_stale_connections(self):
-        """Remove stale connections"""
-        current_time = time.time()
-        stale_threshold = Config.STALE_CONNECTION_THRESHOLD
-        
-        stale_connections = []
-        for conn_id, last_seen in self.last_heartbeat.items():
-            if current_time - last_seen > stale_threshold:
-                stale_connections.append(conn_id)
-        
-        for conn_id in stale_connections:
-            self.remove_connection(conn_id)
-            logging.info(f"Removed stale connection: {conn_id}")
+    def add_connection(self, connection_id: str, client_ip: str, user_agent: str) -> bool:
+        """Add a new connection"""
+        with self.connection_lock:
+            if len(self.connections) >= self.max_connections:
+                logger.warning(f"Maximum connections ({self.max_connections}) reached")
+                return False
+            
+            connection = ConnectionInfo(
+                connection_id=connection_id,
+                client_ip=client_ip,
+                user_agent=user_agent,
+                connected_at=datetime.now(),
+                last_activity=datetime.now()
+            )
+            self.connections[connection_id] = connection
+            logger.info(f"New connection added: {connection_id} from {client_ip}")
+            return True
     
-    def remove_connection(self, conn_id):
-        """Remove a connection from tracking"""
-        self.last_heartbeat.pop(conn_id, None)
-        self.connection_latency.pop(conn_id, None)
-        if conn_id in self.connection_pool:
-            del self.connection_pool[conn_id]
+    def update_activity(self, connection_id: str, command: str = None, bytes_transferred: int = 0):
+        """Update connection activity"""
+        with self.connection_lock:
+            if connection_id in self.connections:
+                connection = self.connections[connection_id]
+                connection.last_activity = datetime.now()
+                if command:
+                    connection.command_count += 1
+                connection.bytes_transferred += bytes_transferred
     
-    def get_connection_info(self, conn_id):
-        """Get detailed connection information"""
-        return {
-            'status': self.get_connection_status(conn_id),
-            'last_heartbeat': self.last_heartbeat.get(conn_id),
-            'latency': self.connection_latency.get(conn_id, 0),
-            'time_since_heartbeat': time.time() - self.last_heartbeat.get(conn_id, 0)
+    def remove_connection(self, connection_id: str):
+        """Remove a connection"""
+        with self.connection_lock:
+            if connection_id in self.connections:
+                connection = self.connections.pop(connection_id)
+                logger.info(f"Connection removed: {connection_id}")
+                return connection
+        return None
+    
+    def get_connection(self, connection_id: str) -> Optional[ConnectionInfo]:
+        """Get connection information"""
+        with self.connection_lock:
+            return self.connections.get(connection_id)
+    
+    def get_all_connections(self) -> List[ConnectionInfo]:
+        """Get all active connections"""
+        with self.connection_lock:
+            return list(self.connections.values())
+    
+    def _cleanup_old_connections(self):
+        """Remove connections that haven't been active for 30 minutes"""
+        cutoff_time = datetime.now() - timedelta(minutes=30)
+        with self.connection_lock:
+            old_connections = [
+                conn_id for conn_id, conn in self.connections.items()
+                if conn.last_activity < cutoff_time
+            ]
+            for conn_id in old_connections:
+                self.remove_connection(conn_id)
+            if old_connections:
+                logger.info(f"Cleaned up {len(old_connections)} old connections")
+
+class MetricsCollector:
+    """Collects and stores system metrics"""
+    
+    def __init__(self, max_metrics: int = 10000):
+        self.max_metrics = max_metrics
+        self.command_metrics: deque = deque(maxlen=max_metrics)
+        self.system_metrics: deque = deque(maxlen=max_metrics)
+        self.metrics_lock = threading.RLock()
+        self.collection_interval = 60  # 1 minute
+        self._start_collection_thread()
+    
+    def _start_collection_thread(self):
+        """Start background thread for metrics collection"""
+        def collect_metrics():
+            while True:
+                try:
+                    time.sleep(self.collection_interval)
+                    self._collect_system_metrics()
+                except Exception as e:
+                    logger.error(f"Error in metrics collection: {e}")
+        
+        collection_thread = threading.Thread(target=collect_metrics, daemon=True)
+        collection_thread.start()
+    
+    def record_command(self, command: str, execution_time: float, success: bool, error_message: str = None):
+        """Record command execution metrics"""
+        with self.metrics_lock:
+            metric = CommandMetrics(
+                command=command,
+                execution_time=execution_time,
+                success=success,
+                error_message=error_message
+            )
+            self.command_metrics.append(metric)
+    
+    def _collect_system_metrics(self):
+        """Collect system performance metrics"""
+        try:
+            import psutil
+            cpu_percent = psutil.cpu_percent(interval=1)
+            memory_percent = psutil.virtual_memory().percent
+            
+            # Calculate commands per minute
+            now = datetime.now()
+            one_minute_ago = now - timedelta(minutes=1)
+            recent_commands = [
+                m for m in self.command_metrics
+                if m.timestamp > one_minute_ago
+            ]
+            commands_per_minute = len(recent_commands)
+            
+            # Calculate errors per minute
+            recent_errors = [
+                m for m in recent_commands
+                if not m.success
+            ]
+            errors_per_minute = len(recent_errors)
+            
+            # Get active connections count
+            from . import connection_manager
+            active_connections = len(connection_manager.get_all_connections())
+            
+            metric = SystemMetrics(
+                timestamp=now,
+                cpu_percent=cpu_percent,
+                memory_percent=memory_percent,
+                active_connections=active_connections,
+                commands_per_minute=commands_per_minute,
+                errors_per_minute=errors_per_minute
+            )
+            
+            with self.metrics_lock:
+                self.system_metrics.append(metric)
+                
+        except ImportError:
+            logger.warning("psutil not available, skipping system metrics collection")
+        except Exception as e:
+            logger.error(f"Error collecting system metrics: {e}")
+    
+    def get_command_metrics(self, limit: int = 100) -> List[Dict]:
+        """Get recent command metrics"""
+        with self.metrics_lock:
+            recent_metrics = list(self.command_metrics)[-limit:]
+            return [asdict(metric) for metric in recent_metrics]
+    
+    def get_system_metrics(self, limit: int = 100) -> List[Dict]:
+        """Get recent system metrics"""
+        with self.metrics_lock:
+            recent_metrics = list(self.system_metrics)[-limit:]
+            return [asdict(metric) for metric in recent_metrics]
+    
+    def get_performance_summary(self) -> Dict[str, Any]:
+        """Get performance summary"""
+        with self.metrics_lock:
+            if not self.command_metrics:
+                return {"error": "No metrics available"}
+            
+            recent_metrics = list(self.command_metrics)[-100:]  # Last 100 commands
+            
+            total_commands = len(recent_metrics)
+            successful_commands = sum(1 for m in recent_metrics if m.success)
+            failed_commands = total_commands - successful_commands
+            
+            avg_execution_time = sum(m.execution_time for m in recent_metrics) / total_commands
+            
+            return {
+                "total_commands": total_commands,
+                "successful_commands": successful_commands,
+                "failed_commands": failed_commands,
+                "success_rate": (successful_commands / total_commands) * 100 if total_commands > 0 else 0,
+                "average_execution_time": avg_execution_time,
+                "most_common_commands": self._get_most_common_commands(recent_metrics)
+            }
+    
+    def _get_most_common_commands(self, metrics: List[CommandMetrics]) -> List[Dict[str, Any]]:
+        """Get most commonly executed commands"""
+        command_counts = defaultdict(int)
+        for metric in metrics:
+            command_counts[metric.command] += 1
+        
+        return [
+            {"command": cmd, "count": count}
+            for cmd, count in sorted(command_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+        ]
+
+class EnhancedLogger:
+    """Enhanced logging with structured output and security features"""
+    
+    def __init__(self, log_file: str = "logs/enhanced.log"):
+        self.log_file = log_file
+        self._ensure_log_directory()
+        self._setup_logger()
+    
+    def _ensure_log_directory(self):
+        """Ensure log directory exists"""
+        os.makedirs(os.path.dirname(self.log_file), exist_ok=True)
+    
+    def _setup_logger(self):
+        """Setup enhanced logger"""
+        self.logger = logging.getLogger("enhanced")
+        self.logger.setLevel(logging.INFO)
+        
+        # File handler
+        file_handler = logging.FileHandler(self.log_file)
+        file_handler.setLevel(logging.INFO)
+        
+        # Console handler
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+        
+        # Formatter
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
+        file_handler.setFormatter(formatter)
+        console_handler.setFormatter(formatter)
+        
+        self.logger.addHandler(file_handler)
+        self.logger.addHandler(console_handler)
+    
+    def log_command_execution(self, command: str, user_id: str, success: bool, execution_time: float, error: str = None):
+        """Log command execution with security context"""
+        log_data = {
+            "event": "command_execution",
+            "command": command,
+            "user_id": user_id,
+            "success": success,
+            "execution_time": execution_time,
+            "timestamp": datetime.now().isoformat()
         }
+        
+        if error:
+            log_data["error"] = error
+        
+        self.logger.info(json.dumps(log_data))
+    
+    def log_authentication(self, user_id: str, success: bool, ip_address: str, method: str):
+        """Log authentication attempts"""
+        log_data = {
+            "event": "authentication",
+            "user_id": user_id,
+            "success": success,
+            "ip_address": ip_address,
+            "method": method,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        self.logger.info(json.dumps(log_data))
+    
+    def log_security_event(self, event_type: str, details: Dict[str, Any]):
+        """Log security-related events"""
+        log_data = {
+            "event": "security",
+            "event_type": event_type,
+            "details": details,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        self.logger.warning(json.dumps(log_data))
 
-# Global connection manager instance
+# Global instances
 connection_manager = ConnectionManager()
+metrics_collector = MetricsCollector()
+enhanced_logger = EnhancedLogger()
 
-# ============================================================================
-# Integration Function
-# ============================================================================
-
-def integrate_enhancements(app, socketio, limiter):
-    """Integrate all enhancements into the Flask app"""
+def integrate_enhancements(app):
+    """Integrate enhancements into Flask app"""
     
-    # Setup enhanced logging
-    setup_enhanced_logging(app)
-    
-    # Update Flask configuration with Config values
-    app.config['SECRET_KEY'] = Config.SECRET_KEY
-    app.config['SESSION_COOKIE_HTTPONLY'] = Config.SESSION_COOKIE_HTTPONLY
-    app.config['SESSION_COOKIE_SAMESITE'] = Config.SESSION_COOKIE_SAMESITE
-    app.config['SESSION_COOKIE_SECURE'] = Config.SESSION_COOKIE_SECURE
-    app.config['PERMANENT_SESSION_LIFETIME'] = Config.PERMANENT_SESSION_LIFETIME
-    app.config['WTF_CSRF_TIME_LIMIT'] = None
-    app.config['WTF_CSRF_SSL_STRICT'] = Config.WTF_CSRF_SSL_STRICT
-    
-    # Update rate limiter with configurable values
-    limiter._default_limits = [
-        f"{Config.DEFAULT_RATE_LIMIT_DAY} per day",
-        f"{Config.DEFAULT_RATE_LIMIT_HOUR} per hour"
-    ]
-    
-    # Register middleware
     @app.before_request
     def before_request():
-        g.request_start_time = time.time()
-        log_request()
+        """Log request information"""
+        g.start_time = time.time()
+        g.request_id = f"{int(time.time() * 1000)}_{os.urandom(4).hex()}"
     
     @app.after_request
     def after_request(response):
-        response = add_csp_headers(response)
-        response = log_response(response)
+        """Log response information"""
+        if hasattr(g, 'start_time'):
+            execution_time = time.time() - g.start_time
+            enhanced_logger.logger.info(f"Request {getattr(g, 'request_id', 'unknown')} completed in {execution_time:.3f}s")
         return response
     
-    # Register new endpoints
-    register_config_endpoint(app)
+    # Add metrics endpoint
+    @app.route('/api/metrics')
+    def get_metrics():
+        """Get system metrics"""
+        return jsonify({
+            "connections": len(connection_manager.get_all_connections()),
+            "performance": metrics_collector.get_performance_summary(),
+            "system_metrics": metrics_collector.get_system_metrics(10)
+        })
     
-    if Config.ENABLE_API_KEYS:
-        register_api_key_endpoints(app)
+    # Add connection management endpoint
+    @app.route('/api/connections')
+    def get_connections():
+        """Get active connections"""
+        connections = connection_manager.get_all_connections()
+        return jsonify([asdict(conn) for conn in connections])
     
-    if Config.ENABLE_BACKUP_RESTORE:
-        register_backup_endpoints(app)
-    
-    if Config.ENABLE_METRICS:
-        register_metrics_endpoint(app)
-    
-    register_config_reload_endpoint(app)
-    
-    # Setup connection cleanup task
-    def cleanup_connections():
-        pass
-    # Monitor connection with timeout protection
-        while True:
-            time.sleep(60)  # Run every minute
-            connection_manager.cleanup_stale_connections()
-            metrics_collector.set_gauge('active_connections', len(connection_manager.last_heartbeat))
-    
-    import threading
-    cleanup_thread = threading.Thread(target=cleanup_connections, daemon=True)
-    cleanup_thread.start()
-    
-    app.logger.info("All enhancements integrated successfully")
-    
-    return app, socketio, limiter
+    return app
 
-# ============================================================================
-# Export Functions
-# ============================================================================
+def log_command_execution(command: str, user_id: str, success: bool, execution_time: float, error: str = None):
+    """Convenience function for logging command execution"""
+    enhanced_logger.log_command_execution(command, user_id, success, execution_time, error)
+    metrics_collector.record_command(command, execution_time, success, error)
 
-__all__ = [
-    'integrate_enhancements',
-    'connection_manager',
-    'metrics_collector',
-    'Config'
-]
+def log_authentication(user_id: str, success: bool, ip_address: str, method: str):
+    """Convenience function for logging authentication"""
+    enhanced_logger.log_authentication(user_id, success, ip_address, method)
+
+def log_security_event(event_type: str, details: Dict[str, Any]):
+    """Convenience function for logging security events"""
+    enhanced_logger.log_security_event(event_type, details)
+
+def get_connection_manager():
+    """Get the global connection manager instance"""
+    return connection_manager
+
+def get_metrics_collector():
+    """Get the global metrics collector instance"""
+    return metrics_collector
+
+def get_enhanced_logger():
+    """Get the global enhanced logger instance"""
+    return enhanced_logger
