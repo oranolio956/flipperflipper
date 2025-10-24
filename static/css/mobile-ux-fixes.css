@@ -1,0 +1,510 @@
+/**
+ * MOBILE UX FIXES - Production-Grade Mobile Optimizations
+ * Fixes content hierarchy, navigation flow, and touch target issues
+ * 
+ * Author: Senior Mobile UX Architect
+ * Date: 2025-10-24
+ */
+
+/* ============================================================================
+   CONTENT HIERARCHY FIXES
+   ============================================================================ */
+
+/* Overview Page - Fix 2-column layout breaking on mobile */
+@media (max-width: 768px) {
+    /* Force single column on mobile */
+    .page-content > div[style*="grid-template-columns: 2fr 1fr"] {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 24px !important;
+    }
+    
+    /* Recent Activity should come FIRST (most important) */
+    .page-content > div[style*="grid-template-columns: 2fr 1fr"] > .card:first-child {
+        order: 1;
+    }
+    
+    /* Quick Actions should come SECOND */
+    .page-content > div[style*="grid-template-columns: 2fr 1fr"] > .card:last-child {
+        order: 2;
+    }
+}
+
+/* Commands Page - Fix sidebar + panel grid */
+@media (max-width: 768px) {
+    .command-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+        height: auto !important;
+    }
+    
+    /* Categories as horizontal scrolling chips */
+    .command-categories {
+        max-height: none !important;
+        padding: 12px !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        white-space: nowrap !important;
+        -webkit-overflow-scrolling: touch;
+        
+        /* Hide scrollbar but keep functionality */
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .command-categories::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .command-categories h3 {
+        display: none; /* Hide "CATEGORIES" heading on mobile */
+    }
+    
+    /* Category items as horizontal chips */
+    .category-item {
+        display: inline-flex !important;
+        white-space: nowrap;
+        padding: 10px 16px !important;
+        margin-right: 8px !important;
+        margin-bottom: 0 !important;
+        border-radius: 20px !important;
+        background: #f0f0f0 !important;
+        color: #333 !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+    }
+    
+    .category-item.active {
+        background: var(--primary) !important;
+        color: white !important;
+    }
+    
+    .category-item i {
+        font-size: 14px;
+    }
+    
+    /* Command panel takes full width */
+    .command-panel {
+        width: 100% !important;
+    }
+    
+    /* Terminal - Better mobile height */
+    .terminal-container {
+        height: 200px !important; /* Shorter on mobile */
+        font-size: 12px !important;
+    }
+    
+    /* Command list - More compact */
+    .command-list {
+        max-height: 300px !important;
+    }
+    
+    .command-item {
+        padding: 12px !important;
+        margin-bottom: 8px !important;
+    }
+    
+    .command-name {
+        font-size: 14px !important;
+    }
+    
+    .command-description {
+        font-size: 12px !important;
+    }
+}
+
+/* Targets Page - Fix filter bar stacking */
+@media (max-width: 768px) {
+    /* Filter bar - Stack vertically on mobile */
+    .card > div[style*="display: flex"][style*="gap: 16px"] {
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+    
+    .card > div[style*="display: flex"][style*="gap: 16px"] .form-group {
+        width: 100% !important;
+        min-width: 100% !important;
+        flex: none !important;
+    }
+}
+
+/* ============================================================================
+   NAVIGATION IMPROVEMENTS
+   ============================================================================ */
+
+/* Bottom Navigation - Show 5 most important pages */
+@media (max-width: 768px) {
+    .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border-top: 1px solid var(--border-color);
+        padding: 8px 0;
+        z-index: 999;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        
+        /* Safe area for iPhone notch */
+        padding-bottom: max(8px, env(safe-area-inset-bottom));
+    }
+    
+    .mobile-bottom-nav .nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        padding: 8px 4px;
+        text-decoration: none;
+        color: var(--text-tertiary);
+        font-size: 11px;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        
+        /* Touch optimization */
+        min-height: 48px;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .mobile-bottom-nav .nav-item i {
+        font-size: 20px;
+    }
+    
+    .mobile-bottom-nav .nav-item.active {
+        color: var(--primary);
+        background: rgba(99, 91, 255, 0.1);
+    }
+    
+    .mobile-bottom-nav .nav-item:active {
+        transform: scale(0.95);
+    }
+    
+    /* Add bottom padding to page content to prevent overlap */
+    .page-content {
+        padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+    }
+}
+
+/* Sidebar - Add swipe indicator */
+@media (max-width: 768px) {
+    .sidebar::before {
+        content: '';
+        position: absolute;
+        right: -20px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 0 4px 4px 0;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .sidebar.mobile-open::before {
+        opacity: 1;
+    }
+    
+    /* Add visual feedback for swipe gesture */
+    .mobile-overlay {
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+    }
+}
+
+/* ============================================================================
+   TOUCH TARGET IMPROVEMENTS
+   ============================================================================ */
+
+/* Action buttons in tables - Better spacing */
+@media (max-width: 768px) {
+    /* Convert button groups to dropdown menu */
+    table .btn-group,
+    table td > div[style*="display: flex"][style*="gap"] {
+        position: relative;
+    }
+    
+    /* Show only first button, hide others */
+    table .btn-sm:not(:first-child) {
+        display: none;
+    }
+    
+    /* Make first button a "more" button */
+    table .btn-sm:first-child {
+        min-width: 48px !important;
+        padding: 12px !important;
+    }
+    
+    /* Add dropdown indicator */
+    table .btn-sm:first-child::after {
+        content: '⋮';
+        margin-left: 4px;
+        font-size: 16px;
+        font-weight: bold;
+    }
+}
+
+/* Modal improvements */
+@media (max-width: 768px) {
+    /* Full-screen modals on mobile */
+    div[id$="Modal"] {
+        padding: 0 !important;
+    }
+    
+    div[id$="Modal"] > div {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Larger close button */
+    div[id$="Modal"] button[onclick*="close"] {
+        min-width: 48px !important;
+        min-height: 48px !important;
+        font-size: 24px !important;
+        padding: 12px !important;
+    }
+    
+    /* Add swipe-down-to-close indicator */
+    div[id$="Modal"] > div::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        background: #ccc;
+        border-radius: 2px;
+    }
+}
+
+/* ============================================================================
+   CARD ACTIONS - Better Mobile Layout
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .card-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+    
+    .card-actions {
+        width: 100%;
+        display: flex;
+        gap: 8px;
+    }
+    
+    .card-actions .btn {
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+/* ============================================================================
+   STATS GRID - Better Mobile Stacking
+   ============================================================================ */
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr 1fr !important; /* 2 columns on small phones */
+        gap: 12px !important;
+    }
+    
+    .stat-card {
+        padding: 16px !important;
+    }
+    
+    .stat-value {
+        font-size: 24px !important;
+    }
+    
+    .stat-title {
+        font-size: 11px !important;
+    }
+    
+    .stat-icon {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 14px !important;
+    }
+}
+
+/* ============================================================================
+   FORM IMPROVEMENTS
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    /* Stack form groups vertically */
+    .form-row,
+    div[style*="display: flex"] > .form-group {
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+    
+    /* Full-width buttons in forms */
+    .form-actions,
+    .modal-footer {
+        flex-direction: column-reverse !important;
+        gap: 12px !important;
+    }
+    
+    .form-actions .btn,
+    .modal-footer .btn {
+        width: 100% !important;
+    }
+}
+
+/* ============================================================================
+   TABLE IMPROVEMENTS
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    /* Better horizontal scroll indicator */
+    .table-container,
+    div[style*="overflow-x: auto"] {
+        position: relative;
+    }
+    
+    .table-container::after,
+    div[style*="overflow-x: auto"]::after {
+        content: '→ Scroll';
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        background: linear-gradient(to right, transparent, white 30%);
+        padding: 8px 16px 8px 40px;
+        font-size: 12px;
+        color: var(--text-tertiary);
+        pointer-events: none;
+        opacity: 0.8;
+    }
+    
+    /* Hide scroll indicator when scrolled */
+    .table-container.scrolled::after,
+    div[style*="overflow-x: auto"].scrolled::after {
+        display: none;
+    }
+}
+
+/* ============================================================================
+   NOTIFICATIONS PANEL
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .notifications-panel {
+        position: fixed !important;
+        top: auto !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        max-height: 70vh !important;
+        border-radius: 16px 16px 0 0 !important;
+        
+        /* Slide up animation */
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .notifications-panel.show {
+        transform: translateY(0);
+    }
+    
+    /* Add drag handle */
+    .notifications-panel::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        background: #ccc;
+        border-radius: 2px;
+    }
+}
+
+/* ============================================================================
+   ACCESSIBILITY IMPROVEMENTS
+   ============================================================================ */
+
+/* Larger tap targets for icon-only buttons */
+@media (max-width: 768px) {
+    .btn-icon,
+    button:not(:has(span)):not(:has(div)) {
+        min-width: 48px !important;
+        min-height: 48px !important;
+        padding: 14px !important;
+    }
+    
+    /* Ensure adequate spacing between adjacent buttons */
+    .btn + .btn,
+    button + button {
+        margin-left: 12px;
+    }
+}
+
+/* Focus indicators for keyboard navigation */
+@media (max-width: 768px) {
+    *:focus-visible {
+        outline: 3px solid var(--primary) !important;
+        outline-offset: 2px !important;
+    }
+}
+
+/* ============================================================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================================================ */
+
+/* Hardware acceleration for animations */
+@media (max-width: 768px) {
+    .sidebar,
+    .mobile-overlay,
+    .notifications-panel,
+    .modal {
+        will-change: transform;
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+    }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ============================================================================
+   DARK MODE SUPPORT (Future-Proofing)
+   ============================================================================ */
+
+@media (prefers-color-scheme: dark) and (max-width: 768px) {
+    .mobile-bottom-nav {
+        background: #1a1a1a;
+        border-top-color: #333;
+    }
+    
+    .category-item {
+        background: #2a2a2a !important;
+        color: #e0e0e0 !important;
+    }
+    
+    .category-item.active {
+        background: var(--primary) !important;
+        color: white !important;
+    }
+}

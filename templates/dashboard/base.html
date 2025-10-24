@@ -9,14 +9,23 @@
     <!-- Stripe-inspired CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
     
+    <!-- Mobile-Perfect CSS - Every element meticulously optimized -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-perfect.css') }}">
+    
+    <!-- Mobile UX Fixes - Production-grade mobile improvements -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-ux-fixes.css') }}">
+    
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+    
     <!-- Sidebar Navigation -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo">
                 <i class="fas fa-bolt"></i>
@@ -150,6 +159,12 @@
     <!-- Socket.IO for real-time updates -->
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     
+    <!-- Mobile-Perfect Table Converter -->
+    <script src="{{ url_for('static', filename='js/mobile-tables.js') }}"></script>
+    
+    <!-- Mobile UX Enhancements -->
+    <script src="{{ url_for('static', filename='js/mobile-ux-enhancements.js') }}"></script>
+    
     <!-- Base JavaScript -->
     <script nonce="{{ g.csp_nonce }}">
         // Initialize Socket.IO
@@ -179,9 +194,38 @@
             }
         }
         
-        // Mobile menu toggle
-        document.getElementById('mobileMenuToggle')?.addEventListener('click', function() {
-            document.querySelector('.sidebar').classList.toggle('mobile-open');
+        // Mobile menu toggle with overlay
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        
+        function toggleMobileMenu() {
+            sidebar.classList.toggle('mobile-open');
+            mobileOverlay.classList.toggle('active');
+            mobileMenuToggle.classList.toggle('sidebar-open');
+        }
+        
+        mobileMenuToggle?.addEventListener('click', toggleMobileMenu);
+        mobileOverlay?.addEventListener('click', toggleMobileMenu);
+        
+        // Close sidebar when clicking a nav item on mobile
+        if (window.innerWidth <= 768) {
+            document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    if (sidebar.classList.contains('mobile-open')) {
+                        toggleMobileMenu();
+                    }
+                });
+            });
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('mobile-open');
+                mobileOverlay.classList.remove('active');
+                mobileMenuToggle.classList.remove('sidebar-open');
+            }
         });
         
         // Notifications dropdown
@@ -293,7 +337,55 @@
             const currentCount = parseInt(badge.textContent) || 0;
             badge.textContent = currentCount + 1;
         }
+        
+        // Touch gestures for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        document.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        }, false);
+        
+        document.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, false);
+        
+        function handleSwipe() {
+            // Swipe right to open sidebar
+            if (touchEndX > touchStartX + 50 && touchStartX < 50 && !sidebar.classList.contains('mobile-open')) {
+                toggleMobileMenu();
+            }
+            // Swipe left to close sidebar
+            if (touchStartX > touchEndX + 50 && sidebar.classList.contains('mobile-open')) {
+                toggleMobileMenu();
+            }
+        }
     </script>
+    
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav">
+        <a href="{{ url_for('dashboard.overview') }}" class="nav-item {% if request.endpoint == 'dashboard.overview' %}active{% endif %}">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="{{ url_for('dashboard.targets') }}" class="nav-item {% if request.endpoint == 'dashboard.targets' %}active{% endif %}">
+            <i class="fas fa-crosshairs"></i>
+            <span>Targets</span>
+        </a>
+        <a href="{{ url_for('dashboard.commands') }}" class="nav-item {% if request.endpoint == 'dashboard.commands' %}active{% endif %}">
+            <i class="fas fa-terminal"></i>
+            <span>Commands</span>
+        </a>
+        <a href="{{ url_for('dashboard.credentials') }}" class="nav-item {% if request.endpoint == 'dashboard.credentials' %}active{% endif %}">
+            <i class="fas fa-key"></i>
+            <span>Creds</span>
+        </a>
+        <button class="nav-item" onclick="toggleMobileMenu()">
+            <i class="fas fa-ellipsis-h"></i>
+            <span>More</span>
+        </button>
+    </nav>
     
     {% block extra_js %}{% endblock %}
 </body>

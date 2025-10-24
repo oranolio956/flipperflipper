@@ -3,6 +3,41 @@
 {% block title %}Targets - Oranolio C2{% endblock %}
 {% block page_title %}Targets{% endblock %}
 
+{% block extra_css %}
+<style>
+.filter-bar {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.filter-bar .form-group {
+    flex: 1;
+    min-width: 200px;
+    margin-bottom: 0;
+}
+
+.filter-bar .form-group:first-child {
+    flex: 2;
+}
+
+/* Mobile: Stack filters vertically */
+@media (max-width: 768px) {
+    .filter-bar {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .filter-bar .form-group {
+        width: 100%;
+        min-width: 100%;
+        flex: none;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Stats Overview -->
 <div class="stats-grid">
@@ -70,12 +105,12 @@
     </div>
     
     <!-- Filter Bar -->
-    <div style="display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;">
-        <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+    <div class="filter-bar">
+        <div class="form-group">
             <input type="text" class="form-input" id="searchTargets" placeholder="Search by hostname, IP, or user...">
         </div>
         
-        <div class="form-group" style="min-width: 150px; margin-bottom: 0;">
+        <div class="form-group">
             <select class="form-select" id="filterStatus" onchange="filterTargets()">
                 <option value="all">All Status</option>
                 <option value="online">Online</option>
@@ -84,7 +119,7 @@
             </select>
         </div>
         
-        <div class="form-group" style="min-width: 150px; margin-bottom: 0;">
+        <div class="form-group">
             <select class="form-select" id="filterOS" onchange="filterTargets()">
                 <option value="all">All OS</option>
                 <option value="windows">Windows</option>

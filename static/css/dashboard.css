@@ -711,6 +711,25 @@ body {
         transform: translateX(0);
     }
     
+    /* Swipe indicator */
+    .sidebar::after {
+        content: '';
+        position: absolute;
+        right: -3px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 60px;
+        background: rgba(99, 91, 255, 0.3);
+        border-radius: 0 3px 3px 0;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .sidebar.mobile-open::after {
+        opacity: 1;
+    }
+    
     .main-content {
         margin-left: 0;
     }
@@ -778,4 +797,135 @@ body {
 .empty-state p {
     font-size: 14px;
     margin-bottom: var(--spacing-lg);
+}
+
+/* Mobile Bottom Navigation */
+.mobile-bottom-nav {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border-top: 1px solid var(--border-color);
+        padding: 8px 0;
+        z-index: 999;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        padding-bottom: max(8px, env(safe-area-inset-bottom));
+    }
+    
+    .mobile-bottom-nav .nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        padding: 8px 4px;
+        text-decoration: none;
+        color: var(--text-tertiary);
+        font-size: 11px;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        min-height: 56px;
+        -webkit-tap-highlight-color: transparent;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .mobile-bottom-nav .nav-item i {
+        font-size: 20px;
+    }
+    
+    .mobile-bottom-nav .nav-item.active {
+        color: var(--primary);
+        background: rgba(99, 91, 255, 0.1);
+    }
+    
+    .mobile-bottom-nav .nav-item:active {
+        transform: scale(0.95);
+    }
+    
+    .page-content {
+        padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+    }
+}
+
+/* Mobile Overlay with blur */
+.mobile-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.mobile-overlay.active {
+    display: block;
+}
+
+/* Modal optimizations for mobile */
+@media (max-width: 768px) {
+    div[id$="Modal"] {
+        padding: 0 !important;
+        align-items: flex-end !important;
+    }
+    
+    div[id$="Modal"] > div {
+        max-width: 100% !important;
+        width: 100% !important;
+        max-height: 90vh !important;
+        border-radius: 16px 16px 0 0 !important;
+        margin: 0 !important;
+        animation: slideUp 0.3s ease;
+    }
+    
+    @keyframes slideUp {
+        from {
+            transform: translateY(100%);
+        }
+        to {
+            transform: translateY(0);
+        }
+    }
+    
+    /* Swipe indicator */
+    div[id$="Modal"] > div::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        background: #ccc;
+        border-radius: 2px;
+        z-index: 1;
+    }
+    
+    /* Larger close button */
+    div[id$="Modal"] button[onclick*="close"] {
+        min-width: 48px !important;
+        min-height: 48px !important;
+        padding: 12px !important;
+        font-size: 20px !important;
+    }
+    
+    /* Full-width buttons in modals */
+    div[id$="Modal"] .btn {
+        width: 100%;
+        justify-content: center;
+    }
 }

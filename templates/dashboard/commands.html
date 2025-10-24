@@ -20,6 +20,34 @@
     overflow-y: auto;
 }
 
+/* Mobile: Horizontal chip navigation */
+@media (max-width: 768px) {
+    .command-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        height: auto;
+    }
+    
+    .command-categories {
+        padding: 12px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .command-categories::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .command-categories h3 {
+        display: none;
+    }
+}
+
 .category-item {
     padding: 12px;
     border-radius: 6px;
@@ -38,6 +66,32 @@
 .category-item.active {
     background: var(--primary);
     color: white;
+}
+
+/* Mobile: Chip style */
+@media (max-width: 768px) {
+    .category-item {
+        display: inline-flex;
+        white-space: nowrap;
+        padding: 10px 16px;
+        margin-right: 8px;
+        margin-bottom: 0;
+        border-radius: 20px;
+        background: #f0f0f0;
+        color: #333;
+        font-size: 14px;
+        font-weight: 500;
+        min-height: 40px;
+    }
+    
+    .category-item.active {
+        background: var(--primary);
+        color: white;
+    }
+    
+    .category-item i {
+        font-size: 14px;
+    }
 }
 
 .command-panel {
@@ -104,6 +158,32 @@
     height: 300px;
     overflow-y: auto;
     border-top: 1px solid var(--border-color);
+}
+
+/* Mobile: Shorter terminal */
+@media (max-width: 768px) {
+    .terminal-container {
+        height: 200px;
+        font-size: 12px;
+        padding: 12px;
+    }
+    
+    .command-list {
+        max-height: 300px;
+    }
+    
+    .command-item {
+        padding: 12px;
+        margin-bottom: 8px;
+    }
+    
+    .command-name {
+        font-size: 14px;
+    }
+    
+    .command-description {
+        font-size: 12px;
+    }
 }
 
 .terminal-line {
