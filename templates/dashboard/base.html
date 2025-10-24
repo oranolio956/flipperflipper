@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <!-- CSRF token removed for now -->
     <title>{% block title %}Oranolio C2{% endblock %}</title>
     
     <!-- Stripe-inspired CSS -->
@@ -35,50 +35,50 @@
         </div>
         
         <nav class="sidebar-nav">
-            <a href="{{ url_for('dashboard.overview') }}" class="nav-item {% if request.endpoint == 'dashboard.overview' %}active{% endif %}">
+            <a href="{{ url_for('dashboard_overview') }}" class="nav-item {% if request.endpoint == 'dashboard_overview' %}active{% endif %}">
                 <i class="fas fa-home"></i>
                 <span>Overview</span>
             </a>
             
-            <a href="{{ url_for('dashboard.targets') }}" class="nav-item {% if request.endpoint == 'dashboard.targets' %}active{% endif %}">
+            <a href="{{ url_for('dashboard_targets') }}" class="nav-item {% if request.endpoint == 'dashboard_targets' %}active{% endif %}">
                 <i class="fas fa-crosshairs"></i>
                 <span>Targets</span>
                 <span class="badge" id="active-targets-count">0</span>
             </a>
             
-            <a href="{{ url_for('dashboard.commands') }}" class="nav-item {% if request.endpoint == 'dashboard.commands' %}active{% endif %}">
+            <a href="{{ url_for('dashboard_commands') }}" class="nav-item {% if request.endpoint == 'dashboard_commands' %}active{% endif %}">
                 <i class="fas fa-terminal"></i>
                 <span>Commands</span>
             </a>
             
-            <a href="{{ url_for('dashboard.files') }}" class="nav-item {% if request.endpoint == 'dashboard.files' %}active{% endif %}">
+            <a href="{{ url_for('dashboard_files') }}" class="nav-item {% if request.endpoint == 'dashboard_files' %}active{% endif %}">
                 <i class="fas fa-folder"></i>
                 <span>Files</span>
             </a>
             
-            <a href="{{ url_for('dashboard.credentials') }}" class="nav-item {% if request.endpoint == 'dashboard.credentials' %}active{% endif %}">
+            <a href="{{ url_for('dashboard_credentials') }}" class="nav-item {% if request.endpoint == 'dashboard_credentials' %}active{% endif %}">
                 <i class="fas fa-key"></i>
                 <span>Credentials</span>
             </a>
             
-            <a href="{{ url_for('dashboard.keylogs') }}" class="nav-item {% if request.endpoint == 'dashboard.keylogs' %}active{% endif %}">
+            <a href="{{ url_for('dashboard_keylogs') }}" class="nav-item {% if request.endpoint == 'dashboard_keylogs' %}active{% endif %}">
                 <i class="fas fa-keyboard"></i>
                 <span>Keylogs</span>
             </a>
             
-            <a href="{{ url_for('dashboard.logs') }}" class="nav-item {% if request.endpoint == 'dashboard.logs' %}active{% endif %}">
+            <a href="{{ url_for('dashboard_logs') }}" class="nav-item {% if request.endpoint == 'dashboard_logs' %}active{% endif %}">
                 <i class="fas fa-list"></i>
                 <span>System Logs</span>
             </a>
             
             <div class="nav-divider"></div>
             
-            <a href="{{ url_for('dashboard.settings') }}" class="nav-item {% if request.endpoint == 'dashboard.settings' %}active{% endif %}">
+            <a href="{{ url_for('dashboard_settings') }}" class="nav-item {% if request.endpoint == 'dashboard_settings' %}active{% endif %}">
                 <i class="fas fa-cog"></i>
                 <span>Settings</span>
             </a>
             
-            <a href="{{ url_for('dashboard.help') }}" class="nav-item {% if request.endpoint == 'dashboard.help' %}active{% endif %}">
+            <a href="{{ url_for('dashboard_help') }}" class="nav-item {% if request.endpoint == 'dashboard_help' %}active{% endif %}">
                 <i class="fas fa-question-circle"></i>
                 <span>Help</span>
             </a>
@@ -440,15 +440,15 @@
     
     <!-- FAB Menu -->
     <div class="fab-menu" id="fabMenu">
-        <a href="{{ url_for('dashboard.commands') }}" class="fab-menu-item">
+        <a href="{{ url_for('dashboard_commands') }}" class="fab-menu-item">
             <i class="fas fa-terminal"></i>
             <span>Execute Command</span>
         </a>
-        <a href="{{ url_for('dashboard.files') }}" class="fab-menu-item">
+        <a href="{{ url_for('dashboard_files') }}" class="fab-menu-item">
             <i class="fas fa-upload"></i>
             <span>Upload File</span>
         </a>
-        <a href="{{ url_for('dashboard.targets') }}" class="fab-menu-item">
+        <a href="{{ url_for('dashboard_targets') }}" class="fab-menu-item">
             <i class="fas fa-crosshairs"></i>
             <span>View Targets</span>
         </a>
@@ -456,19 +456,19 @@
     
     <!-- Mobile Bottom Navigation -->
     <nav class="mobile-bottom-nav">
-        <a href="{{ url_for('dashboard.overview') }}" class="nav-item {% if request.endpoint == 'dashboard.overview' %}active{% endif %}">
+        <a href="{{ url_for('dashboard_overview') }}" class="nav-item {% if request.endpoint == 'dashboard_overview' %}active{% endif %}">
             <i class="fas fa-home"></i>
             <span>Home</span>
         </a>
-        <a href="{{ url_for('dashboard.targets') }}" class="nav-item {% if request.endpoint == 'dashboard.targets' %}active{% endif %}">
+        <a href="{{ url_for('dashboard_targets') }}" class="nav-item {% if request.endpoint == 'dashboard_targets' %}active{% endif %}">
             <i class="fas fa-crosshairs"></i>
             <span>Targets</span>
         </a>
-        <a href="{{ url_for('dashboard.commands') }}" class="nav-item {% if request.endpoint == 'dashboard.commands' %}active{% endif %}">
+        <a href="{{ url_for('dashboard_commands') }}" class="nav-item {% if request.endpoint == 'dashboard_commands' %}active{% endif %}">
             <i class="fas fa-terminal"></i>
             <span>Commands</span>
         </a>
-        <a href="{{ url_for('dashboard.credentials') }}" class="nav-item {% if request.endpoint == 'dashboard.credentials' %}active{% endif %}">
+        <a href="{{ url_for('dashboard_credentials') }}" class="nav-item {% if request.endpoint == 'dashboard_credentials' %}active{% endif %}">
             <i class="fas fa-key"></i>
             <span>Creds</span>
         </a>
