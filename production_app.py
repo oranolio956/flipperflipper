@@ -103,21 +103,96 @@ def index():
         return redirect(url_for('dashboard_overview'))
     return redirect(url_for('login'))
 
+import secrets as secrets_module
+import time
+
+# Approved emails whitelist
+APPROVED_EMAILS = [
+    'admin@oranolio.local',
+    'test@oranolio.local',
+    # Add more approved emails here
+]
+
+# Store access codes temporarily (in production, use Redis)
+access_codes = {}
+
+def generate_access_code():
+    """Generate a 6-digit access code"""
+    return ''.join([str(secrets_module.randbelow(10)) for _ in range(6)])
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """Login page"""
+    """Two-step login: email verification → access code"""
     if request.method == 'POST':
-        email = request.form.get('email', '').strip().lower()
+        step = request.form.get('step', 'email')
         
-        if not email:
-            flash('Please enter an email address', 'error')
-            return render_template('login.html')
+        if step == 'email':
+            # Step 1: Check if email is approved
+            email = request.form.get('email', '').strip().lower()
+            
+            if not email:
+                return jsonify({'success': False, 'error': 'Please enter an email address'}), 400
+            
+            # Check if email is in approved list
+            if email not in APPROVED_EMAILS:
+                return jsonify({'success': False, 'error': 'This email is not authorized to access the system'}), 403
+            
+            # Generate access code
+            code = generate_access_code()
+            access_codes[email] = {
+                'code': code,
+                'expires': time.time() + 300,  # 5 minutes
+                'attempts': 0
+            }
+            
+            # In production, send this via email
+            logger.info(f"Access code for {email}: {code}")
+            
+            return jsonify({
+                'success': True,
+                'message': 'Access code generated',
+                'code': code  # Remove this in production!
+            })
         
-        # Get or create user
-        user = db.get_user_by_email(email)
-        
-        if user:
-            # User exists, log them in
+        elif step == 'code':
+            # Step 2: Verify access code
+            email = request.form.get('email', '').strip().lower()
+            code = request.form.get('code', '').strip()
+            
+            if not email or not code:
+                return jsonify({'success': False, 'error': 'Email and code required'}), 400
+            
+            # Check if code exists
+            if email not in access_codes:
+                return jsonify({'success': False, 'error': 'No access code found. Please start over.'}), 400
+            
+            code_data = access_codes[email]
+            
+            # Check if expired
+            if time.time() > code_data['expires']:
+                del access_codes[email]
+                return jsonify({'success': False, 'error': 'Access code expired. Please start over.'}), 400
+            
+            # Check attempts
+            if code_data['attempts'] >= 3:
+                del access_codes[email]
+                return jsonify({'success': False, 'error': 'Too many failed attempts. Please start over.'}), 400
+            
+            # Verify code
+            if code != code_data['code']:
+                code_data['attempts'] += 1
+                return jsonify({'success': False, 'error': f'Invalid code. {3 - code_data["attempts"]} attempts remaining.'}), 400
+            
+            # Code is valid - log user in
+            del access_codes[email]
+            
+            # Get or create user
+            user = db.get_user_by_email(email)
+            if not user:
+                user_id = db.create_user(email)
+                user = {'id': user_id, 'email': email}
+            
+            # Set session
             session['authenticated'] = True
             session['email'] = email
             session['user_id'] = user['id']
@@ -125,23 +200,10 @@ def login():
             db.update_last_login(user['id'], request.remote_addr)
             audit_log('login', details=f'User logged in from {request.remote_addr}')
             
-            flash(f'Welcome back, {email}!', 'success')
-            return redirect(url_for('dashboard_overview'))
-        else:
-            # Create new user
-            user_id = db.create_user(email)
-            if user_id:
-                session['authenticated'] = True
-                session['email'] = email
-                session['user_id'] = user_id
-                
-                audit_log('register', details=f'New user registered from {request.remote_addr}')
-                
-                flash(f'Welcome, {email}! Your account has been created.', 'success')
-                return redirect(url_for('dashboard_overview'))
-            else:
-                flash('Error creating account', 'error')
-                return render_template('login.html')
+            return jsonify({
+                'success': True,
+                'redirect': url_for('dashboard_overview')
+            })
     
     return render_template('login.html')
 
