@@ -104,89 +104,78 @@ def index():
     return redirect(url_for('login'))
 
 import secrets as secrets_module
-import time
+import hashlib
+import hmac
 
-# Approved emails whitelist
-APPROVED_EMAILS = [
-    'admin@oranolio.local',
-    'test@oranolio.local',
-    # Add more approved emails here
-]
+# Permanent access keys for each approved email
+# Format: email -> (key1, key2)
+ACCESS_KEYS = {
+    'admin@oranolio.local': (
+        'AK_7x9mP2nQ8vL4wR6tY3hJ5kN1bV0cX',
+        'SK_9zF4gH7jK2mN5pQ8rT1vW3xY6aC0bD'
+    ),
+    'test@oranolio.local': (
+        'AK_3bC5dE7fG9hJ1kL4mN6pQ8rS0tU2vW',
+        'SK_5xY7zA9bC1dE3fG5hJ7kL9mN1pQ3rS'
+    ),
+}
 
-# Store access codes temporarily (in production, use Redis)
-access_codes = {}
+def generate_secure_key(prefix='AK'):
+    """Generate a cryptographically secure access key"""
+    random_bytes = secrets_module.token_bytes(32)
+    key_hash = hashlib.sha256(random_bytes).hexdigest()[:30]
+    return f"{prefix}_{key_hash}"
 
-def generate_access_code():
-    """Generate a 6-digit access code"""
-    return ''.join([str(secrets_module.randbelow(10)) for _ in range(6)])
+def verify_access_key(email, key1, key2):
+    """Verify both access keys for an email"""
+    if email not in ACCESS_KEYS:
+        return False
+    
+    stored_key1, stored_key2 = ACCESS_KEYS[email]
+    
+    # Use constant-time comparison to prevent timing attacks
+    key1_valid = hmac.compare_digest(key1, stored_key1)
+    key2_valid = hmac.compare_digest(key2, stored_key2)
+    
+    return key1_valid and key2_valid
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """Two-step login: email verification → access code"""
+    """Secure two-step login with permanent access keys"""
     if request.method == 'POST':
         step = request.form.get('step', 'email')
         
         if step == 'email':
-            # Step 1: Check if email is approved
+            # Step 1: Check if email has access keys
             email = request.form.get('email', '').strip().lower()
             
             if not email:
                 return jsonify({'success': False, 'error': 'Please enter an email address'}), 400
             
-            # Check if email is in approved list
-            if email not in APPROVED_EMAILS:
+            # Check if email has access keys
+            if email not in ACCESS_KEYS:
                 return jsonify({'success': False, 'error': 'This email is not authorized to access the system'}), 403
-            
-            # Generate access code
-            code = generate_access_code()
-            access_codes[email] = {
-                'code': code,
-                'expires': time.time() + 300,  # 5 minutes
-                'attempts': 0
-            }
-            
-            # In production, send this via email
-            logger.info(f"Access code for {email}: {code}")
             
             return jsonify({
                 'success': True,
-                'message': 'Access code generated',
-                'code': code  # Remove this in production!
+                'message': 'Email verified. Enter your access keys.'
             })
         
-        elif step == 'code':
-            # Step 2: Verify access code
+        elif step == 'keys':
+            # Step 2: Verify access keys
             email = request.form.get('email', '').strip().lower()
-            code = request.form.get('code', '').strip()
+            key1 = request.form.get('key1', '').strip()
+            key2 = request.form.get('key2', '').strip()
             
-            if not email or not code:
-                return jsonify({'success': False, 'error': 'Email and code required'}), 400
+            if not email or not key1 or not key2:
+                return jsonify({'success': False, 'error': 'Email and both keys required'}), 400
             
-            # Check if code exists
-            if email not in access_codes:
-                return jsonify({'success': False, 'error': 'No access code found. Please start over.'}), 400
+            # Verify keys
+            if not verify_access_key(email, key1, key2):
+                audit_log('failed_login', email, f'Invalid keys from {request.remote_addr}')
+                return jsonify({'success': False, 'error': 'Invalid access keys'}), 401
             
-            code_data = access_codes[email]
-            
-            # Check if expired
-            if time.time() > code_data['expires']:
-                del access_codes[email]
-                return jsonify({'success': False, 'error': 'Access code expired. Please start over.'}), 400
-            
-            # Check attempts
-            if code_data['attempts'] >= 3:
-                del access_codes[email]
-                return jsonify({'success': False, 'error': 'Too many failed attempts. Please start over.'}), 400
-            
-            # Verify code
-            if code != code_data['code']:
-                code_data['attempts'] += 1
-                return jsonify({'success': False, 'error': f'Invalid code. {3 - code_data["attempts"]} attempts remaining.'}), 400
-            
-            # Code is valid - log user in
-            del access_codes[email]
-            
-            # Get or create user
+            # Keys are valid - log user in
             user = db.get_user_by_email(email)
             if not user:
                 user_id = db.create_user(email)
