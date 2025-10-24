@@ -63,7 +63,7 @@
     <div class="card priority-high">
         <div class="card-header">
             <h2 class="card-title"><i class="fas fa-history"></i> Recent Activity</h2>
-            <a href="{{ url_for('dashboard.logs') }}" class="btn btn-secondary btn-sm">View All</a>
+            <a href="{{ url_for('dashboard_logs') }}" class="btn btn-secondary btn-sm">View All</a>
         </div>
         
         <div id="recentActivity">
@@ -78,7 +78,7 @@
         </div>
         
         <div class="quick-actions-grid">
-            <a href="{{ url_for('dashboard.targets') }}" class="quick-action-card">
+            <a href="{{ url_for('dashboard_targets') }}" class="quick-action-card">
                 <div class="quick-action-icon success">
                     <i class="fas fa-crosshairs"></i>
                 </div>
@@ -88,7 +88,7 @@
                 </div>
             </a>
             
-            <a href="{{ url_for('dashboard.commands') }}" class="quick-action-card">
+            <a href="{{ url_for('dashboard_commands') }}" class="quick-action-card">
                 <div class="quick-action-icon primary">
                     <i class="fas fa-terminal"></i>
                 </div>
@@ -98,7 +98,7 @@
                 </div>
             </a>
             
-            <a href="{{ url_for('dashboard.files') }}" class="quick-action-card">
+            <a href="{{ url_for('dashboard_files') }}" class="quick-action-card">
                 <div class="quick-action-icon info">
                     <i class="fas fa-upload"></i>
                 </div>
@@ -108,7 +108,7 @@
                 </div>
             </a>
             
-            <a href="{{ url_for('dashboard.credentials') }}" class="quick-action-card">
+            <a href="{{ url_for('dashboard_credentials') }}" class="quick-action-card">
                 <div class="quick-action-icon warning">
                     <i class="fas fa-key"></i>
                 </div>
@@ -125,7 +125,7 @@
 <div class="card">
     <div class="card-header">
         <h2 class="card-title"><i class="fas fa-crosshairs"></i> Active Targets</h2>
-        <a href="{{ url_for('dashboard.targets') }}" class="btn btn-secondary btn-sm">View All</a>
+        <a href="{{ url_for('dashboard_targets') }}" class="btn btn-secondary btn-sm">View All</a>
     </div>
     
     <div class="table-responsive">
@@ -401,7 +401,7 @@ function renderActiveTargets(targets) {
             <td>${escapeHtml(target.user_info)}</td>
             <td>${formatDate(target.last_seen)}</td>
             <td>
-                <a href="{{ url_for('dashboard.commands') }}?target=${target.id}" class="btn btn-primary btn-sm">
+                <a href="{{ url_for('dashboard_commands') }}?target=${target.id}" class="btn btn-primary btn-sm">
                     <i class="fas fa-terminal"></i>
                 </a>
             </td>
