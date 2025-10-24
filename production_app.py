@@ -50,6 +50,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', secrets.token_hex(32))
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)  # 30 days
 app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['DOWNLOAD_FOLDER'] = DOWNLOAD_FOLDER
@@ -181,7 +182,8 @@ def login():
                 user_id = db.create_user(email)
                 user = {'id': user_id, 'email': email}
             
-            # Set session
+            # Set session with permanent flag (remember me)
+            session.permanent = True  # Makes session last 30 days
             session['authenticated'] = True
             session['email'] = email
             session['user_id'] = user['id']

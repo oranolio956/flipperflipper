@@ -86,7 +86,7 @@
                 <i class="fas fa-user-circle"></i>
                 <span>{{ session.get('username', 'Admin') }}</span>
             </div>
-            <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+            <a href="{{ url_for('logout') }}" class="logout-btn">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </a>
