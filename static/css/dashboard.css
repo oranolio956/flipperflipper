@@ -705,13 +705,38 @@ body {
 @media (max-width: 768px) {
     .sidebar {
         transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .sidebar.mobile-open {
         transform: translateX(0);
     }
     
-    /* Swipe indicator */
+    /* CRITICAL FIX: Ensure sidebar is hidden by default */
+    body:not(.sidebar-open) .sidebar {
+        transform: translateX(-100%) !important;
+    }
+    
+    /* Edge swipe indicator (iOS pattern) */
+    body::before {
+        content: '';
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 20px;
+        background: linear-gradient(to right, rgba(99, 91, 255, 0.1), transparent);
+        z-index: 997;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    body:not(.sidebar-open)::before {
+        opacity: 1;
+    }
+    
+    /* Swipe indicator on sidebar edge */
     .sidebar::after {
         content: '';
         position: absolute;
@@ -720,10 +745,11 @@ body {
         transform: translateY(-50%);
         width: 3px;
         height: 60px;
-        background: rgba(99, 91, 255, 0.3);
+        background: rgba(99, 91, 255, 0.5);
         border-radius: 0 3px 3px 0;
         opacity: 0;
         transition: opacity 0.3s ease;
+        pointer-events: none;
     }
     
     .sidebar.mobile-open::after {
@@ -736,6 +762,14 @@ body {
     
     .mobile-menu-toggle {
         display: block;
+    }
+    
+    /* Top bar auto-hide */
+    .top-bar {
+        position: sticky;
+        top: 0;
+        z-index: 998;
+        transition: transform 0.3s ease;
     }
     
     .page-content {
@@ -874,6 +908,154 @@ body {
 
 .mobile-overlay.active {
     display: block;
+}
+
+/* Bottom Sheet Navigation (Material Design pattern) */
+@media (max-width: 768px) {
+    .bottom-sheet {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 16px 16px 0 0;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+        transform: translateY(100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1001;
+        max-height: 70vh;
+        overflow-y: auto;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .bottom-sheet.active {
+        transform: translateY(0);
+    }
+    
+    .bottom-sheet-handle {
+        width: 40px;
+        height: 4px;
+        background: #ccc;
+        border-radius: 2px;
+        margin: 12px auto 16px;
+    }
+    
+    .bottom-sheet-content {
+        padding: 0 16px 24px;
+    }
+    
+    .bottom-sheet-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        border-radius: 12px;
+        text-decoration: none;
+        color: var(--text-primary);
+        transition: background 0.2s ease;
+        min-height: 56px;
+    }
+    
+    .bottom-sheet-item:active {
+        background: var(--bg-hover);
+    }
+    
+    .bottom-sheet-item i {
+        font-size: 24px;
+        width: 32px;
+        text-align: center;
+        color: var(--primary);
+    }
+    
+    .bottom-sheet-item span {
+        font-size: 16px;
+        font-weight: 500;
+    }
+}
+
+/* Floating Action Button (FAB) for quick commands */
+@media (max-width: 768px) {
+    .fab {
+        position: fixed;
+        bottom: calc(72px + env(safe-area-inset-bottom));
+        right: 16px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 12px rgba(99, 91, 255, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 998;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .fab:active {
+        transform: scale(0.9);
+    }
+    
+    .fab.hidden {
+        transform: translateY(100px);
+        opacity: 0;
+    }
+    
+    /* FAB menu */
+    .fab-menu {
+        position: fixed;
+        bottom: calc(140px + env(safe-area-inset-bottom));
+        right: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        opacity: 0;
+        transform: scale(0);
+        transform-origin: bottom right;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 997;
+    }
+    
+    .fab-menu.active {
+        opacity: 1;
+        transform: scale(1);
+    }
+    
+    .fab-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: white;
+        padding: 12px 16px;
+        border-radius: 28px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        text-decoration: none;
+        color: var(--text-primary);
+        white-space: nowrap;
+        transition: all 0.2s ease;
+    }
+    
+    .fab-menu-item:active {
+        transform: scale(0.95);
+    }
+    
+    .fab-menu-item i {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+    }
+    
+    .fab-menu-item span {
+        font-size: 14px;
+        font-weight: 500;
+    }
 }
 
 /* Modal optimizations for mobile */

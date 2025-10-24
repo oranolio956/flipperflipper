@@ -1,0 +1,469 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Overview - Oranolio C2{% endblock %}
+{% block page_title %}Dashboard Overview{% endblock %}
+
+{% block content %}
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Active Targets</span>
+            <div class="stat-icon success">
+                <i class="fas fa-crosshairs"></i>
+            </div>
+        </div>
+        <div class="stat-value" id="activeTargets">0</div>
+        <div class="stat-change positive" id="targetsChange">
+            <i class="fas fa-arrow-up"></i> +0%
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Commands Executed</span>
+            <div class="stat-icon primary">
+                <i class="fas fa-terminal"></i>
+            </div>
+        </div>
+        <div class="stat-value" id="commandsExecuted">0</div>
+        <div class="stat-change">Today</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Credentials</span>
+            <div class="stat-icon warning">
+                <i class="fas fa-key"></i>
+            </div>
+        </div>
+        <div class="stat-value" id="credentialsCount">0</div>
+        <div class="stat-change positive" id="credsChange">
+            <i class="fas fa-arrow-up"></i> +0 today
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Success Rate</span>
+            <div class="stat-icon danger">
+                <i class="fas fa-chart-line"></i>
+            </div>
+        </div>
+        <div class="stat-value" id="successRate">0%</div>
+        <div class="stat-change">Last 24h</div>
+    </div>
+</div>
+
+<!-- MOBILE-OPTIMIZED: Content prioritized for mobile users -->
+<!-- Recent Activity comes FIRST (most important) -->
+<!-- Quick Actions comes SECOND (contextual) -->
+<div class="mobile-optimized-grid">
+    <!-- Recent Activity (Priority 1) -->
+    <div class="card priority-high">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-history"></i> Recent Activity</h2>
+            <a href="{{ url_for('dashboard.logs') }}" class="btn btn-secondary btn-sm">View All</a>
+        </div>
+        
+        <div id="recentActivity">
+            <div class="spinner"></div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions (Priority 2) -->
+    <div class="card priority-medium">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-bolt"></i> Quick Actions</h2>
+        </div>
+        
+        <div class="quick-actions-grid">
+            <a href="{{ url_for('dashboard.targets') }}" class="quick-action-card">
+                <div class="quick-action-icon success">
+                    <i class="fas fa-crosshairs"></i>
+                </div>
+                <div class="quick-action-content">
+                    <div class="quick-action-title">View Targets</div>
+                    <div class="quick-action-subtitle">Manage connections</div>
+                </div>
+            </a>
+            
+            <a href="{{ url_for('dashboard.commands') }}" class="quick-action-card">
+                <div class="quick-action-icon primary">
+                    <i class="fas fa-terminal"></i>
+                </div>
+                <div class="quick-action-content">
+                    <div class="quick-action-title">Execute Commands</div>
+                    <div class="quick-action-subtitle">Run operations</div>
+                </div>
+            </a>
+            
+            <a href="{{ url_for('dashboard.files') }}" class="quick-action-card">
+                <div class="quick-action-icon info">
+                    <i class="fas fa-upload"></i>
+                </div>
+                <div class="quick-action-content">
+                    <div class="quick-action-title">Upload Files</div>
+                    <div class="quick-action-subtitle">Transfer data</div>
+                </div>
+            </a>
+            
+            <a href="{{ url_for('dashboard.credentials') }}" class="quick-action-card">
+                <div class="quick-action-icon warning">
+                    <i class="fas fa-key"></i>
+                </div>
+                <div class="quick-action-content">
+                    <div class="quick-action-title">View Credentials</div>
+                    <div class="quick-action-subtitle">Access captured data</div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Active Targets (Priority 3) -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-crosshairs"></i> Active Targets</h2>
+        <a href="{{ url_for('dashboard.targets') }}" class="btn btn-secondary btn-sm">View All</a>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table" id="activeTargetsTable">
+            <thead>
+                <tr>
+                    <th>Hostname</th>
+                    <th>IP Address</th>
+                    <th>OS</th>
+                    <th>User</th>
+                    <th>Last Seen</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="activeTargetsTableBody">
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px;">
+                        <div class="spinner"></div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Mobile-Optimized Grid Layout */
+.mobile-optimized-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+/* Quick Actions Grid */
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.quick-action-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    background: white;
+    
+    /* Touch optimization */
+    min-height: 72px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.quick-action-card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-2px);
+}
+
+.quick-action-card:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.quick-action-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.quick-action-icon.primary { background: rgba(99, 91, 255, 0.1); color: var(--primary); }
+.quick-action-icon.success { background: rgba(0, 217, 36, 0.1); color: var(--success); }
+.quick-action-icon.warning { background: rgba(255, 192, 67, 0.1); color: var(--warning); }
+.quick-action-icon.info { background: rgba(23, 162, 184, 0.1); color: var(--info); }
+
+.quick-action-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.quick-action-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.quick-action-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    /* Single column on mobile - Recent Activity FIRST */
+    .mobile-optimized-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    /* Ensure proper order */
+    .priority-high {
+        order: 1;
+    }
+    
+    .priority-medium {
+        order: 2;
+    }
+    
+    /* Quick actions as 2-column grid on mobile */
+    .quick-actions-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    
+    .quick-action-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 12px;
+        min-height: 100px;
+    }
+    
+    .quick-action-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+    
+    .quick-action-title {
+        font-size: 13px;
+    }
+    
+    .quick-action-subtitle {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Stack quick actions vertically on very small screens */
+    .quick-actions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-action-card {
+        flex-direction: row;
+        text-align: left;
+        justify-content: flex-start;
+        min-height: 64px;
+    }
+}
+
+/* Table responsive wrapper */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script nonce="{{ g.csp_nonce }}">
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardData();
+    setInterval(loadDashboardData, 30000);
+});
+
+async function loadDashboardData() {
+    try {
+        const response = await fetch('/api/dashboard/overview', {
+            headers: { 'X-CSRFToken': csrfToken }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load dashboard data');
+        
+        const data = await response.json();
+        
+        // Update stats
+        document.getElementById('activeTargets').textContent = data.stats.active_targets || 0;
+        document.getElementById('commandsExecuted').textContent = data.stats.commands_today || 0;
+        document.getElementById('credentialsCount').textContent = data.stats.total_credentials || 0;
+        document.getElementById('successRate').textContent = (data.stats.success_rate || 0) + '%';
+        
+        // Update changes
+        if (data.stats.targets_change) {
+            const change = data.stats.targets_change;
+            document.getElementById('targetsChange').innerHTML = `
+                <i class="fas fa-arrow-${change >= 0 ? 'up' : 'down'}"></i> ${change >= 0 ? '+' : ''}${change}%
+            `;
+            document.getElementById('targetsChange').className = `stat-change ${change >= 0 ? 'positive' : 'negative'}`;
+        }
+        
+        if (data.stats.creds_today) {
+            document.getElementById('credsChange').innerHTML = `
+                <i class="fas fa-arrow-up"></i> +${data.stats.creds_today} today
+            `;
+        }
+        
+        // Render recent activity
+        renderRecentActivity(data.recent_activity || []);
+        
+        // Render active targets
+        renderActiveTargets(data.active_targets || []);
+        
+    } catch (error) {
+        console.error('Error loading dashboard data:', error);
+    }
+}
+
+function renderRecentActivity(activities) {
+    const container = document.getElementById('recentActivity');
+    
+    if (activities.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-history"></i>
+                <h3>No recent activity</h3>
+                <p>Activity will appear here</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = activities.map(activity => `
+        <div style="padding: 12px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: ${getActivityColor(activity.type)}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i class="fas ${getActivityIcon(activity.type)}" style="color: white;"></i>
+            </div>
+            <div style="flex: 1; min-width: 0;">
+                <div style="font-weight: 500; font-size: 14px; color: var(--text-primary);">
+                    ${escapeHtml(activity.message)}
+                </div>
+                <div style="font-size: 12px; color: var(--text-tertiary); margin-top: 2px;">
+                    ${formatDate(activity.timestamp)}
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderActiveTargets(targets) {
+    const tbody = document.getElementById('activeTargetsTableBody');
+    
+    if (targets.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 40px;">
+                    <div class="empty-state">
+                        <i class="fas fa-crosshairs"></i>
+                        <h3>No active targets</h3>
+                        <p>Targets will appear here when connected</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = targets.slice(0, 5).map(target => `
+        <tr>
+            <td><strong>${escapeHtml(target.hostname)}</strong></td>
+            <td><code>${escapeHtml(target.ip_address)}</code></td>
+            <td>${escapeHtml(target.os_info)}</td>
+            <td>${escapeHtml(target.user_info)}</td>
+            <td>${formatDate(target.last_seen)}</td>
+            <td>
+                <a href="{{ url_for('dashboard.commands') }}?target=${target.id}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-terminal"></i>
+                </a>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function getActivityIcon(type) {
+    const icons = {
+        'target_connected': 'fa-plus-circle',
+        'target_disconnected': 'fa-minus-circle',
+        'command_executed': 'fa-terminal',
+        'credential_captured': 'fa-key',
+        'file_uploaded': 'fa-upload',
+        'file_downloaded': 'fa-download'
+    };
+    return icons[type] || 'fa-info-circle';
+}
+
+function getActivityColor(type) {
+    const colors = {
+        'target_connected': 'var(--success)',
+        'target_disconnected': 'var(--danger)',
+        'command_executed': 'var(--primary)',
+        'credential_captured': 'var(--warning)',
+        'file_uploaded': 'var(--info)',
+        'file_downloaded': 'var(--info)'
+    };
+    return colors[type] || 'var(--text-tertiary)';
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now - date;
+    
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return Math.floor(diff / 60000) + ' minutes ago';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + ' hours ago';
+    
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Listen for real-time updates
+socket.on('dashboard_update', function(data) {
+    loadDashboardData();
+});
+
+socket.on('target_connected', function(data) {
+    loadDashboardData();
+    showNotification(`New target connected: ${data.hostname}`, 'success');
+});
+
+socket.on('target_disconnected', function(data) {
+    loadDashboardData();
+    showNotification(`Target disconnected: ${data.hostname}`, 'warning');
+});
+</script>
+{% endblock %}

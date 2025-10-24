@@ -200,9 +200,21 @@
         const mobileOverlay = document.getElementById('mobileOverlay');
         
         function toggleMobileMenu() {
-            sidebar.classList.toggle('mobile-open');
-            mobileOverlay.classList.toggle('active');
-            mobileMenuToggle.classList.toggle('sidebar-open');
+            const isOpen = sidebar.classList.contains('mobile-open');
+            
+            if (isOpen) {
+                // Close sidebar
+                sidebar.classList.remove('mobile-open');
+                mobileOverlay.classList.remove('active');
+                mobileMenuToggle.classList.remove('sidebar-open');
+                document.body.classList.remove('sidebar-open');
+            } else {
+                // Open sidebar
+                sidebar.classList.add('mobile-open');
+                mobileOverlay.classList.add('active');
+                mobileMenuToggle.classList.add('sidebar-open');
+                document.body.classList.add('sidebar-open');
+            }
         }
         
         mobileMenuToggle?.addEventListener('click', toggleMobileMenu);
@@ -338,30 +350,109 @@
             badge.textContent = currentCount + 1;
         }
         
+        // FAB menu toggle
+        function toggleFabMenu() {
+            const fabMenu = document.getElementById('fabMenu');
+            const fab = document.getElementById('fab');
+            const isActive = fabMenu.classList.contains('active');
+            
+            if (isActive) {
+                fabMenu.classList.remove('active');
+                fab.innerHTML = '<i class="fas fa-bolt"></i>';
+            } else {
+                fabMenu.classList.add('active');
+                fab.innerHTML = '<i class="fas fa-times"></i>';
+            }
+        }
+        
+        // Close FAB menu when clicking outside
+        document.addEventListener('click', function(e) {
+            const fab = document.getElementById('fab');
+            const fabMenu = document.getElementById('fabMenu');
+            
+            if (!fab?.contains(e.target) && !fabMenu?.contains(e.target)) {
+                fabMenu?.classList.remove('active');
+                if (fab) fab.innerHTML = '<i class="fas fa-bolt"></i>';
+            }
+        });
+        
+        // Auto-hide top bar and FAB on scroll down, show on scroll up
+        let lastScrollTop = 0;
+        const topBar = document.querySelector('.top-bar');
+        const fab = document.getElementById('fab');
+        const scrollThreshold = 10;
+        
+        window.addEventListener('scroll', function() {
+            if (window.innerWidth > 768) return; // Mobile only
+            
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (Math.abs(scrollTop - lastScrollTop) < scrollThreshold) return;
+            
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                // Scrolling down - hide top bar and FAB
+                topBar.style.transform = 'translateY(-100%)';
+                topBar.style.transition = 'transform 0.3s ease';
+                fab?.classList.add('hidden');
+            } else {
+                // Scrolling up - show top bar and FAB
+                topBar.style.transform = 'translateY(0)';
+                topBar.style.transition = 'transform 0.3s ease';
+                fab?.classList.remove('hidden');
+            }
+            
+            lastScrollTop = scrollTop;
+        }, { passive: true });
+        
         // Touch gestures for mobile
         let touchStartX = 0;
         let touchEndX = 0;
+        let touchStartY = 0;
         
         document.addEventListener('touchstart', function(e) {
             touchStartX = e.changedTouches[0].screenX;
-        }, false);
+            touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
         
         document.addEventListener('touchend', function(e) {
             touchEndX = e.changedTouches[0].screenX;
             handleSwipe();
-        }, false);
+        }, { passive: true });
         
         function handleSwipe() {
-            // Swipe right to open sidebar
-            if (touchEndX > touchStartX + 50 && touchStartX < 50 && !sidebar.classList.contains('mobile-open')) {
+            const swipeDistance = touchEndX - touchStartX;
+            
+            // Swipe right from left edge to open sidebar (iOS pattern)
+            if (swipeDistance > 80 && touchStartX < 30 && !sidebar.classList.contains('mobile-open')) {
                 toggleMobileMenu();
             }
             // Swipe left to close sidebar
-            if (touchStartX > touchEndX + 50 && sidebar.classList.contains('mobile-open')) {
+            if (swipeDistance < -80 && sidebar.classList.contains('mobile-open')) {
                 toggleMobileMenu();
             }
         }
     </script>
+    
+    <!-- Floating Action Button (FAB) for quick commands -->
+    <button class="fab" id="fab" onclick="toggleFabMenu()">
+        <i class="fas fa-bolt"></i>
+    </button>
+    
+    <!-- FAB Menu -->
+    <div class="fab-menu" id="fabMenu">
+        <a href="{{ url_for('dashboard.commands') }}" class="fab-menu-item">
+            <i class="fas fa-terminal"></i>
+            <span>Execute Command</span>
+        </a>
+        <a href="{{ url_for('dashboard.files') }}" class="fab-menu-item">
+            <i class="fas fa-upload"></i>
+            <span>Upload File</span>
+        </a>
+        <a href="{{ url_for('dashboard.targets') }}" class="fab-menu-item">
+            <i class="fas fa-crosshairs"></i>
+            <span>View Targets</span>
+        </a>
+    </div>
     
     <!-- Mobile Bottom Navigation -->
     <nav class="mobile-bottom-nav">
