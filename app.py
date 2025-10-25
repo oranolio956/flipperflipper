@@ -306,6 +306,16 @@ def health():
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
+        'version': '1.1.0',
+        'service': 'Oranolio RAT C2 Framework'
+    })
+
+@app.route('/')
+def root():
+    """Root endpoint for health checks"""
+    return jsonify({
+        'status': 'running',
+        'service': 'Oranolio RAT C2 Framework',
         'version': '1.1.0'
     })
 

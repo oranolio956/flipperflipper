@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: oranolio-rat
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: STITCH_HOST
+        value: 0.0.0.0
+      - key: STITCH_PORT
+        value: 5000
+      - key: SECRET_KEY
+        generateValue: true
