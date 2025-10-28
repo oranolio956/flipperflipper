@@ -1,0 +1,75 @@
+{
+  "simple_mode": false,
+  "simple_welcome_message": "Hey {username}! Welcome! 👋",
+  "simple_help_message": "Hey {username}! What do you need help with?",
+  
+  "welcome_messages": [
+    "Hey {username}! Welcome to the group! 👋 Glad you're here!",
+    "Hi {username}! Great to have you join us! Feel free to ask if you need anything 😊",
+    "Welcome {username}! 🎉 Hope you enjoy the community!",
+    "Hey there {username}! Welcome aboard! Don't hesitate to reach out if you have questions 💬",
+    "Hi {username}! Nice to see you here! Welcome to the group! 😊"
+  ],
+  "help_messages": [
+    "Hey {username}! I saw your message - what do you need help with?",
+    "Hi {username}! I can help with that. What specifically are you looking for?",
+    "Hey {username}! I'm around if you need assistance. What's up?",
+    "Hi {username}! Let me know how I can help you out 😊",
+    "Hey {username}! What can I help you with?"
+  ],
+  "help_keywords": [
+    "help",
+    "support",
+    "how do i",
+    "how to",
+    "question",
+    "need assistance",
+    "can someone help",
+    "anyone help",
+    "issue",
+    "problem",
+    "stuck",
+    "confused",
+    "don't understand",
+    "not working",
+    "need help",
+    "someone help me"
+  ],
+  "stealth": {
+    "welcome_delay_min": 45,
+    "welcome_delay_max": 180,
+    "help_delay_min": 10,
+    "help_delay_max": 60,
+    "typing_time_min": 2,
+    "typing_time_max": 5,
+    "cooldown_hours": 24,
+    "max_messages_per_hour": 8,
+    "max_messages_per_day": 50,
+    "response_probability": 0.85,
+    "active_hours_start": 8,
+    "active_hours_end": 23,
+    "night_response_probability": 0.3
+  },
+  "target_group": "cupidbotg",
+  "enable_welcome": true,
+  "enable_help": true,
+  
+  "advanced": {
+    "enable_warmup": false,
+    "warmup_days": 7,
+    "enable_scraping": false,
+    "scraping_methods": ["basic"],
+    "enable_behavioral_mimicry": false,
+    "simulate_reading": false,
+    "simulate_profile_views": false,
+    "simulate_reactions": false,
+    "enable_social_scoring": false,
+    "target_influencers_first": false,
+    "enable_engagement_first": false,
+    "engagement_delay_hours": 24,
+    "use_adaptive_limits": false,
+    "learn_from_success": false,
+    "ai_personalization": false
+  },
+  "stealth_mode": true
+}

@@ -1,0 +1,66 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Bot specific
+telegran.db
+user_data/
+userbot_data.json
+idempotency_state.json
+
+# Backups (keep local, don't commit)
+backups/
+*.backup
+
+# Alerts and monitoring
+alerts.log
+
+# Lock files
+*.lock
+
+# Master password (CRITICAL!)
+.telegran_key
+
+# Telethon session files (CRITICAL - contains auth!)
+*.session
+*.session-journal
+userbot_session*
+get_groups_session*
+test_session*
+scraper_session*
+
+# Member scraper data (SENSITIVE!)
+scraper_state.json
+scraper_config.json
+scraped_members_*.csv
+member_scraper.log
