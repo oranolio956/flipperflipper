@@ -1,0 +1,70 @@
+======================================================================
+  CupidBot.ai Website Verification Report
+======================================================================
+
+
+======================================================================
+PAGE: Home
+======================================================================
+
+LOCAL vs LIVE Comparison:
+  Images:      15 vs 15
+  Scripts:     7 vs 7
+  Stylesheets: 2 vs 2
+  Links:       25 vs 25
+  Forms:       1 vs 1
+
+
+======================================================================
+PAGE: Contact
+======================================================================
+
+LOCAL vs LIVE Comparison:
+  Images:      9 vs 9
+  Scripts:     7 vs 7
+  Stylesheets: 2 vs 2
+  Links:       25 vs 25
+  Forms:       1 vs 1
+
+
+======================================================================
+PAGE: Product
+======================================================================
+
+LOCAL vs LIVE Comparison:
+  Images:      31 vs 31
+  Scripts:     7 vs 7
+  Stylesheets: 2 vs 2
+  Links:       48 vs 48
+  Forms:       1 vs 1
+
+Missing Resources (LOCAL):
+  - fetch: http://localhost:8000/.wf_graphql/csrf (Status: 501)
+
+Console Errors (LOCAL): 1
+  - Failed to load resource: the server responded with a status of 501 (Unsupported method ('POST'))
+
+
+======================================================================
+PAGE: Policies
+======================================================================
+
+LOCAL vs LIVE Comparison:
+  Images:      7 vs 6
+  Scripts:     7 vs 7
+  Stylesheets: 2 vs 2
+  Links:       23 vs 23
+  Forms:       1 vs 1
+
+
+======================================================================
+PAGE: Privacy
+======================================================================
+
+LOCAL vs LIVE Comparison:
+  Images:      7 vs 6
+  Scripts:     7 vs 7
+  Stylesheets: 2 vs 2
+  Links:       24 vs 24
+  Forms:       1 vs 1
+
